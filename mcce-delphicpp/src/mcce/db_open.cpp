@@ -60,7 +60,7 @@
  *        Junjun Mao, 06/02/2003
  *******************************************************************************/
 
-#include "gdbm.h"
+#include <gdbm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -3,7 +3,7 @@
 ********************************/
 
 #include <stdio.h>
-#include <gdbm.h>
+
 
 /*--- Constants ---*/
 /* Constants for geometry transformation recorder */
@@ -743,8 +743,6 @@ typedef struct {
 } ENV;
 
 extern ENV env;
-
-//extern GDBM_FILE param_db;
 
 /*--- Data structure functions ---*/
 ATOM   pdbline2atom(char *line);
