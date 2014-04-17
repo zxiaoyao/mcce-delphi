@@ -1,0 +1,28 @@
+
+#include "energy.h"
+
+
+void CDelphiEnergy::energy_clb(real& ergc)
+{
+	real en1, dist;
+	int i, j;
+	SGrid<real> txyz;
+
+	ergc = 0.0;  // coulombic energy
+	for(i=0;i<iCrgGridNum-1;i++){		// iCrgGridNum -> nqass, number of assigned charges
+		en1 = 0.0;
+
+		for(j=i+1;j<iCrgGridNum;j++){
+			// prgfgCrgPoseA -> chgpos	charge position in angstroms
+
+			txyz = prgfgCrgPoseA[i]-prgfgCrgPoseA[j];
+
+			dist = optDot(txyz,txyz);
+
+			en1 += (prggvAtomicCrg[j].nValue)/sqrt(dist);  // prggvAtomicCrg -> atmcrg
+		}
+
+		ergc += (prggvAtomicCrg[i].nValue) * en1;
+	}
+
+}

@@ -1,0 +1,591 @@
+/**
+ * [QUICK REFERENCE TO ACCESS SVN REPOSITORY ON SERVER consus.clemson.edu] \n
+ * - TO SHOW LOG HISTORY FOR THIS PROJECT:
+ *   	svn log svn+ssh://username\@consus.clemson.edu/home/common/delphi_distr/delphicpp
+ * - TO CHECKOUT THE LATEST REVERSION:
+ *   	svn co svn+ssh://username\@consus.clemson.edu/home/common/delphi_distr/delphicpp
+ * - TO REMOVE/ADD FILES FROM A CHECKED-OUT PROJECT:
+ *   	svn rm  <file/directory name>
+ *   	svn add <file/directory name>
+ * - TO REVIEW LOCAL CHANGES:
+ *   	svn status
+ * - TO COMMIT CHANGES:
+ *   	export SVN_EDITOR=/usr/bin/vim
+ *   	svn commit
+ * - TO UPDATE YOUR LOCAL FILES:
+ *   	svn update
+ *
+ *   (See "subversion user guide" created by S. Sarkar and C. Li for other svn options)
+ *
+ * [SUBMITTED REVERSIONS] \n
+ * - r01   chuan   2013July01   The 1st reversion in SVN.
+ * - r02   chuan   2013Nov25    1. Updated reading size and charge files in IO class. \n
+ *                              2. Updated excel file. \n
+ * - r03   chuan   2013Dec04    1. Completed reading/writing PDB file in IO class. \n
+ *                              2. Completed assigning size and charge to atoms. \n
+ * - r04   chuan   2013Dec05    fixed bugs in IO class.
+ * - r05   chuan   2013Dec10    major changes in prototypes, delphi, main and misc.
+ * - r06   chuan   2013Dec13    overhauled the subsystems of prototypes, delphi, misc, io. \n
+ *                              1. Now the part of code before surface construction is completed. \n
+ *                              2. Now the code requires GCC 4.3+ with option std=c++0x to compile due to the additional feature of
+ *                              initializing values when creating large arrays. (see comments in makefile)
+ * - r07   chuan   2013Dec24    Another set of major changes includes:
+ *                              1. Converted map<string,void *> to map<string,boost::any> \n
+ *                              2. Converted all regular and dynamically allocated multi-dimensional arrays to 1D stl::vector<T> in the map. \n
+ *                              The reasons to do so are: 1) contiguous memory allocation. 2) faster 1-layer loop instead of
+ *                              multi-layer loop. 3) Easier allocate/deallocate arrays \n
+ *                              3. Started using smart pointers instead of raw pointers in  order to avoid possible memory leak. \n
+ *                              4. Removed datadistr(:) and ndistr from the map \n
+ *                              5. Now the class of DataContainer provides 4 template functions to access the map:
+ *                            	   1) read-only by value:         getKey_constRef
+ *                            	   2) read-only by pointer:       getKey_constPtr
+ *                            	   3) writable access by value:   getKey_Val
+ *                            	   4) writable access by pointer: getKey_Ptr
+ *                              6. Reorganized the code structure.
+ * - r08   chuan   2014Jan07    Re-config the code to have datacontainer and datamarshal loosely paired.
+ * - n/a   chuan   2014Jan10    1. Added new piece of code to read ibnum, ibgrd, iepsmp and idebmap from forSolver.dat without Lin's
+ *                              surface construction class. \n
+ *                              2. Fixed various bugs. \n
+ * - r09   chuan   2014Jan18    1st reversion to use Eclipse and Doxygen.
+ * - r10   chuan   2014Jan18    cleaned two additional files
+ * - r11   chuan   2014Feb17    completed solver class with other updates.
+ * - r12   chuan   2014Feb26    Added new class of writing site and phimap.
+ */
+
+#include "../delphi/delphi_data.h"
+#include "../solver/solver_fastSOR.h"
+#include "../site/site.h"
+#include "../energy/energy.h"
+
+int main(int argc, char *argv[])
+{
+   /*
+    * bool values are inserted/extracted by their textual representation: either true or false, instead of integral values.
+    * This flag can be unset with the noboolalpha manipulator.
+    */
+   cout << boolalpha;
+
+#ifdef DEVELOPER
+   //cout.precision(15);
+   cout << fixed << setprecision(7);
+#else
+   //cout.precision(7);
+   cout << fixed << setprecision(3);
+#endif
+
+   try
+   {
+      shared_ptr<CTimer> pTimer( new CTimer); // record execution time
+
+      //*****************************************************************//
+      //                                                                 //
+      //          read the parameter, size, charge, PDB files            //
+      //                                                                 //
+      //*****************************************************************//
+
+      //---------- a shared_ptr to an object of IDataContainer
+      shared_ptr<IDataContainer> pDataContainer( new CDelphiData(argc,argv,pTimer) );
+
+/*===================================  Lin Li ================================
+      !2011-05-10 Parameters transferred via modules qlog and pointers
+      call epsmak
+      !++++I have postponed crgarr to epsmak
+
+      !make some charge arrays for boundary conditions etc.
+      if (isolv) then
+         !increased the starting dimension of crgatn and..+++++
+         extracrg=0
+         if (ndistr.gt.0) extracrg=igrid**3
+
+         !2011-05-30 Allocation of the arrays below is moved to the
+         !           body of crgarr subroutine, arrays are accessible
+         !           via pointers module. Sizes of arrays are
+         !           determined before allocation inside the crgarr
+         !           subroutine
+         !i_crgatn=memalloc(i_crgatn,4,natom+extracrg)
+         !i_chrgv2=memalloc(i_chrgv2,realsiz,4*(natom+extracrg))
+         !i_nqgrdtonqass=memalloc(i_nqgrdtonqass,4,natom+extracrg)
+         !i_atmeps=memalloc(i_atmeps,realsiz,natom+extracrg)
+         !i_chgpos=memalloc(i_chgpos,realsiz,3*ncrgmx)
+
+         !2011-05-30 Parameters transfered via qlog and pointers modules
+         call crgarr
+
+         if (logs.or.lognl) then
+            ico=0
+
+            do ic=1,nqass
+               if ((chgpos(ic).vorlt.xl).or.(chgpos(ic).vorgt.xr)) then
+                  if (crgatn(ic).lt.0) then
+                     write (6,'(''!WARNING: distribution'',I4,&
+                           &'' outside the box'')') (-crgatn(ic))
+                  else
+                     if (crgatn(ic).gt.natom) then
+                        write(6,'(''WARNING:crg'',I4,'',object'',I4,&
+                             &'' outside the box'',3f8.3)')&
+                             &ic,(crgatn(ic)-natom),chgpos(ic)
+                     else
+                        write(6, '(''!!! WARNING : charge '',&
+                             &a15,'' outside the box'')') &
+                             &  delphipdb(crgatn(ic))%atinf
+                     end if
+                  end if
+
+                  ico=1
+               end if
+            end do
+
+            if (ico.gt.0.and.ibctyp.ne.3) then
+               write(6,*)'CHARGES OUTSIDE THE BOX AND &
+                         &NOT DOING FOCUSSING, THEREFORE STOP'
+               stop
+            end if
+         end if
+      end if
+===================================  Lin Li ================================*/
+
+      cout << endl;
+
+      cout << " number of atom coordinates read  :" << right << setw(10) << pDataContainer->getKey_constRef<integer>("natom") << endl;
+
+      if (pDataContainer->getKey_constRef<bool>("isolv"))
+      {
+         cout << " total number of assigned charges :" << right << setw(10) << pDataContainer->getKey_constRef<integer>("nqass") << endl;
+         cout << " net assigned charge              :" << right << setw(10) << pDataContainer->getKey_constRef<real>("qnet") << endl;
+         cout << " assigned positive charge         :" << right << setw(10) << pDataContainer->getKey_constRef<real>("qplus") << endl;
+         cout << " centred at (gu)                  :" << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqplus").nX
+                                                       << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqplus").nY
+                                                       << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqplus").nZ << endl;
+         cout << " assigned negative charge         :" << right << setw(10) << pDataContainer->getKey_constRef<real>("qmin") << endl;
+         cout << " centred at (gu)                  :" << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqmin").nX
+                                                       << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqmin").nY
+                                                       << right << setw(10) << pDataContainer->getKey_constRef< SGrid<real> >("cqmin").nZ << endl;
+         cout << "\nnumber of dielectric boundary points" << right << setw(10) << pDataContainer->getKey_constRef<integer>("ibnum") << endl;
+
+         if (pDataContainer->getKey_constRef<bool>("iexun") && 0 == pDataContainer->getKey_constRef<integer>("ibnum"))
+            throw CNoBndyAndDielec(pTimer);
+      } // ---------- end of if (pDataContainer->getKey_constRef<bool>("isolv"))
+
+      //++++++++++ above is to be moved into biosystem.run() ++++++++++//
+
+      if (pDataContainer->getKey_constRef<bool>("isolv"))
+      {
+    	  cout << " ++++++++++++++ Solver module start ++++++++++++++++ " << endl;
+   	/*
+#ifdef DEBUG_DELPHI_SOLVER
+         {
+            string strSolver = "test_forSolver.dat";
+            ifstream ifSolverStream;
+            ifSolverStream.open(strSolver.c_str());
+            string strLine;
+
+            cerr << "\n\033[1;31m" << "---[post surf_construct] ibnum, ibgrd, iepsmp & " << "idebmap are read from \"" << strSolver
+                 << "\"---\n\n" << "\033[0m";
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<integer>("nqass") = atoi( strLine.c_str() );
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<real>("qnet") = atof(strLine.substr(0, 21).c_str());
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<real>("qmin") = atof(strLine.substr(0, 21).c_str());
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<real>("qplus") = atof(strLine.substr(0, 21).c_str());
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref< SGrid<real> >("cqplus").nX = atof(strLine.substr(0, 21).c_str());
+            pDataContainer->getKey_Ref< SGrid<real> >("cqplus").nY = atof(strLine.substr(21,21).c_str());
+            pDataContainer->getKey_Ref< SGrid<real> >("cqplus").nZ = atof(strLine.substr(42,21).c_str());
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref< SGrid<real> >("cqmin").nX = atof(strLine.substr(0, 21).c_str());
+            pDataContainer->getKey_Ref< SGrid<real> >("cqmin").nY = atof(strLine.substr(21,21).c_str());
+            pDataContainer->getKey_Ref< SGrid<real> >("cqmin").nZ = atof(strLine.substr(42,21).c_str());
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<integer>("ibnum") = atoi( strLine.c_str() );
+
+            for (int i = 0; i < pDataContainer->getKey_constRef<integer>("ibnum"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               SGrid<integer> grid;
+
+               grid.nX = atoi(strLine.substr(0,6).c_str());
+               grid.nY = atoi(strLine.substr(6,6).c_str());
+               grid.nZ = atoi(strLine.substr(12,6).c_str());
+
+               pDataContainer->getKey_Ref<vector<SGrid<integer> > >("ibgrd").push_back(grid);
+            }
+
+            const integer iGrid = pDataContainer->getKey_Val<integer>("igrid");
+
+            for (int i = 0; i < iGrid*iGrid*iGrid; i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               SGrid<integer> grid;
+
+               grid.nX = atoi(strLine.substr(0,6).c_str());
+               grid.nY = atoi(strLine.substr(6,6).c_str());
+               grid.nZ = atoi(strLine.substr(12,6).c_str());
+
+               pDataContainer->getKey_Ref<vector<SGrid<integer> > >("iepsmp").push_back(grid);
+            }
+
+            for (int i = 0; i < iGrid*iGrid*iGrid; i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               if (string::npos != strLine.find("T"))
+                  pDataContainer->getKey_Ref< vector<bool> >("idebmap").push_back(true);
+               else if(string::npos != strLine.find("F"))
+                  pDataContainer->getKey_Ref< vector<bool> >("idebmap").push_back(false);
+            }
+
+            getline(ifSolverStream,strLine);
+            pDataContainer->getKey_Ref<integer>("nqgrd") = atoi( strLine.c_str() );
+
+            for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqgrd"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               SGridValue<real> fgVal;
+
+               fgVal.nGrid.nX = atof(strLine.substr(0, 21).c_str());
+               fgVal.nGrid.nY = atof(strLine.substr(21,21).c_str());
+               fgVal.nGrid.nZ = atof(strLine.substr(42,21).c_str());
+               fgVal.nValue   = atof(strLine.substr(63,21).c_str());
+
+               pDataContainer->getKey_Ref< vector<SGridValue<real> > >("chrgv2").push_back(fgVal);
+            }
+
+            for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqgrd"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               integer iVal = atoi(strLine.substr(0,6).c_str());
+
+               pDataContainer->getKey_Ref< vector<integer> >("nqgrdtonqass").push_back(iVal);
+            }
+
+            for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqass"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               real fVal = atof(strLine.substr(0,21).c_str());
+
+               pDataContainer->getKey_Ref< vector<real> >("atmeps").push_back(fVal);
+            }
+
+            for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqass"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               SGridValue<real> fgVal;
+
+               fgVal.nGrid.nX = atof(strLine.substr(0, 21).c_str());
+               fgVal.nGrid.nY = atof(strLine.substr(21,21).c_str());
+               fgVal.nGrid.nZ = atof(strLine.substr(42,21).c_str());
+               fgVal.nValue   = atof(strLine.substr(63,21).c_str());
+
+               pDataContainer->getKey_Ref< vector<SGridValue<real> > >("atmcrg").push_back(fgVal);
+            }
+
+            for (int i = 0; i < pDataContainer->getKey_Ref<integer>("ibnum"); i += 1)
+            {
+               getline(ifSolverStream,strLine);
+
+               SGrid<real> fgCoord;
+
+               fgCoord.nX = atof(strLine.substr(0, 21).c_str());
+               fgCoord.nY = atof(strLine.substr(21,21).c_str());
+               fgCoord.nZ = atof(strLine.substr(42,21).c_str());
+
+               pDataContainer->getKey_Ref< vector<SGrid<real> > >("scspos").push_back(fgCoord);
+            }
+
+            ifSolverStream.close();
+
+            pDataContainer->showMap("test_delphicpp.dat");
+         }
+#endif // DEBUG_DELPHI_SOLVER
+*/
+         unique_ptr<IAbstractModule> pSolver( new CDelphiFastSOR(pDataContainer,pTimer) );
+
+         pSolver->run();
+
+         pSolver.release();
+      }
+
+      cout << "++++++++++++++ Solver module ends ++++++++++++++++" << endl;
+
+
+      //+++++++++++++++++ Run Delphi Energy Calculation ++++++++++++++++++++++++++++
+
+//#ifdef DEBUG_DELPHI_ENERGY
+
+ //++++++++++++ Set flags for test +++++
+
+      pDataContainer->getKey_Ref<bool>("inrgwrt") = false;
+      pDataContainer->getKey_Ref<bool>("loga")    = false;
+      pDataContainer->getKey_Ref<bool>("logg")    = true;
+      pDataContainer->getKey_Ref<bool>("logs")    = true;
+      pDataContainer->getKey_Ref<bool>("logas")   = false;
+      pDataContainer->getKey_Ref<bool>("logc")    = true;
+      pDataContainer->getKey_Ref<bool>("logions") = false;
+      pDataContainer->getKey_Ref<bool>("lognl")   = true;
+      pDataContainer->getKey_Ref<bool>("irea")    = false;
+      pDataContainer->getKey_Ref<bool>("isch")    = false;
+      pDataContainer->getKey_Ref<bool>("isen")    = false;
+      pDataContainer->getKey_Ref<bool>("isitpot") = false;
+      pDataContainer->getKey_Ref<bool>("ibufz")   = false;
+
+
+  //    pDataContainer->showMap("showMapBeforeEnergy.txt");
+  //+++++++++++++++++++++++++++++++++++++
+
+
+    	  string strEnergy = "test_forEnergy.txt";
+    	  ifstream ifEnergyStream;
+    	  ifEnergyStream.open(strEnergy.c_str());
+    	  string strLine;
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<integer>("nqass") = atoi( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<integer>("ibnum") = atoi( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<integer>("ibc") = atoi( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<integer>("icount1b") = atoi( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<integer>("icount2b") = atoi( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("rionst") = atof( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("chi1") = atof( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("chi2") = atof( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("chi3") = atof( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("chi4") = atof( strLine.c_str() );
+
+    	  getline(ifEnergyStream,strLine);
+    	  pDataContainer->getKey_Ref<real>("chi5") = atof( strLine.c_str() );
+
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqass"); i += 1)
+    	  {
+    	     getline(ifEnergyStream,strLine);
+
+    	     integer iVal = atoi(strLine.substr(0,6).c_str());
+
+    	     pDataContainer->getKey_Ref< vector<integer> >("crgatn").push_back(iVal);
+          }
+/*
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("ibnum"); i += 1)
+    	  {
+    	     getline(ifEnergyStream,strLine);
+
+  	     	 integer iVal = atoi(strLine.substr(0,6).c_str());
+
+    	     pDataContainer->getKey_Ref< vector<integer> >("atsurf").push_back(iVal);
+   	   	   }
+*/
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqass"); i += 1)
+    	  {
+    	     getline(ifEnergyStream,strLine);
+
+    	     real fVal = atof(strLine.substr(0,21).c_str());
+
+    	     pDataContainer->getKey_Ref< vector<real> >("atmeps").push_back(fVal);
+    	  }
+
+    	  const integer iGrid = pDataContainer->getKey_Val<integer>("igrid");
+
+    	  for (int i = 0; i < iGrid*iGrid*iGrid; i += 1)
+    	  {
+    	     getline(ifEnergyStream,strLine);
+
+    	     real fVal = atof(strLine.substr(0,21).c_str());
+
+
+
+    	     pDataContainer->getKey_Ref< vector<real> >("phimap")[i] = fVal;
+    	  }
+
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("icount1b"); i += 1)
+    	  {
+    	     getline(ifEnergyStream,strLine);
+
+    	     real fVal = atof(strLine.substr(0,21).c_str());
+
+    	     pDataContainer->getKey_Ref< vector<real> >("gchrg").push_back(fVal);
+    	  }
+
+    	  for (int i = 0; i < iGrid*iGrid*iGrid; i += 1)
+    	  {
+    	      getline(ifEnergyStream,strLine);
+
+    	      if (string::npos != strLine.find("T"))
+    	    	 pDataContainer->getKey_Ref< vector<bool> >("idebmap").push_back(true);
+    	      else if(string::npos != strLine.find("F"))
+    	         pDataContainer->getKey_Ref< vector<bool> >("idebmap").push_back(false);
+    	   }
+
+    	  for (int i = 0; i < pDataContainer->getKey_constRef<integer>("ibnum"); i += 1)
+    	  {
+    	       getline(ifEnergyStream,strLine);
+
+    	       SGrid<integer> grid;
+
+    	       grid.nX = atoi(strLine.substr(0,6).c_str());
+    	       grid.nY = atoi(strLine.substr(6,6).c_str());
+    	       grid.nZ = atoi(strLine.substr(12,6).c_str());
+
+    	       pDataContainer->getKey_Ref< vector<SGrid<integer> > >("ibgrd").push_back(grid);
+    	   }
+
+    	  for (int i = 0; i < pDataContainer->getKey_constRef<integer>("icount1b"); i += 1)
+    	  {
+    	      getline(ifEnergyStream,strLine);
+
+    	      SGrid<integer> grid;
+
+    	      grid.nX = atoi(strLine.substr(0,6).c_str());
+    	      grid.nY = atoi(strLine.substr(6,6).c_str());
+    	      grid.nZ = atoi(strLine.substr(12,6).c_str());
+
+    	      pDataContainer->getKey_Ref< vector<SGrid<integer> > >("gchrgp").push_back(grid);
+    	  }
+
+    	  for (int i = 0; i < pDataContainer->getKey_constRef<integer>("nqass"); i += 1)
+    	  {
+    	      getline(ifEnergyStream,strLine);
+
+    	      SGrid<real> fgCoord;
+
+    	      fgCoord.nX = atof(strLine.substr(0,21).c_str());
+    	      fgCoord.nY = atof(strLine.substr(21,21).c_str());
+    	      fgCoord.nZ = atof(strLine.substr(42,21).c_str());
+
+    	      pDataContainer->getKey_Ref< vector<SGrid<real> > >("chgpos").push_back(fgCoord);
+    	   }
+
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("ibnum"); i += 1)
+    	  {
+    		  getline(ifEnergyStream,strLine);
+
+    		  SGrid<real> fgCoord;
+
+    		  fgCoord.nX = atof(strLine.substr(0, 21).c_str());
+    	      fgCoord.nY = atof(strLine.substr(21,21).c_str());
+    	      fgCoord.nZ = atof(strLine.substr(42,21).c_str());
+
+    	      pDataContainer->getKey_Ref< vector<SGrid<real> > >("scspos").push_back(fgCoord);
+    	  }
+
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("nqass"); i += 1)
+    	  {
+    		  getline(ifEnergyStream,strLine);
+
+    		  SGridValue<real> fgVal;
+
+    		  fgVal.nGrid.nX = atof(strLine.substr(0, 21).c_str());
+    	      fgVal.nGrid.nY = atof(strLine.substr(21,21).c_str());
+    	      fgVal.nGrid.nZ = atof(strLine.substr(42,21).c_str());
+    	      fgVal.nValue   = atof(strLine.substr(63,21).c_str());
+
+    	      pDataContainer->getKey_Ref< vector<SGridValue<real> > >("atmcrg").push_back(fgVal);
+    	  }
+
+    	  for (int i = 0; i < pDataContainer->getKey_Ref<integer>("ibc"); i += 1)
+    	  {
+    		  getline(ifEnergyStream,strLine);
+
+
+    		  SDoubleGridValue fgVal;
+
+    		  fgVal.fgCoord.nX = atof(strLine.substr(0, 21).c_str());
+    	      fgVal.fgCoord.nY = atof(strLine.substr(21,21).c_str());
+    	      fgVal.fgCoord.nZ = atof(strLine.substr(42,21).c_str());
+    	      fgVal.fVal1 = atof(strLine.substr(63,21).c_str());
+    	      fgVal.fVal2 = atof(strLine.substr(84,21).c_str());
+
+    	      pDataContainer->getKey_Ref< vector<SDoubleGridValue> >("cgbp").push_back(fgVal);
+    	  }
+
+
+
+//#endif // DEBUG_DELPHI_ENERGY
+       pDataContainer->showMap("showMapBeforeEnergy.txt");
+
+       cout << "time before energy calculation  :  "; pTimer->showElapse(); cout << endl;
+       cout << "++++++++++++++ Energy calculation start ++++++++++++++++" << endl;
+
+
+      unique_ptr<IAbstractModule> pEnergy( new CDelphiEnergy(pDataContainer,pTimer) );
+
+      pEnergy->run();
+
+      pEnergy.release();
+
+  		cout << "++++++++++++++ Energy calculation end ++++++++++++++++" << endl;
+  		cout << "time of energy calculation  :  "; pTimer->showElapse(); cout << endl;
+
+      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+
+      unique_ptr<CSite> pSite( new CSite(pDataContainer,pTimer) );
+
+      pDataContainer->getKey_Ref<bool>("isite") = true;
+
+      if (pDataContainer->getKey_constRef<bool>("isite"))
+      {
+         int iisitsf = 0;
+         if (pDataContainer->getKey_Ref<bool>("isitsf")) iisitsf = 1;
+         pSite->writeSite(iisitsf);
+      }
+
+      if (pDataContainer->getKey_constRef<bool>("phiwrt")) pSite->writePhi();
+
+      pSite.release();
+
+      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+
+      pTimer->exit();
+
+      //---------- shared_ptr will be released automatically but unique_ptr must call unique_ptr.release() before exiting this scope
+
+   } // ---------- end of try block
+   catch (CException)
+   {
+      cerr << "\n\n ......... PROGRAM ABORTS WITH AN EXCEPTION AND " << CWarning::iWarningNum << " WARNING(S) ........\n\n";
+
+      return 0;
+   }
+
+   //cout << "\033[1;31mbold red text\033[0m\n";
+
+   cout << "\n\n .........  PROGRAM EXITS SUCCESSFULLY : WITH TOTAL " << CWarning::iWarningNum << " WARNING(S) ........\n\n";
+
+   cout.unsetf(ios_base::floatfield); // return to cout default notation
+
+   return 0;
+
+}
+
+
+
+

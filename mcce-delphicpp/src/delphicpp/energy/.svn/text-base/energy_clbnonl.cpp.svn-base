@@ -1,0 +1,49 @@
+
+#include "energy.h"
+
+void CDelphiEnergy::energy_clbnonl(real& ergc, real& ergest, int& igridout)
+{
+	real en, en1, en2, dist;
+	int i, j, n;
+	SGrid<real> txyz;
+
+	real sqrt8 = sqrt(8.0);
+	real c=0.0006023;
+	en = 0.0;
+
+	for(i=0;i<iCrgGridNum;i++){
+		en1 = 0.0;
+		en2 = 0.0;
+		for(j=0;j<iCrgGridNum;j++){
+			if(i!=j){
+				txyz = prgfgCrgPoseA[i]-prgfgCrgPoseA[j];
+				dist = optDot(txyz,txyz);
+
+				en1 += prggvAtomicCrg[j].nValue/sqrt(dist);
+			}
+		}
+
+		en += prggvAtomicCrg[i].nValue * en1 / prgfAtomEps[i];
+
+		// Calculation for the solvent contribution
+	    // Array sout is declared in pointers module and allocated in nlener subroutine
+
+		if(fIonStrength > 1.0e-6){
+			for(n=0;n<igridout;n++){
+				txyz =  prgfgCrgPoseA[i]-sout[n].nGrid;
+
+				dist = optDot(txyz,txyz);
+
+				en2 += sout[n].nValue/sqrt(dist);
+			}
+
+			ergest = ergest + en2 * prggvAtomicCrg[i].nValue;
+		}
+	}
+
+	en = en / 2.0;
+	ergc = en;
+	ergest = ergest * c / (2.0 * fEpsOut);
+
+}
+

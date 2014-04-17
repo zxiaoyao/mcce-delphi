@@ -1,0 +1,28 @@
+
+#include "energy.h"
+
+void CDelphiEnergy::energy_clbmedia(real& ergc)
+{
+	real en, en1, dist, dX, dY, dZ;
+	int i, j;
+	SGrid<real> txyz;
+
+	ergc = 0.0;
+	for(i=0;i<iCrgGridNum;i++){
+		en1 = 0.0;
+		for(j=0;j<iCrgGridNum;j++){
+			if(i!=j){
+				txyz = prgfgCrgPoseA[i]-prgfgCrgPoseA[j];
+
+				dist = optDot(txyz,txyz);
+
+				en1 +=(prggvAtomicCrg[j].nValue)/sqrt(dist);
+			}
+		}
+
+		ergc += prggvAtomicCrg[i].nValue * en1 / prgfAtomEps[i]; // prgfAtomEps -> atmeps
+	}
+
+	ergc = ergc / 2.0;
+
+}

@@ -1,0 +1,97 @@
+
+#include "energy.h"
+
+void CDelphiEnergy::energy_clbtotal(real& ergest, real& ergc)
+{
+	real cutedgesi, cutedgesj, cutedgesk;
+
+	real en1, en2;
+	real dist, dist2, gX, gY, gZ;
+	real goff, carica, phi, tmp, c;
+	int i, j, k, n, iw, igridout;
+	SGrid<real> txyz;
+	SGridValue<real> temp_GridValue;
+	vector < SGridValue<real> > sout2;
+
+
+	ergc = 0.0;
+	goff = (iGrid + 1.0) / 2.0;
+	gX = (-goff / fScale) + fgBoxCenter.nX;
+	gY = (-goff / fScale) + fgBoxCenter.nY;
+	gZ = (-goff / fScale) + fgBoxCenter.nZ;
+
+
+	c = fScale*fScale*fScale;
+
+	tmp = -2.0 * fIonStrength / c;
+
+	for(k=0;k<iGrid;k++){
+		cutedgesk = 1.0;
+		if(k==0 || k==iGrid-1){
+			cutedgesk = 0.5;
+		}
+		for(j=0;j<iGrid;j++){
+			cutedgesj = cutedgesk;
+			if(j==0 || j==iGrid-1){
+				cutedgesj = cutedgesk * 0.5;
+			}
+			for(i=0;i<iGrid;i++){
+				cutedgesi = cutedgesj;
+				if(i==0 || i==iGrid-1){
+					cutedgesi = cutedgesj * 0.5;
+				}
+
+				iw = k*iGrid*iGrid+j*iGrid+i;
+				if(prgbDielecMap[iw]){
+					phi = prgfPhimap[iw];
+					carica = phi * tmp;
+
+					temp_GridValue.nGrid.nX = i/fScale + gX + 1;
+					temp_GridValue.nGrid.nY = j/fScale + gY + 1;
+					temp_GridValue.nGrid.nZ = k/fScale + gZ + 1;
+					temp_GridValue.nValue = carica * cutedgesi;
+
+					sout2.push_back(temp_GridValue);
+
+				}
+			}
+		}
+	}
+
+	igridout = sout2.size();
+
+	cout << " number of g.p. in solution contributing to the energy :  " << igridout << endl;
+
+	for(i=0;i<iCrgGridNum;i++){
+		en1=0.0; en2=0.0;
+		for(j=0;j<iCrgGridNum;j++){
+			if(i!=j){
+				txyz = prgfgCrgPoseA[i]-prgfgCrgPoseA[j];
+
+				dist = optDot(txyz,txyz);
+
+				en1 += prggvAtomicCrg[j].nValue/sqrt(dist);
+			}
+		}
+
+		ergc += prggvAtomicCrg[i].nValue * en1 / prgfAtomEps[i];
+
+		// calculation for the solvent contribution.
+
+		for(n=0;n<igridout;n++){
+
+			txyz = prgfgCrgPoseA[i] - sout2[n].nGrid;
+
+			dist = optDot(txyz,txyz);
+
+			en2 += sout2[n].nValue/sqrt(dist);
+
+		}
+
+		ergest = ergest + en2*prggvAtomicCrg[i].nValue;
+	}
+
+	ergc = ergc / 2.0;
+	ergest = ergest * 0.0006023 / (2.0 * fEpsOut);
+
+}

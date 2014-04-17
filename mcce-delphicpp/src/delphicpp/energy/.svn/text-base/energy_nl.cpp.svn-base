@@ -1,0 +1,91 @@
+
+#include "energy.h"
+
+void CDelphiEnergy::energy_nonl(real& ergnl, int& igridout)
+{
+	real ergsolv, ergosm;
+	int i, j, k, iw, n;
+	real gX, gY, gZ;
+	real carica, cutedgesi, cutedgesj, cutedgesk, goff;
+	real dhi1, dhi2, dhi3, dhi4, dhi5, tmpcar, phi, c;
+	SGridValue<real> temp_GridValue;
+
+	ergsolv=0.0; ergosm=0.0;  n=0;
+
+	goff = (iGrid + 1.0) / 2.0;
+	gX = (-goff / fScale) + fgBoxCenter.nX;
+	gY = (-goff / fScale) + fgBoxCenter.nY;
+	gZ = (-goff / fScale) + fgBoxCenter.nZ;
+	c = fScale*fScale*fScale;
+
+	dhi5=-fTaylorCoeff5/6.0;
+	dhi4=-fTaylorCoeff4/5.0;
+	dhi3=-fTaylorCoeff3/4.0;
+	dhi2=-fTaylorCoeff2/3.0;
+	dhi1=-fTaylorCoeff1/2.0;
+
+
+		for(k=0;k<iGrid;k++){
+			cutedgesk = 1.0;
+			if(k==0 || k==iGrid-1){
+				cutedgesk = 0.5;
+			}
+			for(j=0;j<iGrid;j++){
+				cutedgesj = cutedgesk;
+				if(j==0 || j==iGrid-1){
+					cutedgesj = cutedgesk * 0.5;
+				}
+				for(i=0;i<iGrid;i++){
+					cutedgesi = cutedgesj;
+					if(i==0 || i==iGrid-1){
+						cutedgesi = cutedgesj * 0.5;
+					}
+
+					iw = k*iGrid*iGrid+j*iGrid+i;
+					if(prgbDielecMap[iw]){
+						phi = prgfPhimap[iw];
+
+
+						tmpcar = fTaylorCoeff5 * phi + fTaylorCoeff4;
+						tmpcar = tmpcar * phi + fTaylorCoeff3;
+						tmpcar = tmpcar * phi + fTaylorCoeff2;
+						tmpcar = tmpcar * phi + fTaylorCoeff1;
+						carica = cutedgesi * tmpcar * phi / c;
+
+						tmpcar = dhi5 * phi + dhi4;
+						tmpcar = tmpcar * phi + dhi3;
+						tmpcar = tmpcar * phi + dhi2;
+						tmpcar = tmpcar * phi + dhi1;
+						ergosm = ergosm + cutedgesi * tmpcar * phi * phi;
+
+
+						if(bIonsEng){
+
+							temp_GridValue.nGrid.nX = i + gX + 1;
+							temp_GridValue.nGrid.nY = j + gY + 1;
+							temp_GridValue.nGrid.nZ = k + gZ + 1;
+							temp_GridValue.nValue = carica;
+							sout.push_back(temp_GridValue);
+
+						}
+						ergsolv -= carica*phi;
+					}
+				}
+			}
+		}
+
+
+	ergsolv = ergsolv * 0.5 * 0.0006023;
+	ergosm = -ergosm * 0.0006023 / c;
+
+	igridout = sout.size();
+
+
+	cout << " rho*phi/2 term in solution       :               " << setw(8) << right << -ergsolv << "  kt" << endl;
+	cout << " osmotic pressure term            :               " << setw(8) << right << -ergosm << "  kt" << endl;
+
+
+	ergnl = ergnl + ergosm +ergsolv;
+
+}
+
