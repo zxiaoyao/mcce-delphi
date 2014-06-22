@@ -18,6 +18,8 @@
    real salt;
    int  bndcon;
    real center[3];
+
+
 } SMCCE;
  *
  */
