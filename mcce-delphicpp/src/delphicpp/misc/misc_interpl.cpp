@@ -23,18 +23,22 @@ class CPointOutBox : public CWarning
 //-----------------------------------------------------------------------//
 real interpl(const integer& igMaxGrid, real *** prgfMap, const SGrid<real>& gPoint)
 {
-   real fInterpl = 0.0; // return interploation value
+   real fInterpl = 0.0; // returned interpolation value
 
    SGrid<real> fgMaxGrid = {(real)(igMaxGrid),(real)(igMaxGrid),(real)(igMaxGrid)};
        
-   // return 0.0 if outside grid
-   if (optORLT(gPoint,0.0) || optORGT(gPoint,fgMaxGrid)) 
+   /*
+    * return 0.0 if outside grid
+    */
+   if (optORLT(gPoint,1.0) || optORGT(gPoint,fgMaxGrid))
    {
       CPointOutBox waring(gPoint,igMaxGrid);
-      return fInterpl = 0.0;
+      return 0.0;
    }
 
-   // find lower left bottom grid point
+   /*
+    * find lower left bottom grid point
+    */
    SGrid<integer> iFloor = {(integer)floor(gPoint.nX),(integer)floor(gPoint.nY),(integer)floor(gPoint.nZ)}; //nx,ny,nz
    
    SGrid<integer> iCeiling = iFloor+1; //nx1,ny1,nz1
@@ -42,19 +46,26 @@ real interpl(const integer& igMaxGrid, real *** prgfMap, const SGrid<real>& gPoi
    if (iCeiling.nY > igMaxGrid) iCeiling.nY = iFloor.nY;
    if (iCeiling.nZ > igMaxGrid) iCeiling.nZ = iFloor.nZ;
    
-   // calculate cube coordinates of point
+   /*
+    * calculate cube coordinates of point
+    */
    SGrid<real> fFloor = {(real)iFloor.nX,(real)iFloor.nY,(real)iFloor.nZ};
    fFloor = gPoint - fFloor; // xgr,ygr,zgr
 
-   // calculate coefficients of trilinear function
-   real a8 = prgfMap[iFloor.nX][iFloor.nY][iFloor.nZ],
-        a7 = prgfMap[iFloor.nX][iFloor.nY][iCeiling.nZ]-a8,
-        a6 = prgfMap[iFloor.nX][iCeiling.nZ][iFloor.nZ]-a8,
-        a5 = prgfMap[iCeiling.nX][iFloor.nZ][iFloor.nZ]-a8,
-        a4 = prgfMap[iFloor.nX][iCeiling.nZ][iCeiling.nZ]-a8-a7-a6,
-        a3 = prgfMap[iCeiling.nX][iFloor.nZ][iCeiling.nZ]-a8-a7-a5,
-        a2 = prgfMap[iCeiling.nX][iCeiling.nZ][iFloor.nZ]-a8-a6-a5,
-        a1 = prgfMap[iCeiling.nX][iCeiling.nZ][iCeiling.nZ]-a8-a7-a6-a5-a4-a3-a2;
+   /*
+    * calculate coefficients of trilinear function
+    * notice that
+    * 1. 3D map prgfMap is prgfMap[iz][iy][ix]
+    * 2. C++ index starts with 0 (therefore - 1)
+    */
+   real a8 = prgfMap[iFloor.nZ-1][iFloor.nY-1][iFloor.nX-1],
+        a7 = prgfMap[iCeiling.nZ-1][iFloor.nY-1][iFloor.nX-1]-a8,
+        a6 = prgfMap[iFloor.nZ-1][iCeiling.nY-1][iFloor.nX-1]-a8,
+        a5 = prgfMap[iFloor.nZ-1][iFloor.nY-1][iCeiling.nX-1]-a8,
+        a4 = prgfMap[iCeiling.nZ-1][iCeiling.nY-1][iFloor.nX-1]-a8-a7-a6,
+        a3 = prgfMap[iCeiling.nZ-1][iFloor.nY-1][iCeiling.nX-1]-a8-a7-a5,
+        a2 = prgfMap[iFloor.nZ-1][iCeiling.nY-1][iCeiling.nX-1]-a8-a6-a5,
+        a1 = prgfMap[iCeiling.nZ-1][iCeiling.nY-1][iCeiling.nX-1]-a8-a7-a6-a5-a4-a3-a2;
         
    // determine value of phi     
    fInterpl = a1*fFloor.nX*fFloor.nY*fFloor.nZ + a2*fFloor.nX*fFloor.nY + a3*fFloor.nX*fFloor.nZ + a4*fFloor.nY*fFloor.nZ +

@@ -124,9 +124,10 @@ void CDelphiFastSOR::postItr(const vector<real>& rmaxl,const vector<real>& rmsl)
       for (m = 1; m <= 5; m++)
       {
          n = (iGrid-1)/4; nn = (m-1)*n+1;
-         cout << "phi " << nn << midg << endl;
+         cout << "phi " << "  " << right << nn << "   " << right << midg << endl;
          for (ii = 1; ii <= iGrid; ii++)
-            cout << phimap[ii-1][midg-1][nn-1];
+            cout << right << phimap[ii-1][midg-1][nn-1] << "   ";
+         cout << endl << endl;
       }
    }
 

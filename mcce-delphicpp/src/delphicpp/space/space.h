@@ -86,7 +86,7 @@ private:                                            // In DATA CONTAINER
     integer ndistr;                         // ndistr
 
     integer& iBoundNum;                       // ibnum
-    real& rdmx;                            // rdmx
+    real& rdmx;                              // rdmx
     integer& nqass;
     integer& nqgrd;
     bool& iacs;                               //
@@ -191,11 +191,16 @@ private:                                            // In DATA CONTAINER
 
 
     SGrid <integer> *** egrid;
-    bool *** bDebMap;
+    //bool *** bDebMap;
     bool *** idebmap;
     SGrid <integer> *** iepsmp;
     integer *** cbn1, *** cbn2, *** iab1, *** iab2;
     integer * iAtomMed;
+
+
+    SGrid <real> sgrid_temp_real;
+
+    SGrid <integer> sgrid_temp_int;
 
 
 /*
@@ -256,8 +261,6 @@ private:                                            // In DATA CONTAINER
 
 
 
-
-
 public:
     SGrid <integer> *** iEpsMap;
     CDelphiSpace(shared_ptr<IDataContainer> pdc,shared_ptr<CTimer> pt):
@@ -281,12 +284,13 @@ public:
         isolv (pdc->getKey_constRef<bool>("isolv")),
         irea (pdc->getKey_constRef<bool>("irea")),
         logs (pdc->getKey_constRef<bool>("logs")),
+        lognl (pdc->getKey_constRef<bool>("lognl")),
         isen (pdc->getKey_constRef<bool>("isen")),
         isch (pdc->getKey_constRef<bool>("isch")),
-        lognl (pdc->getKey_constRef<bool>("lognl")),
+
         isite (pdc->getKey_constRef<bool>("isite")),
         ibem (pdc->getKey_constRef<bool>("ibem")),
-        ibctyp (pdc->getKey_constRef<bool>("ibctyp")),
+        ibctyp (pdc->getKey_constRef<int>("ibctyp")),
         isitsf (pdc->getKey_constRef<bool>("isitsf")),
 
 
@@ -302,6 +306,7 @@ public:
         //ndistr (pdc->getKey_constRef<integer>("ndistr")),
 
         //fRMid (pdc->getKey_constRef<real>("rmid")),
+        cOldMid(pdc->getKey_constRef< SGrid<real> >("oldmid")),
         fIonStrenth (pdc->getKey_constRef<real>("rionst")),
         fExternRadius (pdc->getKey_constRef<real>("exrad")),
         fRMax (pdc->getKey_constRef<real>("rdmx")),
@@ -309,65 +314,55 @@ public:
 
         delphipdb (pdc->getKey_constRef<vector <CAtomPdb> >("delphipdb")),
 
-        cOldMid(pdc->getKey_constRef< SGrid<real> >("oldmid")),
         dataobject_v(pdc->getKey_constRef< vector<string> >("dataobject")),
 
         //++++++++++++++++ reference to read-and-write variables from data container +++++++++++++++//
 
         iBoundNum (pdc->getKey_Ref<integer>("ibnum")),
+        rdmx (pdc->getKey_Ref<real>("rdmx")),
         nqass (pdc->getKey_Ref<integer>("nqass")),
         nqgrd (pdc->getKey_Ref<integer>("nqgrd")),
-
-        rdmx (pdc->getKey_Ref<real>("rdmx")),
-        iAtomMed_v(pdc->getKey_Ref< vector<integer> >("iatmmed")),
-        sLimObject(pdc->getKey_Ref< vector < SExtrema<real> > >("limobject")),
         iacs(pdc->getKey_Ref< bool >("iacs")),
         isrf(pdc->getKey_Ref< bool >("isrf")),
         cMin(pdc->getKey_Ref< SGrid<real> >("cmin")),
         cMax(pdc->getKey_Ref< SGrid<real> >("cmax")),
-
         qnet(pdc->getKey_Ref< real >("qnet")),
         qmin(pdc->getKey_Ref< real >("qmin")),
         qplus(pdc->getKey_Ref< real >("qplus")),
         cqmin(pdc->getKey_Ref< SGrid<real> >("cqmin")),
         cqplus(pdc->getKey_Ref< SGrid<real> >("cqplus")),
         medeps(pdc->getKey_Ref < vector < real > >("medeps")),
-
-
-
-
+        xn1_v(pdc->getKey_Ref< vector< SGrid<real> > >("xn1")),
+        xn2_v(pdc->getKey_Ref< vector< SGrid<real> > >("xn2")),
+        bDebMap_v( pdc->getKey_Ref< vector< bool > >("idebmap")),
+        iEpsMap_v( pdc->getKey_Ref< vector< SGrid<integer> > > ("iepsmp")),
+        iAtomMed_v(pdc->getKey_Ref< vector<integer> >("iatmmed")),
+        sLimObject(pdc->getKey_Ref< vector < SExtrema<real> > >("limobject")),
         ibgrd_v(pdc->getKey_Ref< vector< SGrid<integer> > >("ibgrd")),
         scspos_v(pdc->getKey_Ref< vector< SGrid<real> > >("scspos")),
         chgpos_v(pdc->getKey_Ref< vector< SGrid<real> > >("chgpos")),
         crgatn_v(pdc->getKey_Ref< vector< integer > >("crgatn")),
-        atmeps_v(pdc->getKey_Ref< vector< real > >("atmeps")),
-
         nqgrdtonqass_v(pdc->getKey_Ref< vector< integer > >("nqgrdtonqass")),
+        atmeps_v(pdc->getKey_Ref< vector< real > >("atmeps")),
         atmcrg_v(pdc->getKey_Ref< vector< SGridValue<real> > >("atmcrg")),
         chrgv2_v(pdc->getKey_Ref< vector< SGridValue<real> > >("chrgv2")),
 
         scsnor_v(pdc->getKey_Ref< vector< SGrid<real> > >("scsnor")),
-
         atsurf_v(pdc->getKey_Ref< vector< integer > >("atsurf")),
-        atndx_v(pdc->getKey_Ref< vector< integer > >("atndx")),
-
-        xn1_v(pdc->getKey_Ref< vector< SGrid<real> > >("xn1")),
-        xn2_v(pdc->getKey_Ref< vector< SGrid<real> > >("xn2")),
-        bDebMap_v( pdc->getKey_Ref< vector< bool > >("idebmap")),
-        iEpsMap_v( pdc->getKey_Ref< vector< SGrid<integer> > > ("iepsmp"))
-
-
+        atndx_v(pdc->getKey_Ref< vector< integer > >("atndx"))
 
     {
         //bDebMap_v=pdc->getKey_Ref< vector< bool > >("idebmap");
         bDebMap_v.assign(iGrid*iGrid*iGrid, true);
-        iEpsMap_v.assign(iGrid*iGrid*iGrid, {0,0,0});
-        iEpsMap=pdc->getKey_Ptr < SGrid <integer> > ( "iepsmp",iGrid,iGrid,iGrid);
+
+        //iEpsMap_v.assign(iGrid*iGrid*iGrid, {0,0,0});
+
         iAtomMed=&iAtomMed_v[-1];
 
 
         sDelPhiPDB = new delphipdb_struc [iNatom+1];
-        bDebMap=get_pt3d <bool> (iGrid,iGrid,iGrid);
+        //bDebMap=get_pt3d <bool> (iGrid,iGrid,iGrid);
+        //get_pt3d <bool> (bDebMap,iGrid,iGrid,iGrid);
 
         //egrid = get_pt3d <SGrid <integer> > (iGrid,iGrid,iGrid);
 
@@ -377,14 +372,39 @@ public:
 
         test_pdc=pdc;
 
+        /*
+        integer ** tmlst;
+        SGrid <integer> *** egrid;
+        bool *** idebmap;
+        SGrid <integer> *** iepsmp;
+        integer *** cbn1, *** cbn2, *** iab1, *** iab2;
+        */
+
+        // initialize all the pointers to be NULL:
+        tmlst=NULL;
+        egrid=NULL;
+        idebmap=NULL;
+        iepsmp=NULL;
+        iab1=NULL;
+        iab2=NULL;
+        cbn1=NULL;
+        cbn2=NULL;
+
     };
 
 
-    ~CDelphiSpace() {};
+    ~CDelphiSpace() {
+        delete [] sDelPhiPDB ;
+        //free_pt3d <bool> (idebmap,iGrid+1,iGrid+1,iGrid+1);
+        //free_pt3d <SGrid <integer> > (iEpsMap,iGrid+1,iGrid+1,iGrid+1);
+
+    };
+
 
     virtual void validateInput();
 
     virtual void run();
+
 };
 
 #endif // SPACE_H

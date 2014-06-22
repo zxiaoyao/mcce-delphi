@@ -9,8 +9,5 @@
 
 void CDelphiFastSOR::validateInput()
 {
-   if (bCrgInterplateType) CSphericalCrgIntelp waring();
-
-
 
 }

@@ -13,14 +13,22 @@ void CDelphiSpace::epsmak()
     if(space_debug) cout << "######## This is in epsmak: ##########" << endl;
 
     SGrid <real> amin,amax;
+    //SGrid <real> sgrid_temp_real;
+    SExtrema<real> sextrema_temp;
 
-
-    real fRMid,fRMaxTemp,fCputime;
+    real fRMid,fRMaxTemp;
     integer i,ix,iy,iz;
+
+
+
+
+    sextrema_temp.nMax=sgrid_temp_real;
+    sextrema_temp.nMin=sgrid_temp_real;
 
     i=iGrid;
 
-    sLimGridUnit.assign(iNObject, { {0.,0.,0.} , {0.,0.,0.} } );
+    //sLimGridUnit.assign(iNObject, { {0.,0.,0.} , {0.,0.,0.} } );
+    sLimGridUnit.assign(iNObject, sextrema_temp );
     //here limobject is expressed in grid units
     fRMid=(iGrid+1)/2.0;
 
@@ -133,11 +141,13 @@ void CDelphiSpace::epsmak()
 */
 
 
-    if(true)
+    if(space_debug)
     {
         // testing iepsmp and idebmap:
         ofstream epsfile;
         ofstream debfile;
+
+
         epsfile.open ("epsmap_win.txt");
         debfile.open ("debmap_win.txt");
         for (ix=1; ix<=iGrid; ix++)
@@ -146,11 +156,11 @@ void CDelphiSpace::epsmak()
             {
                 for (iz=1; iz<=iGrid; iz++)
                 {
-                    epsfile << setw(5) << iepsmp[ix][iy][iz].nX
-                            << setw(5) << iepsmp[ix][iy][iz].nY
-                            << setw(5) << iepsmp[ix][iy][iz].nZ
+                    epsfile << setw(5) << iepsmp[iz][iy][ix].nX
+                            << setw(5) << iepsmp[iz][iy][ix].nY
+                            << setw(5) << iepsmp[iz][iy][ix].nZ
                             << endl;
-                    debfile << idebmap[ix][iy][iz] << endl;
+                    debfile << idebmap[iz][iy][ix] << endl;
                     /*
                     if(bDebMap[ix-1][iy-1][iz-1]){
                        debfile << "T" << " " << bDebMap[ix-1][iy-1][iz-1] <<endl;
@@ -164,11 +174,41 @@ void CDelphiSpace::epsmak()
             }
         }
 
+#ifdef LIN
+        epsfile.open ("epsmap_win_kji.txt");
+        debfile.open ("debmap_win_kji.txt");
+        for (iz=1; iz<=iGrid; iz++)
+        {
+            for (iy=1; iy<=iGrid; iy++)
+            {
+                for (ix=1; ix<=iGrid; ix++)
+                {
+                    epsfile << setw(5) << iepsmp[ix][iy][iz].nX
+                            << setw(5) << iepsmp[ix][iy][iz].nY
+                            << setw(5) << iepsmp[ix][iy][iz].nZ
+                            << endl;
+                    debfile << idebmap[iz][iy][ix] << endl;
+                    /*
+                    if(bDebMap[ix-1][iy-1][iz-1]){
+                       debfile << "T" << " " << bDebMap[ix-1][iy-1][iz-1] <<endl;
+
+                    }
+                    else{
+                       debfile << "F" << " " << bDebMap[ix-1][iy-1][iz-1] <<endl;
+                    }*/
+
+                }
+            }
+        }
+#endif // LIN
+
         epsfile.close();
         debfile.close();
 
     }
 
+
+/*
 #ifdef DEBUG
         {
             //open(52,file='iepsmapnewfirst',form='formatted');
@@ -188,7 +228,7 @@ void CDelphiSpace::epsmak()
             //close (52);
             file1.close();
 #endif
-
+*/
 
 
 }

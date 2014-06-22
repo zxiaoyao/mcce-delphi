@@ -51,21 +51,24 @@ void CDelphiFastSOR::run()
    if (0.3 < (real)iCrgBndyGridNum/iBndyGridNum && bAutoConverge)
    {
       iLinIterateNum = iLinIterateNum*iCrgBndyGridNum/(0.3*iBndyGridNum);
-      cout << "Re-estimated iterations now : " << iLinIterateNum;
+      cout << "Re-estimated iterations now : " << iLinIterateNum << endl;
    }
 
 #ifdef VERBOSE
    cout << "now iterating on "; pTimer->showTime(); cout << endl;
 #endif
 
-   if (0 == iNonIterateNum || 1.0e-6 > fIonStrength)
+   if (0 == iNonIterateNum || fZero > fIonStrength)
+   {
+      if (0 >= iLinIterateNum) throw CZeorLinIterateNum(bAutoConverge,iLinIterateNum);
       itit();
+   }
    else
    {
-      if (50 < noit)
+      if (50 < noit || 0 >= iLinIterateNum)
       {
          iLinIterateNum = noit/2;
-         cout << "Re-estimated iterations now : " << iLinIterateNum;
+         cout << "Re-estimated iterations now : " << iLinIterateNum << endl;
       }
 
       real qfact = abs(fNetCrg)*(real)iCrgBndyGridNum/iBndyGridNum;

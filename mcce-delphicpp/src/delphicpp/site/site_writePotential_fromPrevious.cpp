@@ -41,8 +41,8 @@ void CSite::writePotential_fromPrevious(vector<real>& phimapIn)
 
    ifPreviousStream.close();
 
-   if ( 1.0e-6 < abs(fScale-scalesingle1) || 1.0e-6 < abs(oldmidsingle1.nX-fgBoxCenter.nX) ||  1.0e-6 < abs(oldmidsingle1.nY-fgBoxCenter.nY) ||
-        1.0e-6 < abs(oldmidsingle1.nZ-fgBoxCenter.nZ) ||  1.0e-6 < abs(iGrid-igrid1) ) throw CUnmatchPotentialMap();
+   if ( fZero < abs(fScale-scalesingle1) || fZero < abs(oldmidsingle1.nX-fgBoxCenter.nX) ||  fZero < abs(oldmidsingle1.nY-fgBoxCenter.nY) ||
+        fZero < abs(oldmidsingle1.nZ-fgBoxCenter.nZ) ||  fZero < abs(iGrid-igrid1) ) throw CUnmatchPotentialMap();
 
    /*
     * subroutine submaps(mgrid,phimap,phimap4,opt) is removed due to the fact that realsiz cannot be 4

@@ -1,5 +1,14 @@
 #include "io.h"
 
+/*
+ * Declaring a static member variable is not enough, you need to also define it somewhere.
+ * This should be in a .cpp file that includes the header (.h) file that declared them.
+ */
+integer CIO::iRadiusNum = 0;
+vector<CForce> CIO::prgas;
+integer CIO::iCrgNum    = 0;
+vector<CForce> CIO::prgac;
+
 //-----------------------------------------------------------------------//
 // atom(a6),residue(a3),radius(f8.4) or charge(f8.4)
 // aaaaaarrrfff.ffff
@@ -287,9 +296,9 @@ integer CIO::FindRecord(const string& strAtom, const string& strResidue, const s
 //   {
 //      for (integer i = 0; i < iAtomNum; i++)
 //      {
-//         fCharge = prgapAtomPdb[i].getCharge();
+//         fCharge = vctapAtomPdb[i].getCharge();
 //         
-//         strAtInf      = prgapAtomPdb[i].getAtInf();
+//         strAtInf      = vctapAtomPdb[i].getAtInf();
 //         strResidue    = strAtInf.substr(6,4); 
 //         strResidueNum = strAtInf.substr(11,4);
 //         

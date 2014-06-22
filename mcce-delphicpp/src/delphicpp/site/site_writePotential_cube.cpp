@@ -30,13 +30,19 @@ void CSite::writePotential_cube()
 
    ofPhiStream.precision(5);
 
+   int l = 0;
+
    for (int i = 0; i < iGrid; i++)
    {
       for (int j = 0; j < iGrid; j++)
       {
+         l = 0;
+
          for (int k = 0; k < iGrid; k++)
          {
             ofPhiStream << scientific << setw(13) << right << phimap[k][j][i];
+            l++;
+            if (6 == l) { ofPhiStream << endl; l = 0;} // 6 values per line
          }
          ofPhiStream << endl;
       }

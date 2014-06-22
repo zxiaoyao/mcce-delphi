@@ -30,26 +30,27 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
     bool outcb[5][5][5]; //outcb index should be modified
 
 //2011-05-19 Leaving only variables not declared in qlog and pointers modules
-    integer iaprec,objecttype,nearest,even,dim1,kind;
+    integer iaprec,dim1,kind;
     integer dim,prevmed,med;
     integer epsdim,imezzo[7],iente[7],ix,iy,iz;
     SGrid <integer > ixyz;
     integer iac1,iac2;
     bool lga,lgd,iflag,precedenza,vicinanza,flag;
     string strtmp;
-    real disev,disodd;
-    SGrid <real> vectx,vnor,s123;
-    real tmp[7],radpmax,dst,zeta;
-    SGrid <real> modul,vectz,mod2,x1xyz,xg, u123,xxyyzz;
-    real radius,temp;
-    SGrid <real> vecty,xq,dot,dxyz,dixyz,dx123, dr;
-    real alpha,tan2,dx,dy,dz;
-    real dix,diy,diz,hgs,ds2min1,ds2min2;
-    SGrid <integer > lmncb1,it,jxyz;
+    //real disev,disodd;
+    SGrid <real> vnor,s123;
+    //real tmp[7];
+    real radpmax,dst;
+    SGrid <real> x1xyz,xg, u123,xxyyzz;
+    real temp;
+    SGrid <real> xq,dxyz,dixyz,dx123, dr;
+    //real tan2,dx,dy,dz;
+    real hgs,ds2min1,ds2min2;
+    SGrid <integer > it,jxyz;
 //2011-05-27 Declarations added due to IMPLICIT NONE
     integer iac,ia,i,j,k,iacl,iii,ii,jjx,jjy,jjz,jx,jy,jz;
     integer jzi,jyi,jxi,liml,limu,kk,nnbr,ncbp;
-    real x1,cbln,del,dis2,dis,dist,dmn,dcr,ctf,dmxx,dmn1,dmn2;
+    real x1,cbln,del,dis2,dis,dist,dmn,dcr,ctf,dmn1,dmn2;
     real cba,ds2,dsr,rmn,rdist,dmx;
 
     vector <bool> internal;
@@ -109,8 +110,17 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
         cout <<"Scaling routine in action//" << endl;
 
 //2011-05-19 Using operations on coord and int_coord type variables defined in module operators_on_coordinates
-        cMin= {6000.,6000.,6000.};
-        cMax= {-6000.,-6000.,-6000.};
+        //cMin= {6000.,6000.,6000.};
+        cMin.nX=6000.;
+        cMin.nY=6000.;
+        cMin.nZ=6000.;
+
+        //cMax= {-6000.,-6000.,-6000.};
+        cMax.nX=-6000.;
+        cMax.nY=-6000.;
+        cMax.nZ=-6000.;
+
+
         for(ii=1; ii<=iNObject; ii++)
         {
             cMin=optMin(cMin,sLimObject[ii].nMin);
@@ -153,7 +163,7 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
         if (iBoundNum!=iBoundNumsurf&&numbmol>1)
         {
 //2011-05-19 Converted to int_coord derived type
-
+            cout << "###### sclbp iente iepsmp: " << endl;
             ixyz=optCast <integer,real> (scspos[i]);
 
             ix=ixyz.nX;
@@ -162,20 +172,33 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
 
             iflag=false;
 
+            iente[1]=iepsmp[ix][iy][iz].nX%epsdim;
+            iente[2]=iepsmp[ix][iy][iz].nY%epsdim;
+            iente[3]=iepsmp[ix][iy][iz].nZ%epsdim;
+            iente[4]=iepsmp[ix-1][iy][iz].nX%epsdim;
+            iente[5]=iepsmp[ix][iy-1][iz].nY%epsdim;
+            iente[6]=iepsmp[ix][iy][iz-1].nX%epsdim;
 
-            iente[1]=iEpsMap[ix][iy][iz].nX%epsdim;
-            iente[2]=iEpsMap[ix][iy][iz].nY%epsdim;
-            iente[3]=iEpsMap[ix][iy][iz].nZ%epsdim;
-            iente[4]=iEpsMap[ix-1][iy][iz].nX%epsdim;
-            iente[5]=iEpsMap[ix][iy-1][iz].nY%epsdim;
-            iente[6]=iEpsMap[ix][iy][iz-1].nX%epsdim;
+            imezzo[1]=iepsmp[ix][iy][iz].nX/epsdim;
+            imezzo[2]=iepsmp[ix][iy][iz].nY/epsdim;
+            imezzo[3]=iepsmp[ix][iy][iz].nZ/epsdim;
+            imezzo[4]=iepsmp[ix-1][iy][iz].nX/epsdim;
+            imezzo[5]=iepsmp[ix][iy-1][iz].nY/epsdim;
+            imezzo[6]=iepsmp[ix][iy][iz-1].nZ/epsdim;
 
-            imezzo[1]=iEpsMap[ix][iy][iz].nX/epsdim;
-            imezzo[2]=iEpsMap[ix][iy][iz].nY/epsdim;
-            imezzo[3]=iEpsMap[ix][iy][iz].nZ/epsdim;
-            imezzo[4]=iEpsMap[ix-1][iy][iz].nX/epsdim;
-            imezzo[5]=iEpsMap[ix][iy-1][iz].nY/epsdim;
-            imezzo[6]=iEpsMap[ix][iy][iz-1].nZ/epsdim;
+            //iente[1]=iEpsMap[ix][iy][iz].nX%epsdim;
+            //iente[2]=iEpsMap[ix][iy][iz].nY%epsdim;
+            //iente[3]=iEpsMap[ix][iy][iz].nZ%epsdim;
+            //iente[4]=iEpsMap[ix-1][iy][iz].nX%epsdim;
+            //iente[5]=iEpsMap[ix][iy-1][iz].nY%epsdim;
+            //iente[6]=iEpsMap[ix][iy][iz-1].nX%epsdim;
+
+            //imezzo[1]=iEpsMap[ix][iy][iz].nX/epsdim;
+            //imezzo[2]=iEpsMap[ix][iy][iz].nY/epsdim;
+            //imezzo[3]=iEpsMap[ix][iy][iz].nZ/epsdim;
+            //imezzo[4]=iEpsMap[ix-1][iy][iz].nX/epsdim;
+            //imezzo[5]=iEpsMap[ix][iy-1][iz].nY/epsdim;
+            //imezzo[6]=iEpsMap[ix][iy][iz-1].nZ/epsdim;
 
 //guardo se ho due molecole con diversa epsilon nel punto,interno
             if(imezzo[1]!=imezzo[6]&&imezzo[1]*imezzo[6]!=0) iflag=(iente[1]<=iNatom+1&&iente[6]<=iNatom+1);
@@ -201,8 +224,10 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
         prevmed=0;
         iac=0;
         nnbr=0;
-        lmncb={lcb,mcb,ncb};
-
+        //lmncb={lcb,mcb,ncb};
+        lmncb.nX=lcb;
+        lmncb.nY=mcb;
+        lmncb.nZ=ncb;
 
         if (optORLT(it,0)||optORGT(it,lmncb))
         {
@@ -316,8 +341,9 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
             temp=optDot(dx123,dx123);
             temp=0.5*(ds2min2-ds2min1)/temp;
             scspos[i]=xg+(temp*dx123);
-            if(i==190) cout << "Lin Li 1: scspos "<< scspos[i] << endl;
-            scsnor[i]={0.,0.,0.};
+            //if(i==190) cout << "Lin Li 1: scspos "<< scspos[i] << endl;
+            //scsnor[i]={0.,0.,0.};
+            scsnor[i]=sgrid_temp_real;
             //cycle D500;
             continue;
         }
@@ -453,7 +479,7 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                 scsnor[i]=vnor;
 
             }// if
-            if(i==197) cout << "Lin Li 2: scspos "<< scspos[i] << endl;
+            //if(i==197) cout << "Lin Li 2: scspos "<< scspos[i] << endl;
             atndx[i]=iac;
 
             //cout << "i,atndx: " << i << " " << atndx[i] << endl;
@@ -508,9 +534,9 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                 dcr=min(dmn1,dmn2);
                 ctf=cba*(1+dcr);
 
-                if(i==197) cout << "Lin Li dmn1,dmn2: " << dmn1<< " " << dmn2<< endl;
+                //if(i==197) cout << "Lin Li dmn1,dmn2: " << dmn1<< " " << dmn2<< endl;
 
-                if(i==197) cout << "Lin Li ctf,cba,dcr: " << ctf<< " " << cba<< " " << dcr << endl;
+                //if(i==197) cout << "Lin Li ctf,cba,dcr: " << ctf<< " " << cba<< " " << dcr << endl;
 
                 ctf=ctf*ctf;
                 iacl=0;
@@ -535,11 +561,12 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                         }// do
                     }// do
                 }// do
-                if(i==197) cout << "Lin Li 1: iacl: " << iacl << endl;
-                if(i==197) cout << "Lin Li iacl,rmn,ctf: " << iacl<< " " << rmn<< " " << ctf << endl;
+                //if(i==197) cout << "Lin Li 1: iacl: " << iacl << endl;
+                //if(i==197) cout << "Lin Li iacl,rmn,ctf: " << iacl<< " " << rmn<< " " << ctf << endl;
+
                 if (!(iacl>0&&rmn<ctf))
                 {
-                    if(i==197) cout << "Lin Li 1: in if1: " << endl;
+                    //if(i==197) cout << "Lin Li 1: in if1: " << endl;
                     for(jxi=-2; jxi<=2; jxi++)
                     {
                         for(jyi=-2; jyi<=2; jyi++)
@@ -548,33 +575,33 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                             {
                                 //if (outcb[jxi][jyi][jzi])
 
-                                if(i==197) cout << "jxi,jyi,jzi:outcb: " <<jxi<< " " << jyi << " " << jzi<< " " << outcb[jxi+2][jyi+2][jzi+2] << endl;
+                                //if(i==197) cout << "jxi,jyi,jzi:outcb: " <<jxi<< " " << jyi << " " << jzi<< " " << outcb[jxi+2][jyi+2][jzi+2] << endl;
                                 if (outcb[jxi+2][jyi+2][jzi+2]) // index of outcb is modified
                                 {
-                                    if(i==197) cout << "Lin Li 1: in if2: " << endl;
+                                    //if(i==197) cout << "Lin Li 1: in if2: " << endl;
                                     jjx=jx+jxi;
                                     if (jjx>=0&&jjx<=lcb1)
                                     {
-                                        if(i==197) cout << "Lin Li 1: in if3: " << endl;
+                                        //if(i==197) cout << "Lin Li 1: in if3: " << endl;
                                         jjy=jy+jyi;
                                         if (jjy>=0&&jjy<=mcb1)
                                         {
                                             jjz=jz+jzi;
                                             if (jjz>=0&&jjz<=ncb1)
                                             {
-                                                if(i==197) cout << "Lin Li 1: in if4: " << endl;
-                                                //if(i==197) cout << "iab1:" << iab1[jjx][jjy][jjz] << " " << iab2[jjx][jjy][jjz] << endl;
-                                                //if(i==197) cout << "jjx,jjy,jjz: " << " " << jjx<< " " << jjy << " " << jjz << endl;
+                                                //if(i==197) cout << "Lin Li 1: in if4: " << endl;
+                                                ////if(i==197) cout << "iab1:" << iab1[jjx][jjy][jjz] << " " << iab2[jjx][jjy][jjz] << endl;
+                                                ////if(i==197) cout << "jjx,jjy,jjz: " << " " << jjx<< " " << jjy << " " << jjz << endl;
 
                                                 for(ii=iab1[jjx][jjy][jjz]; ii<=iab2[jjx][jjy][jjz]; ii++)
                                                 {
 
                                                     iac= icume[ii];
                                                     dist= optDot( (s123-expos[iac]),(s123-expos[iac]) );
-                                                    //if(i==197) cout << "Lin Li:dist,rmn : " << dist << " " << rmn << endl;
+                                                    ////if(i==197) cout << "Lin Li:dist,rmn : " << dist << " " << rmn << endl;
                                                     if (dist<rmn)
                                                     {
-                                                        if(i==197) cout << "Lin Li 1: in if5: " << endl;
+                                                        //if(i==197) cout << "Lin Li 1: in if5: " << endl;
                                                         rmn=dist;
                                                         iacl=iac;
                                                     }// if
@@ -586,7 +613,7 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                             }// do
                         }// do
                     }// do
-                    if(i==197) cout << "Lin Li 2: iacl: " << iacl << endl;
+                    //if(i==197) cout << "Lin Li 2: iacl: " << iacl << endl;
 
                     if (iacl<=0)
                     {
@@ -602,7 +629,7 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                         }// do
                     }// if
                 }// if
-                if(i==197) cout << "Lin Li 3: iacl: " << iacl << endl;
+                //if(i==197) cout << "Lin Li 3: iacl: " << iacl << endl;
                 dxyz=s123-expos[iacl];
                 rdist=sqrt(optDot(dxyz,dxyz) );
 
@@ -651,7 +678,7 @@ void CDelphiSpace::sclbp() // scspos-> scspos; scsnor-> scsnor; iBoundNum-> iBou
                 }// if
 
                 scspos[i]=expos[iacl]+(dxyz*dist);
-                if(i==197) cout << "Lin Li 3: scspos expos[iacl],dxyz,dist,iacl: " << scspos[i] << " " << expos[iacl] << " " <<dxyz << " " <<dist << " " << iacl<< endl;
+                //if(i==197) cout << "Lin Li 3: scspos expos[iacl],dxyz,dist,iacl: " << scspos[i] << " " << expos[iacl] << " " <<dxyz << " " <<dist << " " << iacl<< endl;
                 if (rdist>1.0e-8)
                 {
                     scsnor[i]=(-dxyz)/rdist;

@@ -309,7 +309,7 @@ void CDelphiFastSOR::setDielecBndySaltMap()
             sf1[idpos[i]-1] = 0.0;
          else
          {
-            if (abs(sf1[idpos[i]-1]-fSixth) < 1.0e-6)
+            if (abs(sf1[idpos[i]-1]-fSixth) < fZero)
                sf1[idpos[i]-1] = rgfSaltFuncDiff[ iepsv[idpos[i]-1] ][0];
             else
                sf1[idpos[i]-1] = rgfSaltFuncDiff[ iepsv[idpos[i]-1] ][1];
@@ -322,7 +322,7 @@ void CDelphiFastSOR::setDielecBndySaltMap()
             sf2[idpos[i]-1] = 0.0;
          else
          {
-            if (abs(sf2[idpos[i]-1]-fSixth) < 1.0e-6)
+            if (abs(sf2[idpos[i]-1]-fSixth) < fZero)
                sf2[idpos[i]-1] = rgfSaltFuncDiff[ iepsv[ idpos[i]-1] ][0];
             else
                sf2[idpos[i]-1] = rgfSaltFuncDiff [iepsv[ idpos[i]-1] ][1];

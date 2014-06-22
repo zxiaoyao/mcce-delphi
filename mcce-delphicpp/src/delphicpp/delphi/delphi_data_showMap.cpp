@@ -1,3 +1,10 @@
+/*
+ * delphi_data_showMap.cpp
+ *
+ *  Created on: Apr 20, 2014
+ *      Author: chuan
+ */
+
 #include "delphi_data.h"
 
 //-----------------------------------------------------------------------//
@@ -35,8 +42,8 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "      repsin(INDI) : " << getKey_constRef<real>("repsin")         << endl;
 
    {
-      const vector<real> rgfSalt = getKey_constRef< vector<real> >("conc");
-      ofMapStream << "  conc(SALT,SALT2) : " << rgfSalt[0] << " " << rgfSalt[1] << endl;
+      const vector<real> vctfSalt = getKey_constRef< vector<real> >("conc");
+      ofMapStream << "  conc(SALT,SALT2) : " << vctfSalt[0] << " " << vctfSalt[1] << endl;
    }
 
    ofMapStream << "     exrad(IONRAD) : " << getKey_constRef<real>("exrad")          << endl;
@@ -47,20 +54,20 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "       nnit(NONIT) : " << getKey_constRef<int>("nnit")            << endl;
 
    {
-      const vector<bool> rgbPeriodicBndy = getKey_constRef< vector<bool> >("iper");
-      ofMapStream << "    iper1-3(PBX-Z) : " << (rgbPeriodicBndy[0]?'T':'F') << " "
-                                             << (rgbPeriodicBndy[1]?'T':'F') << " "
-                                             << (rgbPeriodicBndy[2]?'T':'F') << endl;
-      ofMapStream << " iper4-6(VDROPX-Z) : " << (rgbPeriodicBndy[3]?'T':'F') << " "
-                                             << (rgbPeriodicBndy[4]?'T':'F') << " "
-                                             << (rgbPeriodicBndy[5]?'T':'F') << endl;
+      const vector<bool> vctbPeriodicBndy = getKey_constRef< vector<bool> >("iper");
+      ofMapStream << "    iper1-3(PBX-Z) : " << (vctbPeriodicBndy[0]?'T':'F') << " "
+                                             << (vctbPeriodicBndy[1]?'T':'F') << " "
+                                             << (vctbPeriodicBndy[2]?'T':'F') << endl;
+      ofMapStream << " iper4-6(VDROPX-Z) : " << (vctbPeriodicBndy[3]?'T':'F') << " "
+                                             << (vctbPeriodicBndy[4]?'T':'F') << " "
+                                             << (vctbPeriodicBndy[5]?'T':'F') << endl;
    }
 
    ofMapStream << "     iconc(PHICON) : " << (getKey_constRef<bool>("iconc")?'T':'F') << endl;
 
    {
-      const vector<real> rgfProbeRadius = getKey_constRef< vector<real> >("radprb");
-      ofMapStream << "    radprb(PRBRAD) : " << rgfProbeRadius[0] << " " << rgfProbeRadius[1] << endl;
+      const vector<real> vctfProbeRadius = getKey_constRef< vector<real> >("radprb");
+      ofMapStream << "    radprb(PRBRAD) : " << vctfProbeRadius[0] << " " << vctfProbeRadius[1] << endl;
    }
 
    ofMapStream << "     uspec(RELFAC) : " << getKey_constRef<real>("uspec")          << endl;
@@ -70,13 +77,13 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "     isolv(SOLVPB) : " << (getKey_constRef<bool>("isolv")?'T':'F')<< endl;
 
    {
-      const vector<int> rgiValence1 = getKey_constRef< vector<int> >("ival");
-      ofMapStream << " ival(VAL+1,VAL-1) : " << rgiValence1[0] << " " << rgiValence1[1] << endl;
+      const vector<int> vctiValence1 = getKey_constRef< vector<int> >("ival");
+      ofMapStream << " ival(VAL+1,VAL-1) : " << vctiValence1[0] << " " << vctiValence1[1] << endl;
    }
 
    {
-      const vector<int> rgiValence2 = getKey_constRef< vector<int> >("ival2");
-      ofMapStream << "ival2(VAL+2,VAL-2) : " << rgiValence2[0] << " " << rgiValence2[1] << endl;
+      const vector<int> vctiValence2 = getKey_constRef< vector<int> >("ival2");
+      ofMapStream << "ival2(VAL+2,VAL-2) : " << vctiValence2[0] << " " << vctiValence2[1] << endl;
    }
 
    ofMapStream << "atompotdist(ATPODS): " << getKey_constRef<real>("atompotdist")    << endl;
@@ -200,52 +207,52 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "       uniformdiel : " << (getKey_constRef<bool>("uniformdiel")?'T':'F') << endl;
 
    {
-      const vector< SExtrema<real> >* prgfeExtrema = getKey_constPtr< vector< SExtrema<real> > >("limobject");
+      const vector< SExtrema<real> >* vctefExtrema = getKey_constPtr< vector< SExtrema<real> > >("limobject");
 
       ofMapStream << "         limobject : " << endl;
-      if (0 != prgfeExtrema->size())
+      if (0 != vctefExtrema->size())
       {
-         for (unsigned int i = 0; i < prgfeExtrema->size(); i++)
+         for (unsigned int i = 0; i < vctefExtrema->size(); i++)
          {
             ofMapStream<<setw(6)<<right<<i<<" : ";
 
             //ofMapStream<<fixed<<setprecision(3);
-            ofMapStream << setw(8) << right << prgfeExtrema->at(i).nMin.nX << "  "
-                        << setw(8) << right << prgfeExtrema->at(i).nMin.nY << "  "
-                        << setw(8) << right << prgfeExtrema->at(i).nMin.nZ << " || "
-                        << setw(8) << right << prgfeExtrema->at(i).nMax.nX << "  "
-                        << setw(8) << right << prgfeExtrema->at(i).nMax.nY << "  "
-                        << setw(8) << right << prgfeExtrema->at(i).nMax.nZ << endl;
+            ofMapStream << setw(8) << right << vctefExtrema->at(i).nMin.nX << "  "
+                        << setw(8) << right << vctefExtrema->at(i).nMin.nY << "  "
+                        << setw(8) << right << vctefExtrema->at(i).nMin.nZ << " || "
+                        << setw(8) << right << vctefExtrema->at(i).nMax.nX << "  "
+                        << setw(8) << right << vctefExtrema->at(i).nMax.nY << "  "
+                        << setw(8) << right << vctefExtrema->at(i).nMax.nZ << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<real> >* prgfgAtomCoordA = getKey_constPtr< vector< SGrid<real> > >("xn1");
+      const vector< SGrid<real> >* vctgfAtomCoordA = getKey_constPtr< vector< SGrid<real> > >("xn1");
 
       ofMapStream << "               xn1 : " << endl;
-      if (0 != prgfgAtomCoordA->size())
+      if (0 != vctgfAtomCoordA->size())
       {
-         for (unsigned int i = 0; i < prgfgAtomCoordA->size(); i++)
+         for (unsigned int i = 0; i < vctgfAtomCoordA->size(); i++)
          {
-            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfgAtomCoordA->at(i).nX << "  "
-                        << setw(8) << right << prgfgAtomCoordA->at(i).nY << "  "
-                        << setw(8) << right << prgfgAtomCoordA->at(i).nZ << endl;
+            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctgfAtomCoordA->at(i).nX << "  "
+                        << setw(8) << right << vctgfAtomCoordA->at(i).nY << "  "
+                        << setw(8) << right << vctgfAtomCoordA->at(i).nZ << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<real> >* prgfgAtomCoordG = getKey_constPtr< vector< SGrid<real> > >("xn2");
+      const vector< SGrid<real> >* vctgfAtomCoordG = getKey_constPtr< vector< SGrid<real> > >("xn2");
 
       ofMapStream << "               xn2 : " << endl;
-      if (0 != prgfgAtomCoordG->size())
+      if (0 != vctgfAtomCoordG->size())
       {
-         for (unsigned int i = 0; i < prgfgAtomCoordG->size(); i++)
+         for (unsigned int i = 0; i < vctgfAtomCoordG->size(); i++)
          {
-            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfgAtomCoordG->at(i).nX << "  "
-                        << setw(8) << right << prgfgAtomCoordG->at(i).nY << "  "
-                        << setw(8) << right << prgfgAtomCoordG->at(i).nZ << endl;
+            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctgfAtomCoordG->at(i).nX << "  "
+                        << setw(8) << right << vctgfAtomCoordG->at(i).nY << "  "
+                        << setw(8) << right << vctgfAtomCoordG->at(i).nZ << endl;
          }
       }
    }
@@ -255,14 +262,14 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "            nmedia : " << getKey_constRef<integer>("nmedia")      << endl;
 
    {
-      const vector<real>* prgfMediaEps = getKey_constPtr< vector<real> >("medeps");
+      const vector<real>* vctfMediaEps = getKey_constPtr< vector<real> >("medeps");
 
       ofMapStream << "            medeps : " << endl;
-      if (0 != prgfMediaEps->size())
+      if (0 != vctfMediaEps->size())
       {
-         for (unsigned int i = 0; i < prgfMediaEps->size(); i++)
+         for (unsigned int i = 0; i < vctfMediaEps->size(); i++)
          {
-            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfMediaEps->at(i) << endl;
+            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctfMediaEps->at(i) << endl;
          }
       }
    }
@@ -270,16 +277,16 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "           nobject : " << getKey_constRef<integer>("nobject")     << endl;
 
    {
-      const vector<string>* prgstrObject = getKey_constPtr< vector<string> >("dataobject");
+      const vector<string>* vctstrObject = getKey_constPtr< vector<string> >("dataobject");
 
       ofMapStream << "        dataobject : " << endl;
-      if (0 != prgstrObject->size())
+      if (0 != vctstrObject->size())
       {
-         for (unsigned int i = 0; i < prgstrObject->size(); i=i+2)
+         for (unsigned int i = 0; i < vctstrObject->size(); i=i+2)
          {
             ofMapStream << setw(6)  << right << i << " : "
-                        << setw(15) << right << prgstrObject->at(i)   << " || "
-                        << setw(15) << right << prgstrObject->at(i+1) << endl;
+                        << setw(15) << right << vctstrObject->at(i)   << " || "
+                        << setw(15) << right << vctstrObject->at(i+1) << endl;
          }
       }
    }
@@ -287,32 +294,32 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "             natom : " << getKey_constRef<integer>("natom")       << endl;
 
    {
-      const vector<CAtomPdb>* prgapAtomPdb = getKey_constPtr< vector<CAtomPdb> >("delphipdb");
+      const vector<CAtomPdb>* vctapAtomPdb = getKey_constPtr< vector<CAtomPdb> >("delphipdb");
 
       ofMapStream << "         delphipdb : " << endl;
-      if (0 != prgapAtomPdb->size())
+      if (0 != vctapAtomPdb->size())
       {
-         for (unsigned int i = 0; i < prgapAtomPdb->size(); i++)
+         for (unsigned int i = 0; i < vctapAtomPdb->size(); i++)
          {
-            ofMapStream<<setw(6)<< right << i << " : " << setw(8) << right << prgapAtomPdb->at(i).getPose().nX << "  "
-                                << setw(8) << right << prgapAtomPdb->at(i).getPose().nY << "  "
-                                << setw(8) << right << prgapAtomPdb->at(i).getPose().nZ <<" || "
-                                << setw(8) << right << prgapAtomPdb->at(i).getRadius()  <<" || "
-                                << setw(8) << right << prgapAtomPdb->at(i).getCharge()  <<" || "
-                                << setw(15)<< right << prgapAtomPdb->at(i).getAtInf()   << endl;
+            ofMapStream<<setw(6)<< right << i << " : " << setw(8) << right << vctapAtomPdb->at(i).getPose().nX << "  "
+                                << setw(8) << right << vctapAtomPdb->at(i).getPose().nY << "  "
+                                << setw(8) << right << vctapAtomPdb->at(i).getPose().nZ <<" || "
+                                << setw(8) << right << vctapAtomPdb->at(i).getRadius()  <<" || "
+                                << setw(8) << right << vctapAtomPdb->at(i).getCharge()  <<" || "
+                                << setw(15)<< right << vctapAtomPdb->at(i).getAtInf()   << endl;
          }
       }
    }
 
    {
-      const vector<integer>* prgiAtomMediaNum = getKey_constPtr< vector<integer> >("iatmmed");
+      const vector<integer>* vctiAtomMediaNum = getKey_constPtr< vector<integer> >("iatmmed");
 
       ofMapStream << "           iatmmed : " << endl;
-      if (0 != prgiAtomMediaNum->size())
+      if (0 != vctiAtomMediaNum->size())
       {
-         for (unsigned int i=0; i < prgiAtomMediaNum->size(); i++)
+         for (unsigned int i=0; i < vctiAtomMediaNum->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgiAtomMediaNum->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctiAtomMediaNum->at(i) << endl;
          }
       }
    }
@@ -362,7 +369,7 @@ void CDelphiData::showMap(const string& strMapFile)
    /*------------------------------ test of getKey_constPtr overloading --------------------------//
    {
       const integer iGrid = getKey_constRef<integer>("igrid");
-      const SGrid<integer> *** prgigEpsMap = getKey_constPtr< SGrid<integer> >("iepsmp",iGrid,iGrid,iGrid);
+      const SGrid<integer> *** vctgiEpsMap = getKey_constPtr< SGrid<integer> >("iepsmp",iGrid,iGrid,iGrid);
 
       ofMapStream << "      iepsmp2 : " << endl;
       if (0 != iGrid)
@@ -372,9 +379,9 @@ void CDelphiData::showMap(const string& strMapFile)
              {  for (unsigned int k = 0; k < (size_t)iGrid; k++)
                 {
                    ofMapStream << setw(3) << right << i << " " << setw(3) << right << j << " " << setw(3) << right << k << " : "
-                               << setw(6) << right << prgigEpsMap[i][j][k].nX
-                               << setw(6) << right << prgigEpsMap[i][j][k].nY
-                               << setw(6) << right << prgigEpsMap[i][j][k].nZ << endl;
+                               << setw(6) << right << vctgiEpsMap[i][j][k].nX
+                               << setw(6) << right << vctgiEpsMap[i][j][k].nY
+                               << setw(6) << right << vctgiEpsMap[i][j][k].nZ << endl;
                 }
              }
           }
@@ -406,17 +413,17 @@ void CDelphiData::showMap(const string& strMapFile)
    }
 
    {
-      const vector< SGrid<integer> >* prgigBndyGrid = getKey_constPtr< vector< SGrid<integer> > >("ibgrd");
+      const vector< SGrid<integer> >* vctgiBndyGrid = getKey_constPtr< vector< SGrid<integer> > >("ibgrd");
 
       ofMapStream << "             ibgrd : " << endl;
-      if (0 != prgigBndyGrid->size())
+      if (0 != vctgiBndyGrid->size())
       {
-         for (unsigned int i=0; i < prgigBndyGrid->size(); i++)
+         for (unsigned int i=0; i < vctgiBndyGrid->size(); i++)
          {
            ofMapStream << setw(6) << right << i << " : "
-                       << setw(6) << right << prgigBndyGrid->at(i).nX << " "
-                       << setw(6) << right << prgigBndyGrid->at(i).nY << " "
-                       << setw(6) << right << prgigBndyGrid->at(i).nZ << endl;
+                       << setw(6) << right << vctgiBndyGrid->at(i).nX << " "
+                       << setw(6) << right << vctgiBndyGrid->at(i).nY << " "
+                       << setw(6) << right << vctgiBndyGrid->at(i).nZ << endl;
          }
       }
    }
@@ -424,148 +431,148 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "             nqgrd : " << getKey_constRef<integer>("nqgrd") << endl;
 
    {
-      const vector< SGridValue<real> >* prggvCrg2Grid = getKey_constPtr< vector< SGridValue<real> > >("chrgv2");
+      const vector< SGridValue<real> >* vctgvfCrg2Grid = getKey_constPtr< vector< SGridValue<real> > >("chrgv2");
 
       ofMapStream << "            chrgv2 : " << endl;
-      if (0 != prggvCrg2Grid->size())
+      if (0 != vctgvfCrg2Grid->size())
       {
-         for (unsigned int i=0; i < prggvCrg2Grid->size(); i++)
+         for (unsigned int i=0; i < vctgvfCrg2Grid->size(); i++)
          {
            ofMapStream << setw(6) << right << i << " : "
-                   << setw(8) << right << prggvCrg2Grid->at(i).nGrid.nX << " "
-                   << setw(8) << right << prggvCrg2Grid->at(i).nGrid.nY << " "
-                   << setw(8) << right << prggvCrg2Grid->at(i).nGrid.nZ << " "
-                   << setw(8) << right << prggvCrg2Grid->at(i).nValue   << endl;
+                   << setw(8) << right << vctgvfCrg2Grid->at(i).nGrid.nX << " "
+                   << setw(8) << right << vctgvfCrg2Grid->at(i).nGrid.nY << " "
+                   << setw(8) << right << vctgvfCrg2Grid->at(i).nGrid.nZ << " "
+                   << setw(8) << right << vctgvfCrg2Grid->at(i).nValue   << endl;
          }
       }
    }
 
    {
-      const vector<integer>* prgiCrg2GridMap = getKey_constPtr< vector<integer> >("nqgrdtonqass");
+      const vector<integer>* vctiCrg2GridMap = getKey_constPtr< vector<integer> >("nqgrdtonqass");
 
       ofMapStream << "      nqgrdtonqass : " << endl;
-      if (0 != prgiCrg2GridMap->size())
+      if (0 != vctiCrg2GridMap->size())
       {
-         for (unsigned int i=0; i < prgiCrg2GridMap->size(); i++)
+         for (unsigned int i=0; i < vctiCrg2GridMap->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << prgiCrg2GridMap->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << vctiCrg2GridMap->at(i) << endl;
          }
       }
    }
 
    {
-      const vector< SGridValue<real> >* prggvAtomCrg = getKey_constPtr< vector< SGridValue<real> > >("atmcrg");
+      const vector< SGridValue<real> >* vctgvfAtomCrg = getKey_constPtr< vector< SGridValue<real> > >("atmcrg");
 
       ofMapStream << "            atmcrg : " << endl;
-      if (0 != prggvAtomCrg->size())
+      if (0 != vctgvfAtomCrg->size())
       {
-         for (unsigned int i=0; i < prggvAtomCrg->size(); i++)
+         for (unsigned int i=0; i < vctgvfAtomCrg->size(); i++)
          {
            ofMapStream << setw(6) << right << i << " : "
-                       << setw(8) << right << prggvAtomCrg->at(i).nGrid.nX << " "
-                       << setw(8) << right << prggvAtomCrg->at(i).nGrid.nY << " "
-                       << setw(8) << right << prggvAtomCrg->at(i).nGrid.nZ << " "
-                       << setw(8) << right << prggvAtomCrg->at(i).nValue << endl;
+                       << setw(8) << right << vctgvfAtomCrg->at(i).nGrid.nX << " "
+                       << setw(8) << right << vctgvfAtomCrg->at(i).nGrid.nY << " "
+                       << setw(8) << right << vctgvfAtomCrg->at(i).nGrid.nZ << " "
+                       << setw(8) << right << vctgvfAtomCrg->at(i).nValue << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<real> >* prgfgCrgPoseA = getKey_constPtr< vector< SGrid<real> > >("chgpos");
+      const vector< SGrid<real> >* vctgfCrgPoseA = getKey_constPtr< vector< SGrid<real> > >("chgpos");
 
       ofMapStream << "            chgpos : " << endl;
-      if (0 != prgfgCrgPoseA->size())
+      if (0 != vctgfCrgPoseA->size())
       {
-         for (unsigned int i = 0; i < prgfgCrgPoseA->size(); i++)
+         for (unsigned int i = 0; i < vctgfCrgPoseA->size(); i++)
          {
             ofMapStream << setw(6) << right << i << " : "
-                        << setw(8) << right << prgfgCrgPoseA->at(i).nX << "  "
-                        << setw(8) << right << prgfgCrgPoseA->at(i).nY << "  "
-                        << setw(8) << right << prgfgCrgPoseA->at(i).nZ << endl;
+                        << setw(8) << right << vctgfCrgPoseA->at(i).nX << "  "
+                        << setw(8) << right << vctgfCrgPoseA->at(i).nY << "  "
+                        << setw(8) << right << vctgfCrgPoseA->at(i).nZ << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<real> >* prgfgSurfCrgA = getKey_constPtr< vector< SGrid<real> > >("scspos");
+      const vector< SGrid<real> >* vctgfSurfCrgA = getKey_constPtr< vector< SGrid<real> > >("scspos");
 
       ofMapStream << "            scspos : " << endl;
-      if (0 != prgfgSurfCrgA->size())
+      if (0 != vctgfSurfCrgA->size())
       {
-         for (unsigned int i = 0; i < prgfgSurfCrgA->size(); i++)
+         for (unsigned int i = 0; i < vctgfSurfCrgA->size(); i++)
          {
             ofMapStream << setw(6) << right << i <<" : "
-                      << setw(8) << right << prgfgSurfCrgA->at(i).nX << "  "
-                      << setw(8) << right << prgfgSurfCrgA->at(i).nY << "  "
-                      << setw(8) << right << prgfgSurfCrgA->at(i).nZ << endl;
+                      << setw(8) << right << vctgfSurfCrgA->at(i).nX << "  "
+                      << setw(8) << right << vctgfSurfCrgA->at(i).nY << "  "
+                      << setw(8) << right << vctgfSurfCrgA->at(i).nZ << endl;
          }
       }
    }
 
    {
-      const vector<integer>* prgiCrgAt = getKey_constPtr< vector<integer> >("crgatn");
+      const vector<integer>* vctiCrgAt = getKey_constPtr< vector<integer> >("crgatn");
 
       ofMapStream << "            crgatn : " << endl;
-      if (0 != prgiCrgAt->size())
+      if (0 != vctiCrgAt->size())
       {
-         for (unsigned int i=0; i < prgiCrgAt->size(); i++)
+         for (unsigned int i=0; i < vctiCrgAt->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << prgiCrgAt->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << vctiCrgAt->at(i) << endl;
          }
       }
    }
 
    {
-      const vector<integer>* prgiAtSurf = getKey_constPtr< vector<integer> >("atsurf");
+      const vector<integer>* vctiAtSurf = getKey_constPtr< vector<integer> >("atsurf");
 
       ofMapStream << "            atsurf : " << endl;
-      if (0 != prgiAtSurf->size())
+      if (0 != vctiAtSurf->size())
       {
-         for (unsigned int i=0; i < prgiAtSurf->size(); i++)
+         for (unsigned int i=0; i < vctiAtSurf->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << prgiAtSurf->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << vctiAtSurf->at(i) << endl;
          }
       }
    }
 
    {
-      const vector<integer>* prgiAtNdx = getKey_constPtr< vector<integer> >("atndx");
+      const vector<integer>* vctiAtNdx = getKey_constPtr< vector<integer> >("atndx");
 
       ofMapStream << "             atndx : " << endl;
-      if (0 != prgiAtNdx->size())
+      if (0 != vctiAtNdx->size())
       {
-         for (unsigned int i=0; i < prgiAtNdx->size(); i++)
+         for (unsigned int i=0; i < vctiAtNdx->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << prgiAtNdx->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(6) << right << vctiAtNdx->at(i) << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<real> >* prgfgSurfCrgE = getKey_constPtr< vector< SGrid<real> > >("scsnor");
+      const vector< SGrid<real> >* vctgfSurfCrgE = getKey_constPtr< vector< SGrid<real> > >("scsnor");
 
       ofMapStream << "            scsnor : " << endl;
-      if (0 != prgfgSurfCrgE->size())
+      if (0 != vctgfSurfCrgE->size())
       {
-         for (unsigned int i = 0; i < prgfgSurfCrgE->size(); i++)
+         for (unsigned int i = 0; i < vctgfSurfCrgE->size(); i++)
          {
             ofMapStream << setw(6) << right << i <<" : "
-                        << setw(8) << right << prgfgSurfCrgE->at(i).nX << "  "
-                        << setw(8) << right << prgfgSurfCrgE->at(i).nY << "  "
-                        << setw(8) << right << prgfgSurfCrgE->at(i).nZ << endl;
+                        << setw(8) << right << vctgfSurfCrgE->at(i).nX << "  "
+                        << setw(8) << right << vctgfSurfCrgE->at(i).nY << "  "
+                        << setw(8) << right << vctgfSurfCrgE->at(i).nZ << endl;
          }
       }
    }
 
    {
-      const vector<real>* prgfAtomEps = getKey_constPtr< vector<real> >("atmeps");
+      const vector<real>* vctfAtomEps = getKey_constPtr< vector<real> >("atmeps");
 
       ofMapStream << "            atmeps : " << endl;
-      if (0 != prgfAtomEps->size())
+      if (0 != vctfAtomEps->size())
       {
-         for (unsigned int i=0; i < prgfAtomEps->size(); i++)
+         for (unsigned int i=0; i < vctfAtomEps->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfAtomEps->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctfAtomEps->at(i) << endl;
          }
       }
    }
@@ -575,30 +582,30 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "          icount1b : " << getKey_constRef<integer>("icount1b")    << endl;
 
    {
-      const vector<real>* prgfGridCrg = getKey_constPtr< vector<real> >("gchrg");
+      const vector<real>* vctfGridCrg = getKey_constPtr< vector<real> >("gchrg");
 
       ofMapStream << "             gchrg : " << endl;
-      if (0 != prgfGridCrg->size())
+      if (0 != vctfGridCrg->size())
       {
-         for (unsigned int i=0; i < prgfGridCrg->size(); i++)
+         for (unsigned int i=0; i < vctfGridCrg->size(); i++)
          {
-           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfGridCrg->at(i) << endl;
+           ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctfGridCrg->at(i) << endl;
          }
       }
    }
 
    {
-      const vector< SGrid<integer> >* prgigGridCrgPose = getKey_constPtr< vector< SGrid<integer> > >("gchrgp");
+      const vector< SGrid<integer> >* vctgiGridCrgPose = getKey_constPtr< vector< SGrid<integer> > >("gchrgp");
 
       ofMapStream << "            gchrgp : " << endl;
-      if (0 != prgigGridCrgPose->size())
+      if (0 != vctgiGridCrgPose->size())
       {
-         for (unsigned int i = 0; i < prgigGridCrgPose->size(); i++)
+         for (unsigned int i = 0; i < vctgiGridCrgPose->size(); i++)
          {
             ofMapStream << setw(6) << right << i << " : "
-                        << setw(8) << right << prgigGridCrgPose->at(i).nX << "  "
-                        << setw(8) << right << prgigGridCrgPose->at(i).nY << "  "
-                        << setw(8) << right << prgigGridCrgPose->at(i).nZ << endl;
+                        << setw(8) << right << vctgiGridCrgPose->at(i).nX << "  "
+                        << setw(8) << right << vctgiGridCrgPose->at(i).nY << "  "
+                        << setw(8) << right << vctgiGridCrgPose->at(i).nZ << endl;
          }
       }
    }
@@ -606,29 +613,29 @@ void CDelphiData::showMap(const string& strMapFile)
    ofMapStream << "               ibc : " << getKey_constRef<integer>("ibc")    << endl;
 
    {
-      const vector<SDoubleGridValue>* prgdgvCrgBndyGrid = getKey_constPtr< vector<SDoubleGridValue> >("cgbp");
+      const vector<SDoubleGridValue>* vctdgvCrgBndyGrid = getKey_constPtr< vector<SDoubleGridValue> >("cgbp");
 
       ofMapStream << "              cgbp : " << endl;
-      if (0 != prgdgvCrgBndyGrid->size())
+      if (0 != vctdgvCrgBndyGrid->size())
       {
-         for (unsigned int i = 0; i < prgdgvCrgBndyGrid->size(); i++)
+         for (unsigned int i = 0; i < vctdgvCrgBndyGrid->size(); i++)
          {
             ofMapStream << setw(6) << right << i << " : "
-                        << setw(8) << right << prgdgvCrgBndyGrid->at(i).fgCoord.nX << "  "
-                        << setw(8) << right << prgdgvCrgBndyGrid->at(i).fgCoord.nY << "  "
-                        << setw(8) << right << prgdgvCrgBndyGrid->at(i).fgCoord.nZ << "  "
-                        << setw(8) << right << prgdgvCrgBndyGrid->at(i).fVal1      << "  "
-                        << setw(8) << right << prgdgvCrgBndyGrid->at(i).fVal2      << endl;
+                        << setw(8) << right << vctdgvCrgBndyGrid->at(i).fgCoord.nX << "  "
+                        << setw(8) << right << vctdgvCrgBndyGrid->at(i).fgCoord.nY << "  "
+                        << setw(8) << right << vctdgvCrgBndyGrid->at(i).fgCoord.nZ << "  "
+                        << setw(8) << right << vctdgvCrgBndyGrid->at(i).fVal1      << "  "
+                        << setw(8) << right << vctdgvCrgBndyGrid->at(i).fVal2      << endl;
          }
       }
    }
 
    {
       const integer iGrid = getKey_constRef<integer>("igrid");
-      const vector<real>* prgfPhimap = getKey_constPtr< vector<real> >("phimap");
+      const vector<real>* vctfPhiMap = getKey_constPtr< vector<real> >("phimap");
 
       ofMapStream << "            phimap : " << endl;
-      if (0 != prgfPhimap->size())
+      if (0 != vctfPhiMap->size())
       {
          for (unsigned int k = 0; k < (size_t)iGrid; k++)
 
@@ -638,7 +645,7 @@ void CDelphiData::showMap(const string& strMapFile)
                for (unsigned int i = 0; i < (size_t)iGrid; i++)
                {
                   ofMapStream << setw(3) << right << i << "," << setw(3) << right << j << "," << setw(3) << right << k << " : "
-                              << setw(11) << right << prgfPhimap->at(k*iGrid*iGrid+j*iGrid+i) << endl;
+                              << setw(11) << right << vctfPhiMap->at(k*iGrid*iGrid+j*iGrid+i) << endl;
                }
             }
          }
@@ -647,18 +654,29 @@ void CDelphiData::showMap(const string& strMapFile)
 
    ofMapStream << "---------------------- Energy ----------------------"        << endl;
    {
-      const vector<real>* prgfSurfCrgE = getKey_constPtr< vector<real> >("schrg");
+      const vector<real>* vctfSurfCrgE = getKey_constPtr< vector<real> >("schrg");
 
       ofMapStream << "             schrg : " << endl;
 
-      if(0 != prgfSurfCrgE->size())
+      if(0 != vctfSurfCrgE->size())
       {
-         for (unsigned int i = 0; i < prgfSurfCrgE->size(); i++)
+         for (unsigned int i = 0; i < vctfSurfCrgE->size(); i++)
          {
-            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << prgfSurfCrgE->at(i) << endl;
+            ofMapStream << setw(6) << right << i << " : " << setw(8) << right << vctfSurfCrgE->at(i) << endl;
          }
       }
    }
+
+   ofMapStream << "                  total grid energy (ergg) : " << setw(21) << right
+               << getKey_constRef<real>("ergg") << endl;
+   ofMapStream << "                   coulombic energy (ergc) : " << setw(21) << right
+               << getKey_constRef<real>("ergc") << endl;
+   ofMapStream << "    corrected reaction field energy (ergs) : " << setw(21) << right
+               << getKey_constRef<real>("ergs") << endl;
+   ofMapStream << "        total reaction field energy (ergr) : " << setw(21) << right
+               << getKey_constRef<real>("ergr") << endl;
+   ofMapStream << " total ionic direct contribution (ergions) : " << setw(21) << right
+               << getKey_constRef<real>("ergions") << endl;
 
 //   ofMapStream << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n";
 //   ofMapStream << "+                                                        + \n";

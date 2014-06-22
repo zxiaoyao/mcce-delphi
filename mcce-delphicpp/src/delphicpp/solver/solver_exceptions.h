@@ -37,7 +37,7 @@ class CSettingBndyError : public CException
    public:
       CSettingBndyError(const int& iBndyType)
       {
-         cerr << "PROBLEM OCCURS WHEN SETTING BOUNDARY CONDITION WITH INPUT BNDCON = " << iBndyType << " (PROGRAM EXITS...)\n";
+         cerr << "PROBLEM OCCURS WHEN SETTING BOUNDARY CONDITION BNDCON = " << iBndyType << " (PROGRAM EXITS...)\n";
       }
 };
 
@@ -66,13 +66,13 @@ class COutsideFocus : public CException
       }
 };
 
-class CSphericalCrgIntelp : public CWarning
+class CZeorLinIterateNum : public CException
 {
    public:
-   CSphericalCrgIntelp()
+   CZeorLinIterateNum(const bool& bAutoConverge, const int& iLinIterateNum)
       {
-         cerr << "SPHERICAL CHARGE INTERPOLATION OF CHARGES TO GRIDS IS OBSOLETED " ;
-         cerr << "(USING LINEAR CUBIC INTERPOLATION INSTEAD) \n";
+         cerr << "AUTOC = " << bAutoConverge << " AND LINIT = " << iLinIterateNum << " ";
+         cerr << "(PROGRAM DOES NOT KNOW WHAT TO DO AND THEREFORE EXITS...) \n";
       }
 };
 

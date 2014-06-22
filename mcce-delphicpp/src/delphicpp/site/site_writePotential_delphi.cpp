@@ -12,7 +12,7 @@ void CSite::writePotential_delphi()
    cout << "\nwriting potential map in DELPHI format\n\n";
    cout << "potential map written to file " << strPhiFile << endl << endl;
 
-   char nxtlbl[10],head[] = "now starting phimap ",tail[] = " end of phimap ";
+   char nxtlbl[10],head[21] = "now starting phimap ",tail[16] = " end of phimap ";
    real scalesingle = fScale;
    SGrid<real> oldmidsingle = fgBoxCenter;
    integer igrid = iGrid;
@@ -24,9 +24,9 @@ void CSite::writePotential_delphi()
    else
       strcpy(nxtlbl,"potential ");
 
-   ofPhiStream.write(head,sizeof(head));
+   ofPhiStream.write(head,21);
    ofPhiStream.write(nxtlbl,10);
-   ofPhiStream.write(rgcFileMap,sizeof(rgcFileMap));
+   ofPhiStream.write(rgcFileMap,54);
    {
       real* prgfData = prgfPhiMap.data();
 
@@ -36,7 +36,7 @@ void CSite::writePotential_delphi()
          prgfData++;
       }
    }
-   ofPhiStream.write(tail,sizeof(tail));
+   ofPhiStream.write(tail,16);
    ofPhiStream.write(reinterpret_cast<char*>(&scalesingle),sizeof(real));
    ofPhiStream.write(reinterpret_cast<char*>(&oldmidsingle),sizeof(SGrid<real>));
    ofPhiStream.write(reinterpret_cast<char*>(&igrid),sizeof(real));

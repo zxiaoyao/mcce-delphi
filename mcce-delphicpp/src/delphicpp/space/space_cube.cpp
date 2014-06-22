@@ -54,10 +54,16 @@ void CDelphiSpace::cube()
 //void
     //integer cbn1[0:lcb,0:mcb,0:ncb],cbn2[0:lcb,0:mcb,0:ncb];
     //integer ***cbn1,***cbn2;
-    cbn1=get_pt3d<integer>(lcb+1,mcb+1,ncb+1);
-    cbn2=get_pt3d<integer>(lcb+1,mcb+1,ncb+1);
 
-    integer newatm,objecttype,itmp,kind;
+
+    //cbn1=get_pt3d<integer>(lcb+1,mcb+1,ncb+1);
+    //cbn2=get_pt3d<integer>(lcb+1,mcb+1,ncb+1);
+
+    get_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
+    if(space_debug) cout << "### alocated cbn1 ###" << endl;
+    get_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
+
+    integer newatm,itmp,kind;
 
 
 //2011-05-27 Variables are accessible via qlog and pointers modules
@@ -65,30 +71,39 @@ void CDelphiSpace::cube()
 // integer cbal[1]
 
 //creating a set of fictious atoms occupying little cubes
-    SGrid <integer> icbn[iNatom+(iNObject-numbmol)*(lcb+1)*(mcb+1)*(ncb+1)];
+    //SGrid <integer> icbn[iNatom+(iNObject-numbmol)*(lcb+1)*(mcb+1)*(ncb+1)];
+    SGrid <integer> icbn[iNatom+(iNObject-numbmol)*(lcb+1)*(mcb+1)*(ncb+1)+1];
 
 //iatmobj connects the fictious atoms to the objects
     integer iatmobj[(iNObject-numbmol)*(lcb+1)*(mcb+1)*(ncb+1)];
 
     string strtmp;
-    SGrid <real> vectx,vecty,vectz,dxyz,tmpvect,xa,xb,xyz2,tmpvect1;
-    SGrid <real> tmpvect2,xc,xd,xq,xloc,xyz;
+
+    SGrid <real> xq,xyz;
     SGrid <integer> ixyz;
-    real modx,mody;
-    real tmp,tmp1,dist,shift;
-    real modul,mod2,tmp2;
-    real alpha,tan2,dot;
+
+    real shift;
+    //real dist;
     real cost;
 
 //2011-05-27 Declarations added due to IMPLICIT NONE
     real prbrd,cbln;
-    integer i,j,k,ii,ix,iy,iz,jx,jy,jz,newatom,icum;
+    integer i,j,k,ii,ix,iy,iz,jx,jy,jz,icum;
 
 
     if(space_debug) cout << "### in cube: ###" << endl;
+
+
+    for(i=0;i<=iNatom+(iNObject-numbmol)*(lcb+1)*(mcb+1)*(ncb+1);i++){
+        icbn[i]=sgrid_temp_int;
+    }
+
+    //cout << "Lin Li 1: icbn[818]:" << icbn[818] << endl;
+
     prbrd=fRadPrb[1];
 
     cbln=1./cbai;
+
 
 //2011-05-27 Changed to array operations
     //cbn1=1;
@@ -151,6 +166,7 @@ void CDelphiSpace::cube()
 
     }
 
+   // cout << "Lin Li 2: icbn[818]:" << icbn[818] << endl;
 
 //icbn will contain also coord center of fictious atoms
     for(ii=1; ii<=iNObject; ii++)
@@ -182,7 +198,8 @@ void CDelphiSpace::cube()
                         {
                             //call distobj(xq,dist,dxyz,ii,prbrd,true);
 
-                            if (dist<=cost)
+                            //if (dist<=cost)
+                            if (false) // never go to this if statement
                             {
                                 newatm=newatm+1;
                                 cbn2[ix][iy][iz]=cbn2[ix][iy][iz]+1;
@@ -227,6 +244,7 @@ void CDelphiSpace::cube()
         }// if
     }// do
 
+    //cout << "Lin Li 1: cbal[3955] :" << cbal[3955] << endl;
     for(i=iNatom+1; i<=newatm; i++) //This will not be excuted
     {
         cout << "Warning: newatm > iNatom" << endl;
@@ -286,6 +304,8 @@ void CDelphiSpace::cube()
             icbn[i].nY=iy;
         }// if
     }// do
+
+
 
 //0,1,0
     for(i=1; i<=iNatom; i++)
@@ -381,22 +401,28 @@ void CDelphiSpace::cube()
             icbn[i].nY=iy;
         }// if
     }// do
-
+    //cout << "Lin Li 63: cbal[3955] :" << cbal[3955] << endl;
 //0,-1,1
     for(i=1; i<=iNatom; i++)
     {
+
         if (sDelPhiPDB[i].radius>0.0)
         {
+
             ix=icbn[i].nX;
             iy=icbn[i].nY;
             iz=icbn[i].nZ;
             iy=iy-2;
             cbal[cbn1[ix][iy][iz]]=i;
+            //if(cbn1[ix][iy][iz]==3955) cout << "Lin Li: cbn1[ix][iy][iz]:" << cbn1[ix][iy][iz] << " " << ix << " " << iy << " " << iz << endl;
+            //if(cbn1[ix][iy][iz]==3955) cout << "Lin Li: icbn[i],i1:" << icbn[i] << " " << i << endl;
+            //if(i==818) cout << "Lin Li: icbn[i],i:"                 << icbn[i] << " " << i << endl;
+
             cbn1[ix][iy][iz]=cbn1[ix][iy][iz]+1;
             icbn[i].nY=iy;
         }// if
     }// do
-
+    //cout << "Lin Li 65: cbal[3955] :" << cbal[3955] << endl;
 //-1,-1,0
     for(i=1; i<=iNatom; i++)
     {
@@ -663,8 +689,11 @@ void CDelphiSpace::cube()
             }// do
         }// do
     }// do
+
+
     icum=icum-1;
     if(space_debug) cout << "icum: " << icum << endl;
+
 
 /*
     for (i=0;i<=lcb;i++){

@@ -20,9 +20,9 @@ void CDelphiFastSOR::setBndy()
    //----- phimap is initialized to zero for BNDCON == 1 (zero boundary condition)
    //prgfPhiMap.assign(iGrid*iGrid*iGrid,0.0);
 
-   if (6 == iBndyType && !(bIonsEng && 0 == iNonIterateNum && 1.0e-6 < abs(fNetCrg))) iBndyType = 2;
+   if (6 == iBndyType && !(bIonsEng && 0 == iNonIterateNum && fZero < abs(fNetCrg))) iBndyType = 2;
 
-   if (7 == iBndyType && !(bIonsEng && 0 == iNonIterateNum && 1.0e-6 < abs(fNetCrg))) iBndyType = 4;
+   if (7 == iBndyType && !(bIonsEng && 0 == iNonIterateNum && fZero < abs(fNetCrg))) iBndyType = 4;
 
    switch(iBndyType)
    {
@@ -31,7 +31,7 @@ void CDelphiFastSOR::setBndy()
       case 2: // quasi coulombic dipole option
          bSucessFail = isDipolarBndy(phimap); break;
       case 3: // focussing option-bc's come from a previous phimap
-         bSucessFail = isFocusBndy(phimap); break;
+         bSucessFail = isFocusBndy(phimap);  break;
       case 4: // a summation of the potential resulted from each point of charge
          bSucessFail = isCoulombBndy(phimap); break;
       case 5: // constant external field option
@@ -45,6 +45,19 @@ void CDelphiFastSOR::setBndy()
    }
 
    if (!bSucessFail) throw CSettingBndyError(iBndyType);
+
+   /*
+    * delete real *** phimap without deleting underneath prgfPhiMap in data container
+    */
+   for(int i = 0; i != iGrid; ++i)
+   {
+      //for(int j = 0; j != iGrid; ++j)
+      //{
+      //    delete[] phimap[i][j];
+      //}
+      delete[] phimap[i];
+   }
+   delete[] phimap;
 
 #ifdef VERBOSE
    integer iMidGrid = (iGrid + 1)/2;
@@ -74,8 +87,8 @@ void CDelphiFastSOR::setBndy()
          {
             for (int ix = 0; ix < iGrid; ix++)
             {
-               ofTestStream << setw(3)  << right << ix+1 << setw(3) << right << iy+1 << setw(3) << right << iz+1
-                            << setw(11) << right << prgfPhiMap[i] << endl; //phimap[iz][iy][ix] << endl;
+               ofTestStream << "phimap[" << setw(3)  << right << ix+1 << setw(3) << right << iy+1 << setw(3) << right << iz+1 << "] = "
+                            << setw(12) << right << prgfPhiMap[i] << endl; //phimap[iz][iy][ix] << endl;
                i++;
             }
          }

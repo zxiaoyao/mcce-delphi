@@ -63,7 +63,7 @@ bool CIO::checkFileFormat(const string& strFile)
 
 //-----------------------------------------------------------------------//
 void CIO::setDelphiAtom(const bool& bSolvePB, const bool& bSurfCrgInSite, const string& strSizeFile, const string& strCrgFile,
-		                const string& strPdbFile, const int& iPdbFormat, const bool& bPdbUnformat)
+		                  const string& strPdbFile, const int& iPdbFormat, const bool& bPdbUnformat)
 {
    int    iFound  = -1;
    real   fValue  = 0.0; // radius or charge
@@ -71,9 +71,19 @@ void CIO::setDelphiAtom(const bool& bSolvePB, const bool& bSurfCrgInSite, const 
 
    cout << "\nassigning charges and radii... \n\n";
 
-   this->readForceFile(strSizeFile); // read delphi size file
-   
-   if (bSolvePB) this->readForceFile(strCrgFile);  // read delphi charge file
+   /*
+    * only standard PDB requires to read charge and size from separate files. Otherwise, charges and sizes are already
+    * included in the input PDB file.
+    */
+   if (STDPDB == iPdbFormat)
+   {
+      this->readForceFile(strSizeFile); // read delphi size file
+      if (bSolvePB) this->readForceFile(strCrgFile);  // read delphi charge file
+   }
+   else
+   {
+      CReadSizeCrgFromPDB warning;
+   }
    
    this->readPdbFile(strPdbFile,iPdbFormat,bPdbUnformat); // read pdb file 
 
@@ -81,9 +91,18 @@ void CIO::setDelphiAtom(const bool& bSolvePB, const bool& bSurfCrgInSite, const 
    {
       for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
       {
-         strAtInf = prgapAtomPdb[iThisAtom].getAtInf(); strAtInf = toUpperCase(strAtInf);
-         strAtom       = strAtInf.substr(0,6);  strAtom       = removeSpace(strAtom);
-         strResidue    = strAtInf.substr(6,4);  strResidue    = removeSpace(strResidue);
+         strAtInf = vctapAtomPdb[iThisAtom].getAtInf(); strAtInf = toUpperCase(strAtInf);
+
+         /*
+          * for certain pdb files such as 1AB1.pdb, position 5 (maybe and 9) are for special purpose
+          */
+         //strAtom       = strAtInf.substr(0,6);  strAtom       = removeSpace(strAtom);
+         //strResidue    = strAtInf.substr(6,4);  strResidue    = removeSpace(strResidue);
+         //strChain      = strAtInf.substr(10,1); strChain      = removeSpace(strChain);
+         //strResidueNum = strAtInf.substr(11,4); strResidueNum = removeSpace(strResidueNum);
+
+         strAtom       = strAtInf.substr(0,5);  strAtom       = removeSpace(strAtom);
+         strResidue    = strAtInf.substr(6,3);  strResidue    = removeSpace(strResidue);
          strChain      = strAtInf.substr(10,1); strChain      = removeSpace(strChain);
          strResidueNum = strAtInf.substr(11,4); strResidueNum = removeSpace(strResidueNum);
 
@@ -93,22 +112,26 @@ void CIO::setDelphiAtom(const bool& bSolvePB, const bool& bSurfCrgInSite, const 
 
          iFound = FindRecord(strAtom,strResidue,strResidueNum,strChain,SIZEFILE,fValue);
       
-         if (-1 == iFound) throw  CUnknownRadius(strAtInf); // need stop here
-                 
+         if (-1 == iFound)
+         {
+            //throw  CUnknownRadius(strAtInf); // need stop here
+            CUnknownRadius warning(strAtInf);
+         }
+
          strSub0 = strAtom.substr(0,1); strSub1 = strAtom.substr(1,1);
          if (1.0e-6 > fValue && 0 != strSub0.compare("H") &&  0 != strSub1.compare("H"))
             CZeroHeavyAtomRadius warning(strAtInf);
       
-         prgapAtomPdb[iThisAtom].setRadius(fValue);
+         vctapAtomPdb[iThisAtom].setRadius(fValue);
          
          fValue = 0.0;
          
-         iFound = FindRecord(strAtom,strResidue,strResidueNum,strChain,CHARGEFILE,fValue);
-         
-         if (-1 == iFound) CUnknownCharge warning(strAtInf); // need stop here
-
-         prgapAtomPdb[iThisAtom].setCharge(fValue);         
-      
+         if (bSolvePB)
+         {
+            iFound = FindRecord(strAtom,strResidue,strResidueNum,strChain,CHARGEFILE,fValue);
+            if (-1 == iFound) CUnknownCharge warning(strAtInf); // need stop here
+            vctapAtomPdb[iThisAtom].setCharge(fValue);
+         }
       } //---------- end of loop over iThisAtom =0:iAtomNum-1 
    } //---------- end of if (!bExistRadiiInfo)
 
@@ -122,9 +145,9 @@ void CIO::setDelphiAtom(const bool& bSolvePB, const bool& bSurfCrgInSite, const 
    
    for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
    {
-      fValue = prgapAtomPdb[iThisAtom].getCharge();
+      fValue = vctapAtomPdb[iThisAtom].getCharge();
          
-      strAtInf      = prgapAtomPdb[iThisAtom].getAtInf();
+      strAtInf      = vctapAtomPdb[iThisAtom].getAtInf();
       strResidue    = strAtInf.substr(6,4); 
       strResidueNum = strAtInf.substr(11,4);
          

@@ -8,6 +8,7 @@
 void CDelphiSpace::run()
 {
 
+    space_debug=false;
     if(space_debug) cout << "############### run in Space module.... ##################" << endl;
 
 
@@ -35,11 +36,30 @@ void CDelphiSpace::run()
     integer i,j,k,ix,iy,iz,ic,ico;
     real fRMid;
     SGrid <integer> epstmp;
-    bool debtmp;
     SGrid <real> xl,xr;
     fRMid=(iGrid+1)/2.0;
-    space_debug=true;
+    space_debug=false; //space_debug=true will print a lot of debug information
+
+    sgrid_temp_real.nX=0.;
+    sgrid_temp_real.nY=0.;
+    sgrid_temp_real.nZ=0.;
+
+    sgrid_temp_int.nX=0;
+    sgrid_temp_int.nY=0;
+    sgrid_temp_int.nZ=0;
+
+
+
+    //iEpsMap=pdc->getKey_Ptr < SGrid <integer> > ( "iepsmp",iGrid,iGrid,iGrid);
+
+    //##### navigate iepsmp and idebmap, xn1,xn2,fRadProb: ##########
+    //idebmap=Move_index_3d <bool> (bDebMap,iGrid,iGrid,iGrid);
+    //iepsmp=Move_index_3d <SGrid <integer> > (iEpsMap,iGrid,iGrid,iGrid);
+
+    //Move_index_3d <bool> (idebmap,bDebMap,iGrid,iGrid,iGrid);
+    get_pt3d <bool> (idebmap,iGrid+1,iGrid+1,iGrid+1);
     //######### initialize bDebMap: #########
+
     for (ix=1; ix<=iGrid; ix++)
     {
         for (iy=1; iy<=iGrid; iy++)
@@ -47,15 +67,13 @@ void CDelphiSpace::run()
             for (iz=1; iz<=iGrid; iz++)
             {
 
-                bDebMap[ix-1][iy-1][iz-1]=true;
+                idebmap[ix-1][iy-1][iz-1]=true;
             }
         }
     }
 
-    //##### navigate iepsmp and idebmap, xn1,xn2,fRadProb: ##########
-    idebmap=Move_index_3d <bool> (bDebMap,iGrid,iGrid,iGrid);
-    iepsmp=Move_index_3d <SGrid <integer> > (iEpsMap,iGrid,iGrid,iGrid);
-
+    //Move_index_3d <SGrid <integer> > (iepsmp,iEpsMap,iGrid,iGrid,iGrid);
+    get_pt3d <SGrid <integer> > (iepsmp,iGrid+1,iGrid+1,iGrid+1);
     xn1=&xn1_v[-1];
     xn2=&xn2_v[-1];
     fRadPrb=&fRadPrb_v[-1];
@@ -90,7 +108,7 @@ void CDelphiSpace::run()
 
     }
 
-    epsmak();
+    epsmak(); //Lin Li reset
 
 
 // Now start crgarr
@@ -101,11 +119,11 @@ void CDelphiSpace::run()
 //increased the starting dimension of crgatn and..+++++
         extracrg=0;
         if (ndistr>0) extracrg=iGrid*iGrid*iGrid;
-        cout << "ndistr: " << ndistr;
+        if(space_debug) cout << "ndistr: " << ndistr << endl;
 //2011-05-30 Allocation of the arrays below is moved to the body of crgarr void, arrays are accessible
 // via pointers module. Sizes of arrays are determined before allocation inside the crgarr void
 
-        crgarr();
+        crgarr(); //Lin Li reset
 
         xl=cOldMid-(1.0/fScale)*(iGrid+1)*0.5;
         xr=cOldMid+(1.0/fScale)*(iGrid+1)*0.5;
@@ -129,12 +147,14 @@ void CDelphiSpace::run()
                         }
                         else
                         {
-                            cout << "//!! WARNING : charge " << delphipdb[crgatn[ic]-1].getAtInf() << "outside the box";
+                            cout << "//!! WARNING : charge " << delphipdb[crgatn[ic]-1].getAtInf() << "outside the box" << endl;
+                            //if(space_debug) cout << "ico: " << ico  << endl;
                         }// if
                     }// if
                     ico=1;
                 }// if
             }// do
+            //if(space_debug) cout << "ico, ibctype: " << ico << " " << ibctyp << endl;
             if (ico>0&&ibctyp!=3)
             {
                 cout <<"CHARGES OUTSIDE THE BOX AND NOT DOING FOCUSSING << THEREFORE STOP" << endl;
@@ -144,37 +164,88 @@ void CDelphiSpace::run()
     }// if
 
     if(space_debug) cout << "#### Lin Li: coverting the matrix...." << endl;
-    for(i=1;i<=iGrid-1;i++){
-    //for(i=1;i<=iGrid;i++){
-       for(j=1;j<=iGrid;j++){
-          for(k=i+1;k<=iGrid;k++){
-          //for(k=1;k<=iGrid;k++){
-	     //cout <<"i,j,k,iepsmp: "<< i <<" " << j << " " << " " << k << " "  << iepsmp[i][j][k] << endl;
-	     //cout <<"i,j,k,idebmap: "<< i <<" " << j << " " << " " << k << " "  << idebmap[i][j][k] << " "  << idebmap[k][j][i] << endl;
+    /*
+        for(i=1;i<=iGrid-1;i++){
+        //for(i=1;i<=iGrid;i++){
+           for(j=1;j<=iGrid;j++){
+              for(k=i+1;k<=iGrid;k++){
+              //for(k=1;k<=iGrid;k++){
+    	     //cout <<"i,j,k,iepsmp: "<< i <<" " << j << " " << " " << k << " "  << iepsmp[k][j][i] << endl;
+    	     //cout <<"i,j,k,idebmap: "<< i <<" " << j << " " << " " << k << " "  << idebmap[i][j][k] << " "  << idebmap[k][j][i] << endl;
 
-             epstmp=iepsmp[i][j][k];
-             iepsmp[i][j][k]=iepsmp[k][j][i];
-             iepsmp[k][j][i]=epstmp;
+                 epstmp=iepsmp[k][j][i];
+                 iepsmp[k][j][i]=iepsmp[k][j][i];
+                 iepsmp[i][j][k]=epstmp;
 
-             //debtmp=idebmap[i][j][k];
-             //idebmap[i][j][k]=idebmap[k][j][i];
-             //idebmap[k][j][i]=debtmp;
+                 //debtmp=idebmap[i][j][k];
+                 //idebmap[i][j][k]=idebmap[k][j][i];
+                 //idebmap[k][j][i]=debtmp;
 
-	     //if(i==5&&j==6&&k==1) cout << "i,j,k,iepsmp: " << i << " " << j << " " << k << " " << iepsmp[i][j][k] << endl;
-          }
-       }
-    }
+    	     //if(i==5&&j==6&&k==1) cout << "i,j,k,iepsmp: " << i << " " << j << " " << k << " " << iepsmp[k][j][i] << endl;
+              }
+           }
+        }
+    */
+/*
+    // testing..........
+    for(i=1; i<=iGrid; i++)
+    {        //for(i=1;i<=iGrid;i++){
+        for(j=1; j<=iGrid; j++)
+        {
+            for(k=1; k<=iGrid; k++)
+            {
+                //if(iepsmp[i][j][k] != iEpsMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+k-1])cout << "iepsmp: " << i << " "<< j<< " "<< k << " " << iepsmp[i][j][k] << " " << iEpsMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+k-1] << endl;
+                if(idebmap[i][j][k] != bDebMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+k-1])cout << "bdebmap: " << i << " "<< j<< " "<< k << " " << idebmap[i][j][k] << " " << bDebMap_v[(k-1)*iGrid*iGrid+(j-1)*iGrid+i-1] << endl;
 
-
-    for(i=1;i<=iGrid;i++){
-    //for(i=1;i<=iGrid;i++){
-        for(j=1;j<=iGrid;j++){
-            for(k=1;k<=iGrid;k++){
-                bDebMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+(k-1)]=idebmap[k][j][i];
 
             }
         }
     }
+*/
+
+    //######### initialize iepsmp: #########
+    iEpsMap_v.assign(iGrid*iGrid*iGrid, sgrid_temp_int);
+
+
+    for(i=1; i<=iGrid; i++)
+    {
+        //for(i=1;i<=iGrid;i++){
+        for(j=1; j<=iGrid; j++)
+        {
+            for(k=1; k<=iGrid; k++)
+            {
+
+                iEpsMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+k-1]=iepsmp[i][j][k];
+            }
+        }
+    }
+
+
+
+    for(i=1; i<=iGrid; i++)
+    {
+        //for(i=1;i<=iGrid;i++){
+        for(j=1; j<=iGrid; j++)
+        {
+            for(k=1; k<=iGrid; k++)
+            {
+#ifdef IKJ
+                bDebMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+(k-1)]=idebmap[k][j][i];
+#endif // IKJ
+                bDebMap_v[(i-1)*iGrid*iGrid+(j-1)*iGrid+(k-1)]=idebmap[i][j][k];
+
+            }
+        }
+    }
+
+
+    //free_pt3d <bool> (bDebMap,iGrid,iGrid,iGrid);
+
+    if(iepsmp != NULL) free_pt3d(iepsmp,iGrid+1,iGrid+1,iGrid+1);
+    if(idebmap != NULL) free_pt3d(idebmap,iGrid+1,iGrid+1,iGrid+1);
+    // free_pt3d_p <bool> (idebmap,iGrid+1,iGrid+1);
+
+    // free_pt3d_p <SGrid <integer> > (iEpsMap,iGrid+1,iGrid+1);
 
 }
 

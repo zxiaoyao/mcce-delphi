@@ -26,7 +26,7 @@ void CDelphiSpace::sas()
 //2011-05-26 Arrays declared in pointers module and allocated in
 //vwtms sub
 
-    SGrid <real> ver[nver+1],tv;
+    SGrid <real> ver[nver+1];
     integer edgv[2+1][nedge+1],edg[nedge+1],oti[nver+1],st[nedge+1];
 //a third field in pls takes into account the correspondence nprobj-npr
 
@@ -34,14 +34,16 @@ void CDelphiSpace::sas()
 // integer*4 pls(3,1)
 //2011-05-26 Removed variables declared in qlog module and
 //redeclared some variables as coord type
-    integer objecttype,itmp,jprec,kk,nprtobj,nprobj,inter;
-    integer ii,jj,nside,dim,dim1,kind,itemp;
+    //integer objecttype,itmp,jprec,kk,nprtobj,nprobj,inter;
+    integer jprec,nprtobj,nprobj;
+    integer ii,jj,dim,dim1;
     string strtmp,strtmp1;
-    real side,dist;
-    SGrid <real> omin,omax,vectx,xmin,xmax,xa,xb, xc, xd, xq,temp_Sgrid_real;
-    SGrid <real> vectz, vecty, xyzm,x123, dxyz, dx123, tij123;
+    //real side,dist;
+    //SGrid <real> omin,omax,vectx,xmin,xmax,xa,xb, xc, xd, xq;
+
+    SGrid <real> xyzm,x123, dx123, tij123;
     SGrid <real> rmv[3+1],cf123, dy123;
-    SGrid <integer> ix123, ic123, temp_Sgrid_integer;
+    SGrid <integer> ix123, ic123;
     vector < SGrid <integer> > pls; // pls is changed to be local variable
     vector < SGrid <integer> > plstemp;
     /*
@@ -56,26 +58,26 @@ void CDelphiSpace::sas()
     vector < SGrid <real> > expostemp;
 
 
-    real tmp,tmp1;
-    real radius,modul,mod2;
-    real alpha,dot;
-    real dx,dy,dz,seno,cose,modx,mody,modul2;
-    real tmp3,rad2;
+    //real tmp,tmp1;
+    //real radius,modul,mod2;
+    //real alpha;
+    //real dx,dy,dz,seno,cose,modx,mody,modul2;
+    real rad2;
 //2011-05-26 Declaration due IMPLICIT NONE
     integer nacc,nacct,i,j,k,ie,ia2,ie2,ie1,ilvl,ia1,iv,iv1,iv2;
-    integer ip,liml,limu,ne,nbv,nlvl,npr,nprp,nprx,nst,nprt,nvo;
+    integer ip,liml,limu,ne,nlvl,npr,nprp,nprx,nst,nprt,nvo;
     integer nxa,nvi, nv;
-    real ctf,ctf2,cst,dctf,d2,del,dx1,dx2,dx3,h,ds2,pre,rad, radj;
-    real rij,rdn,rv1,rv2,rvmg,rsx2,dctf2,sm1,sm2,snt,tmp2,tta,vmg;
-    real cbln,csp,dmg,rdx2,tm;
+    real ctf,ctf2,cst,dctf,d2,del,dx1,dx2,dx3,ds2,pre,rad, radj;
+    real rij,rdn,rv1,rv2,rvmg,dctf2,sm1,sm2,snt,tta,vmg;
+    real cbln,csp,dmg,tm;
 
     if(space_debug) cout << "######## in sas: ############" << endl;
-    coi_1.xyz= {0.,0.,0.};
+    coi_1.xyz= sgrid_temp_real;
     coi_1.rad=0.;
     coi_1.is=0;
-    temp_Sgrid_real= {0.,0.,0.};
+    //sgrid_temp_real= {0.,0.,0.};
 
-    fill_n(ver,nver+1,temp_Sgrid_real);
+    fill_n(ver,nver+1,sgrid_temp_real);
 
     for (i=0; i<3; i++)
     {
@@ -132,7 +134,11 @@ void CDelphiSpace::sas()
     for(i=1; i<=nvi; i++)
     {
         rdn=(i-1)*tta;
-        ver[i]= {cos(rdn),sin(rdn),0.};
+        //ver[i]= {cos(rdn),sin(rdn),0.};
+        ver[i].nX=cos(rdn);
+        ver[i].nY=sin(rdn);
+        ver[i].nZ=0.;
+
         j=i+1;
         if(i==nvi)j=1;
         edgv[1][i]=i;
@@ -180,7 +186,8 @@ void CDelphiSpace::sas()
     }
     cout <<"# of vertices = " << nv << " # of edges = " << ne << endl;
     //ast=1;
-    for (i=0; i<=iNatom+1; i++)
+    //for (i=0; i<=iNatom+1; i++)
+    for (i=0; i<iNatom+1; i++)
     {
         ast[i]=1;
     }
@@ -216,7 +223,7 @@ void CDelphiSpace::sas()
             {
                 /*
                 //allocate(plstemp(nprt-5000));
-                plstemp.assign(nprt-5000+1, {0,0,0});
+                plstemp.assign(nprt-5000+1, sgrid_temp_int);
                 plstemp=pls;
                 //deallocate(pls);
                 vector < SGrid <integer> >().swap(pls);
@@ -235,7 +242,7 @@ void CDelphiSpace::sas()
             else
             {
                 //allocate(pls(nprt));
-                pls.assign(nprt+1, {0,0,0});
+                pls.assign(nprt+1, sgrid_temp_int);
             }// if
         }// if
 
@@ -297,7 +304,10 @@ void CDelphiSpace::sas()
                     if (del>0.01&&d2>dctf2)
                     {
                         npr=npr+1;
-                        pls[npr]= {i,j,0};
+                        //pls[npr]= {i,j,0};
+                        pls[npr].nX=i;
+                        pls[npr].nY=j;
+                        pls[npr].nZ=0;
                         //cout << "npr,del,d2,dctf2: " << npr << " " << del << " " << d2 << " " << dctf2 << endl;
                     }// if
                 }// if
@@ -608,6 +618,11 @@ void CDelphiSpace::sas()
     if(cbn2_v.size()>0) vector <integer> ().swap(cbn2_v);
     if(cbal.size()>0) vector <integer> ().swap(cbal);
 
+    if(cbn1 != NULL) free_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
+    if(space_debug) cout << "### freed cbn1 ###" << endl;
+    if(cbn2 != NULL) free_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
+
+
     cout <<"# of pairs = " << npr << endl;
 
 
@@ -680,19 +695,44 @@ void CDelphiSpace::sas()
             tm=csp*rv1;
             sm1=snt*rv1;
             sm2=snt*rv2;
-            rmv[1]= {tm*rv1+cst,tm*rv2,sm2};
-            rmv[2]= {tm*rv2,csp*rv2*rv2+cst,-sm1};
-            rmv[3]= {-sm2,sm1,cst};
+            //rmv[1]= {tm*rv1+cst,tm*rv2,sm2};
+            rmv[1].nX=tm*rv1+cst;
+            rmv[1].nY=tm*rv2;
+            rmv[1].nZ=sm2;
+
+            //rmv[2]= {tm*rv2,csp*rv2*rv2+cst,-sm1};
+            rmv[2].nX=tm*rv2;
+            rmv[2].nY=csp*rv2*rv2+cst;
+            rmv[2].nZ=-sm1;
+
+            //rmv[3]= {-sm2,sm1,cst};
+            rmv[3].nX=-sm2;
+            rmv[3].nY=sm1;
+            rmv[3].nZ=cst;
         }
         else
         {
-            rmv[1]= {1.,0.,0.};
-            rmv[2]= {0.,1.,0.};
-            rmv[3]= {0.,0.,1.};
+            //rmv[1]= {1.,0.,0.};
+            rmv[1].nX=1.0;
+            rmv[1].nY=0.0;
+            rmv[1].nZ=0.0;
+
+            //rmv[2]= {0.,1.,0.};
+            rmv[2].nX=0.0;
+            rmv[2].nY=1.0;
+            rmv[2].nZ=0.0;
+
+
+            //rmv[3]= {0.,0.,1.};
+            rmv[3].nX=0.0;
+            rmv[3].nY=0.0;
+            rmv[3].nZ=1.0;
+
+
         }// if
 
         nvo=0;
-        nbv=0;
+        //nbv=0;
 
 //assign memory to expos if needed
 //2011-06-17 Re-sizing array keeping old value
@@ -704,11 +744,11 @@ void CDelphiSpace::sas()
             {
                 /*
                 //allocate(expostemp(nacct-1000));
-                expostemp.assign(nacct-1000+1,temp_Sgrid_real);
+                expostemp.assign(nacct-1000+1,sgrid_temp_real);
                 expostemp=expos;
                 //deallocate(expos);
                 //allocate(expos[nacct]);
-                expos.assign(nacct+1,temp_Sgrid_real);
+                expos.assign(nacct+1,sgrid_temp_real);
                 //expos[1:nacct-1000]=expostemp;
                 for(itemp=1; itemp<=nacct-1000; itemp++)
                 {
@@ -721,7 +761,7 @@ void CDelphiSpace::sas()
             else
             {
                 //allocate(expos[nacct]);
-                expos.assign(nacct+1,temp_Sgrid_real);
+                expos.assign(nacct+1,sgrid_temp_real);
             }// if
         }// if
 
@@ -810,6 +850,7 @@ D05:
             //cout << "Lin Li1 : expos: " << nacc << " " << expos[nacc] << endl;
             oti[iv]=0;
 
+
             iv++;
         }// do D10;
                 //cout << "### flag3: "   << endl;
@@ -853,7 +894,11 @@ D030:
 
                 //rm(7)*ver[3][iv] has been removed because it is always
                 //zero
-                cf123= {optDot(rmv[1],ver[iv]), optDot(rmv[2],ver[iv]), optDot(rmv[3],ver[iv])};
+                //cf123= {optDot(rmv[1],ver[iv]), optDot(rmv[2],ver[iv]), optDot(rmv[3],ver[iv])};
+                cf123.nX=optDot(rmv[1],ver[iv]);
+                cf123.nY=optDot(rmv[2],ver[iv]);
+                cf123.nZ=optDot(rmv[3],ver[iv]);
+
                 cf123=tij123+(cf123*rij);
 
                 if (ia1!=0)
@@ -995,6 +1040,10 @@ END030:
     if(cbn1_v.size()>0)  vector <integer> ().swap(cbn1_v);
     if(cbn2_v.size()>0)  vector <integer> ().swap(cbn2_v);
     if(cbal.size()>0)  vector <integer> ().swap(cbal);
+
+    if(cbn1 != NULL) free_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
+    if(space_debug) cout << "### freed cbn1 ###" << endl;
+    if(cbn2 != NULL) free_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
 
 
     nxa=0;

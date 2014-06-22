@@ -23,37 +23,37 @@ void CDelphiDataMarshal::setDefault()
    fGridConverge        = 0.0;          // gten     GRDCON
    iGrid                = 0;            // igrid    GSIZE
    fInDielec            = 2.0;          // repsin   INDI
-   rgfSalt.push_back(0.0);              // conc     SALT,SALT2
-   rgfSalt.push_back(0.0);
+   vctfSalt.push_back(0.0);             // conc     SALT,SALT2
+   vctfSalt.push_back(0.0);
    fIonRadius           = 2.0;          // exrad    IONRAD
    iLinIterateNum       = 0;            // nlit     LINIT
    bLogGraph            = false;        // igraph   LOGGRP
    bLogPotential        = false;        // ipoten   LOGPOT
    fMaxc                = 0.0;          // res2     MAXC
    iNonIterateNum       = 0;            // nnit     NONIT
-   rgbPeriodicBndy.push_back(false);    // iper     PBX,PBY,PBZ
-   rgbPeriodicBndy.push_back(false);
-   rgbPeriodicBndy.push_back(false);
-   rgbPeriodicBndy.push_back(false);
-   rgbPeriodicBndy.push_back(false);
-   rgbPeriodicBndy.push_back(false);
+   vctbPeriodicBndy.push_back(false);   // iper     PBX,PBY,PBZ
+   vctbPeriodicBndy.push_back(false);
+   vctbPeriodicBndy.push_back(false);
+   vctbPeriodicBndy.push_back(false);
+   vctbPeriodicBndy.push_back(false);
+   vctbPeriodicBndy.push_back(false);
    bOutCrgDensity       = false;        // iconc    PHICON
-   rgfProbeRadius.push_back(1.4);       // radprb   PRBRAD,RADPR2
-   rgfProbeRadius.push_back(-1.0);
+   vctfProbeRadius.push_back(1.4);      // radprb   PRBRAD,RADPR2
+   vctfProbeRadius.push_back(-1.0);
    fSpectralRadius      = 0.9975;       // uspec    RELFAC
    fRelaxParam          = 1.0;          // relpar   RELPAR
    fRmsc                = 0.0;          // res1     RMSC
-   fScale               = 1.2;          // scale    SCALE
+   fScale               = 2.0;          // scale    SCALE
    bSolvePB             = true;         // isolv    SOLVPB
-   rgiValence1.push_back(1);            // ival     VAL+1,VAL-1
-   rgiValence1.push_back(1);
-   rgiValence2.push_back(0);            // ival2    VAL+2,VAL-2
-   rgiValence2.push_back(0);
+   vctiValence1.push_back(1);           // ival     VAL+1,VAL-1
+   vctiValence1.push_back(1);
+   vctiValence2.push_back(0);           // ival2    VAL+2,VAL-2
+   vctiValence2.push_back(0);
    fPotentialUpperBond  = 0.5;          // atompotdist  ATPODS
    fTemper              = 297.3342119;  // temperature  TEMPER
-   fgPotentialDrop.nX   = 0.0;          // vdrop
-   fgPotentialDrop.nY   = 0.0;
-   fgPotentialDrop.nZ   = 0.0;
+   gfPotentialDrop.nX   = 0.0;          // vdrop
+   gfPotentialDrop.nY   = 0.0;
+   gfPotentialDrop.nZ   = 0.0;
    bSpectralRadius      = false;        // iuspec
    bManualRelaxParam    = false;        // imanual
 
@@ -76,14 +76,14 @@ void CDelphiDataMarshal::setDefault()
 
    //----------------------- set by functions ------------------------//
    // set by CENTER or CENT function:
-   fgOffCenter.nX       = 0.0;          // offset
-   fgOffCenter.nY       = 0.0;
-   fgOffCenter.nZ       = 0.0;
+   gfOffCenter.nX       = 0.0;          // offset
+   gfOffCenter.nY       = 0.0;
+   gfOffCenter.nZ       = 0.0;
 
    // set by ACENTER or ACENT function
-   fgAcent.nX           = 0.0;          // acent
-   fgAcent.nY           = 0.0;
-   fgAcent.nZ           = 0.0;
+   gfAcent.nX           = 0.0;          // acent
+   gfAcent.nY           = 0.0;
+   gfAcent.nZ           = 0.0;
    bIsAcent             = false;        // iacent
 
    // set by READ or IN function
@@ -140,12 +140,12 @@ void CDelphiDataMarshal::setDefault()
    bPDB2FRCInSite       = false;        // iself
 
    // set by BUFZ function
-   ieBuffz.nMin.nX      = 0;            // bufz
-   ieBuffz.nMin.nY      = 0;
-   ieBuffz.nMin.nZ      = 0;
-   ieBuffz.nMax.nX      = 0;
-   ieBuffz.nMax.nY      = 0;
-   ieBuffz.nMax.nZ      = 0;
+   eiBuffz.nMin.nX      = 0;            // bufz
+   eiBuffz.nMin.nY      = 0;
+   eiBuffz.nMin.nZ      = 0;
+   eiBuffz.nMax.nX      = 0;
+   eiBuffz.nMax.nY      = 0;
+   eiBuffz.nMax.nZ      = 0;
    bIsBuffz             = false;        // ibufz
 
    // set by SURFACE function
@@ -154,15 +154,15 @@ void CDelphiDataMarshal::setDefault()
    //------------------------------ DelPhi ---------------------------//
    fDebyeLength         = 0.0;          // deblen
    fEpsOut              = 80.0;         // epsout
-   fgCoordinateRange.nX = 0.0;          // cran
-   fgCoordinateRange.nY = 0.0;
-   fgCoordinateRange.nZ = 0.0;
-   fgGeometricCenter.nX = 0.0;          // pmid
-   fgGeometricCenter.nY = 0.0;
-   fgGeometricCenter.nZ = 0.0;
-   fgBoxCenter.nX       = 0.0;          // oldmid
-   fgBoxCenter.nY       = 0.0;
-   fgBoxCenter.nZ       = 0.0;
+   gfCoordinateRange.nX = 0.0;          // cran
+   gfCoordinateRange.nY = 0.0;
+   gfCoordinateRange.nZ = 0.0;
+   gfGeometricCenter.nX = 0.0;          // pmid
+   gfGeometricCenter.nY = 0.0;
+   gfGeometricCenter.nZ = 0.0;
+   gfBoxCenter.nX       = 0.0;          // oldmid
+   gfBoxCenter.nY       = 0.0;
+   gfBoxCenter.nZ       = 0.0;
    fIonStrength         = 0.0;          // rionst
    fTaylorCoeff1        = 0.0;          // chi1
    fTaylorCoeff2        = 0.0;          // chi2
@@ -190,18 +190,18 @@ void CDelphiDataMarshal::setDefault()
    fNetCrg              = 0.0;          // qnet
    fMinusCrg            = 0.0;          // qmin
    fPlusCrg             = 0.0;          // qplus
-   fgPlusCrgCenter.nX   = 0.0;          // cqplus
-   fgPlusCrgCenter.nY   = 0.0;
-   fgPlusCrgCenter.nZ   = 0.0;
-   fgMinusCrgCenter.nX  = 0.0;          // cqmin
-   fgMinusCrgCenter.nY  = 0.0;
-   fgMinusCrgCenter.nZ  = 0.0;
-   fgMinCoordinate.nX   = 6000.0;       // cmin
-   fgMinCoordinate.nY   = 6000.0;
-   fgMinCoordinate.nZ   = 6000.0;
-   fgMaxCoordinate.nX   =-6000.0;       // cmax
-   fgMaxCoordinate.nY   =-6000.0;
-   fgMaxCoordinate.nZ   =-6000.0;
+   gfPlusCrgCenter.nX   = 0.0;          // cqplus
+   gfPlusCrgCenter.nY   = 0.0;
+   gfPlusCrgCenter.nZ   = 0.0;
+   gfMinusCrgCenter.nX  = 0.0;          // cqmin
+   gfMinusCrgCenter.nY  = 0.0;
+   gfMinusCrgCenter.nZ  = 0.0;
+   gfMinCoordinate.nX   = 6000.0;       // cmin
+   gfMinCoordinate.nY   = 6000.0;
+   gfMinCoordinate.nZ   = 6000.0;
+   gfMaxCoordinate.nX   =-6000.0;       // cmax
+   gfMaxCoordinate.nY   =-6000.0;
+   gfMaxCoordinate.nZ   =-6000.0;
    iBndyGridNum         = 0;            // ibnum
    iCrg2GridNum         = 0;            // nqgrd
 
@@ -210,122 +210,129 @@ void CDelphiDataMarshal::setDefault()
    iCrgedGridSum        = 0;            // icount1b
    iCrgBdyGrid          = 0;            // ibc
 
-   //---------------------------- statements -------------------------//
-   strFullState[0]      = "UNUSED";
-   strFullState[1]      = "GSIZE";
-   strFullState[2]      = "SCALE";
-   strFullState[3]      = "PERFIL";
-   strFullState[4]      = "INDI";
-   strFullState[5]      = "EXDI";
-   strFullState[6]      = "PRBRAD";
-   strFullState[7]      = "IONRAD";
-   strFullState[8]      = "SALT";
-   strFullState[9]      = "BNDCON";
-   strFullState[10]     = "LINIT";
-   strFullState[11]     = "NONIT";
-   //strFullState[12]   = "MEMDAT"; // OBSOLELE. REMOVED FROM THE LIST.
-   strFullState[12]     = "UNUSED";
-   strFullState[13]     = "FCRG";
-   strFullState[14]     = "LOGPOT";
-   strFullState[15]     = "LOGGRP";
-   strFullState[16]     = "CONINT";
-   strFullState[17]     = "CONFRA";
-   strFullState[18]     = "PBX";
-   strFullState[19]     = "PBY";
-   strFullState[20]     = "PBZ";
-   strFullState[21]     = "AUTOC";
-   strFullState[22]     = "EXITUN";
-   strFullState[23]     = "GRDCON";
-   strFullState[24]     = "RELFAC";
-   strFullState[25]     = "CHEBIT";
-   strFullState[26]     = "SOLVPB";
-   strFullState[27]     = "CLCSRF";
-   strFullState[28]     = "PHICON";
-   //strFullState[29]   = "RADPOL"; // ONLY FOR OBJECTS. REMOVED FROM THE LIST.
-   strFullState[29]     = "UNUSED";
-   strFullState[30]     = "RELPAR";
-   strFullState[31]     = "SALT2";
-   strFullState[32]     = "RADPR2";
-   strFullState[33]     = "VAL+1";
-   strFullState[34]     = "VAL-1";
-   strFullState[35]     = "VAL+2";
-   strFullState[36]     = "VAL-2";
-   strFullState[37]     = "RMSC";
-   strFullState[38]     = "MAXC";
-   //strFullState[39]   = "NORMC"; // UNUSED. REMOVED FROM THE LIST.
-   strFullState[39]     = "UNUSED";
-   strFullState[40]     = "VDROPX";
-   strFullState[41]     = "VDROPY";
-   strFullState[42]     = "VDROPZ";
-   strFullState[43]     = "ATPODS";
-   strFullState[44]     = "TEMPER";
+   //------------------------------ Energy ---------------------------//
+   fEngGrid             = 0.0;          // test_ergg
+   fEngCoul             = 0.0;          // test_ergc
+   fEngCorrect          = 0.0;          // test_ergs
+   fEngReact            = 0.0;          // test_ergr
+   fEngIons             = 0.0;          // test_ergions
 
-   strShortState[0]     = "UNUSED";
-   strShortState[1]     = "GS";
-   strShortState[2]     = "SC";
-   strShortState[3]     = "PF";
-   strShortState[4]     = "ID";
-   strShortState[5]     = "ED";
-   strShortState[6]     = "PR";
-   strShortState[7]     = "IR";
-   strShortState[8]     = "IS";
-   strShortState[9]     = "BC";
-   strShortState[10]    = "LI";
-   strShortState[11]    = "NI";
-   //strShortState[12]  = "MD"; // OBSOLELE. REMOVED FROM THE LIST.
-   strShortState[12]    = "UNUSED";
-   strShortState[13]    = "FC";
-   strShortState[14]    = "LP";
-   strShortState[15]    = "LG";
-   strShortState[16]    = "CI";
-   strShortState[17]    = "CF";
-   strShortState[18]    = "PX";
-   strShortState[19]    = "PY";
-   strShortState[20]    = "PZ";
-   strShortState[21]    = "AC";
-   strShortState[22]    = "XU";
-   strShortState[23]    = "GC";
-   strShortState[24]    = "RF";
-   strShortState[25]    = "CI";
-   strShortState[26]    = "SP";
-   strShortState[27]    = "CS";
-   strShortState[28]    = "PC"; // new for PHICON
-   strShortState[29]    = "RL";
-   strShortState[30]    = "RR";
-   strShortState[31]    = "S2";
-   strShortState[32]    = "R2";
-   strShortState[33]    = "+1";
-   strShortState[34]    = "-1";
-   strShortState[35]    = "+2";
-   strShortState[36]    = "-2";
-   strShortState[37]    = "MC";
-   strShortState[38]    = "XC";
-   strShortState[39]    = "NC";
-   strShortState[40]    = "VX";
-   strShortState[41]    = "VY";
-   strShortState[42]    = "VZ";
-   strShortState[43]    = "AD";
-   strShortState[44]    = "TE";
+   //---------------------------- statements -------------------------//
+   rgstrStatement_ShortForm[0]    = "UNUSED";
+   rgstrStatement_ShortForm[1]    = "GSIZE";
+   rgstrStatement_ShortForm[2]    = "SCALE";
+   rgstrStatement_ShortForm[3]    = "PERFIL";
+   rgstrStatement_ShortForm[4]    = "INDI";
+   rgstrStatement_ShortForm[5]    = "EXDI";
+   rgstrStatement_ShortForm[6]    = "PRBRAD";
+   rgstrStatement_ShortForm[7]    = "IONRAD";
+   rgstrStatement_ShortForm[8]    = "SALT";
+   rgstrStatement_ShortForm[9]    = "BNDCON";
+   rgstrStatement_ShortForm[10]   = "LINIT";
+   rgstrStatement_ShortForm[11]   = "NONIT";
+   //rgstrStatement_ShortForm[12] = "MEMDAT"; // OBSOLELE. REMOVED FROM THE LIST.
+   rgstrStatement_ShortForm[12]   = "UNUSED";
+   rgstrStatement_ShortForm[13]   = "FCRG";
+   rgstrStatement_ShortForm[14]   = "LOGPOT";
+   rgstrStatement_ShortForm[15]   = "LOGGRP";
+   rgstrStatement_ShortForm[16]   = "CONINT";
+   rgstrStatement_ShortForm[17]   = "CONFRA";
+   rgstrStatement_ShortForm[18]   = "PBX";
+   rgstrStatement_ShortForm[19]   = "PBY";
+   rgstrStatement_ShortForm[20]   = "PBZ";
+   rgstrStatement_ShortForm[21]   = "AUTOC";
+   rgstrStatement_ShortForm[22]   = "EXITUN";
+   rgstrStatement_ShortForm[23]   = "GRDCON";
+   rgstrStatement_ShortForm[24]   = "RELFAC";
+   rgstrStatement_ShortForm[25]   = "CHEBIT";
+   rgstrStatement_ShortForm[26]   = "SOLVPB";
+   rgstrStatement_ShortForm[27]   = "CLCSRF";
+   rgstrStatement_ShortForm[28]   = "PHICON";
+   //rgstrStatement_ShortForm[29] = "RADPOL"; // ONLY FOR OBJECTS. REMOVED FROM THE LIST.
+   rgstrStatement_ShortForm[29]   = "UNUSED";
+   rgstrStatement_ShortForm[30]   = "RELPAR";
+   rgstrStatement_ShortForm[31]   = "SALT2";
+   rgstrStatement_ShortForm[32]   = "RADPR2";
+   rgstrStatement_ShortForm[33]   = "VAL+1";
+   rgstrStatement_ShortForm[34]   = "VAL-1";
+   rgstrStatement_ShortForm[35]   = "VAL+2";
+   rgstrStatement_ShortForm[36]   = "VAL-2";
+   rgstrStatement_ShortForm[37]   = "RMSC";
+   rgstrStatement_ShortForm[38]   = "MAXC";
+   //rgstrStatement_ShortForm[39] = "NORMC"; // UNUSED. REMOVED FROM THE LIST.
+   rgstrStatement_ShortForm[39]   = "UNUSED";
+   rgstrStatement_ShortForm[40]   = "VDROPX";
+   rgstrStatement_ShortForm[41]   = "VDROPY";
+   rgstrStatement_ShortForm[42]   = "VDROPZ";
+   rgstrStatement_ShortForm[43]   = "ATPODS";
+   rgstrStatement_ShortForm[44]   = "TEMPER";
+
+   rgstrStatement_2lAbbre[0]      = "UNUSED";
+   rgstrStatement_2lAbbre[1]      = "GS";
+   rgstrStatement_2lAbbre[2]      = "SC";
+   rgstrStatement_2lAbbre[3]      = "PF";
+   rgstrStatement_2lAbbre[4]      = "ID";
+   rgstrStatement_2lAbbre[5]      = "ED";
+   rgstrStatement_2lAbbre[6]      = "PR";
+   rgstrStatement_2lAbbre[7]      = "IR";
+   rgstrStatement_2lAbbre[8]      = "IS";
+   rgstrStatement_2lAbbre[9]      = "BC";
+   rgstrStatement_2lAbbre[10]     = "LI";
+   rgstrStatement_2lAbbre[11]     = "NI";
+   //rgstrStatement_2lAbbre[12]   = "MD"; // OBSOLELE. REMOVED FROM THE LIST.
+   rgstrStatement_2lAbbre[12]     = "UNUSED";
+   rgstrStatement_2lAbbre[13]     = "FC";
+   rgstrStatement_2lAbbre[14]     = "LP";
+   rgstrStatement_2lAbbre[15]     = "LG";
+   rgstrStatement_2lAbbre[16]     = "CI";
+   rgstrStatement_2lAbbre[17]     = "CF";
+   rgstrStatement_2lAbbre[18]     = "PX";
+   rgstrStatement_2lAbbre[19]     = "PY";
+   rgstrStatement_2lAbbre[20]     = "PZ";
+   rgstrStatement_2lAbbre[21]     = "AC";
+   rgstrStatement_2lAbbre[22]     = "XU";
+   rgstrStatement_2lAbbre[23]     = "GC";
+   rgstrStatement_2lAbbre[24]     = "RF";
+   rgstrStatement_2lAbbre[25]     = "CB";
+   rgstrStatement_2lAbbre[26]     = "SP";
+   rgstrStatement_2lAbbre[27]     = "CS";
+   rgstrStatement_2lAbbre[28]     = "PC"; // new for PHICON
+   rgstrStatement_2lAbbre[29]     = "RL";
+   rgstrStatement_2lAbbre[30]     = "RR";
+   rgstrStatement_2lAbbre[31]     = "S2";
+   rgstrStatement_2lAbbre[32]     = "R2";
+   rgstrStatement_2lAbbre[33]     = "+1";
+   rgstrStatement_2lAbbre[34]     = "-1";
+   rgstrStatement_2lAbbre[35]     = "+2";
+   rgstrStatement_2lAbbre[36]     = "-2";
+   rgstrStatement_2lAbbre[37]     = "MC";
+   rgstrStatement_2lAbbre[38]     = "XC";
+   rgstrStatement_2lAbbre[39]     = "NC";
+   rgstrStatement_2lAbbre[40]     = "VX";
+   rgstrStatement_2lAbbre[41]     = "VY";
+   rgstrStatement_2lAbbre[42]     = "VZ";
+   rgstrStatement_2lAbbre[43]     = "AD";
+   rgstrStatement_2lAbbre[44]     = "TE";
 
    //------------------------------ functions ------------------------//
-   strFullFunc[0]       = "UNUSED";
-   strFullFunc[1]       = "CENTER";
-   strFullFunc[2]       = "ACENTER";
-   strFullFunc[3]       = "READ";
-   strFullFunc[4]       = "WRITE";
-   strFullFunc[5]       = "ENERGY";
-   strFullFunc[6]       = "SITE";
-   strFullFunc[7]       = "BUFFZ";
-   strFullFunc[8]       = "QPREF";
-   strFullFunc[9]       = "INSOBJ";
-   strFullFunc[10]      = "SURFACE";
-   strFullFunc[11]      = "SOLVER";
+   rgstrFunction_FullForm[0]      = "UNUSED";
+   rgstrFunction_FullForm[1]      = "CENTER";
+   rgstrFunction_FullForm[2]      = "ACENTER";
+   rgstrFunction_FullForm[3]      = "READ";
+   rgstrFunction_FullForm[4]      = "WRITE";
+   rgstrFunction_FullForm[5]      = "ENERGY";
+   rgstrFunction_FullForm[6]      = "SITE";
+   rgstrFunction_FullForm[7]      = "BUFFZ";
+   rgstrFunction_FullForm[8]      = "QPREF";
+   rgstrFunction_FullForm[9]      = "INSOBJ";
+   rgstrFunction_FullForm[10]     = "SURFACE";
+   //rgstrFunction_FullForm[11]   = "SOLVER";
 
-   strShortFunc[0]      = "UNUSED";
-   strShortFunc[1]      = "CENT";
-   strShortFunc[2]      = "ACENT";
-   strShortFunc[3]      = "IN";
-   strShortFunc[4]      = "OUT";
+   rgstrFunction_ShortForm[0]     = "UNUSED";
+   rgstrFunction_ShortForm[1]     = "CENT";
+   rgstrFunction_ShortForm[2]     = "ACENT";
+   rgstrFunction_ShortForm[3]     = "IN";
+   rgstrFunction_ShortForm[4]     = "OUT";
 
    //------------------------------ LOCAL ----------------------------//
    strCentFile          = "fort.27";    // centnam (not to be mapped)

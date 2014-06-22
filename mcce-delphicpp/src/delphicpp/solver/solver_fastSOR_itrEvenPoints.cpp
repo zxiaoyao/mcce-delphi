@@ -19,7 +19,7 @@ void CDelphiFastSOR::itrEvenPoints(const int& forWhom)
     * which numerically much simpler, hence faster. we put all we leave out, back in below, ending up with
     * an equivalent calculation, but much faster.
     */
-   if (1.0e-6 < abs(fIonStrength))  //----- the main loop is as below:
+   if (fZero < abs(fIonStrength))  //----- the main loop is as below:
    {
       for (n = 1; n < iGrid-1; n++)
       {
@@ -105,7 +105,7 @@ void CDelphiFastSOR::itrEvenPoints(const int& forWhom)
    {
       for (iy = 1; iy < (iGrid-2)*(iGrid-2); iy += 2)
       {
-         temp1 = ibndz[iy];      itemp1 = (integer)temp1;
+         temp1 = ibndy[iy];      itemp1 = (integer)temp1;
          temp2 = temp1 + idif2y; itemp2 = (integer)temp2;
          temp3 = temp2 + inc2ya; itemp3 = (integer)temp3;
          temp4 = temp1 + inc2yb; itemp4 = (integer)temp4;

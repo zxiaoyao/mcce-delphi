@@ -16,6 +16,7 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 
 
 	bool ido;
+	bool bRadiusWarn = false;
 	int ix, iy, iz;
 	int i, j, ii, jj, qq;
 	real fRadius, fEnergy_SelfReaction, fCost, fVal;
@@ -117,15 +118,19 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 						}
 
 						if(fRadius<=0){
-							cout << " charged atom number " << ii << "  radius changed from zero to " << 1.0 << endl;
-							cout << " BE CAREFUL!! REACTION FIELD ENERGY MIGHT BE OVERESTIMATED!!!!" << endl;
+							cout << " charged atom number " << setw(4) << fixed << right << ii << "  radius changed from zero to " << 1.0 << endl;
 							fRadius = 1.0;
+							bRadiusWarn=true;
 						}
 
 					}
 
 					fEnergy_SelfReaction = fEnergy_SelfReaction + 0.5*prggvAtomicCrg[i].nValue*prggvAtomicCrg[i].nValue*fCost/fRadius; // not very clear
 
+				}
+
+				if(bRadiusWarn){
+					CReacFieldEnergyOverEST waring;
 				}
 
 				fEnergy_SelfReaction = fEnergy_SelfReaction * fEPKT;
@@ -179,6 +184,7 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 							fEnergy_Temp = fEnergy_Temp + fEnergy_Temp1*schrgj;
 							temp1 = schrgj*fEnergy_Temp1;
 							sen.push_back(temp1);
+							cout << "sen[i] = " << sen[i] << endl;
 
 						}
 
@@ -188,6 +194,8 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 				cout << " tot s.charge, no epsin carrying  :               " << setw(8) << right << fEnergy_TotalCharge << endl;
 				cout << " corrected reaction field energy  :               " << setw(8) << right << fEnergy_Solvation << " kt" << endl;
 				cout << " total reaction field energy      :               " << setw(8) << right << (fEnergy_SelfReaction+fEnergy_Solvation) << " kt" << endl;
+
+				ergr = fEnergy_SelfReaction+fEnergy_Solvation;
 
 				if(bEngOut){
 					ofstream ofEnergyFile;
@@ -225,6 +233,9 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 				}
 				cout << " corrected reaction field energy  :               " << setw(8) << right << fEnergy_Solvation << " kt" << endl;
 				cout << " total reaction field energy      :               " << setw(8) << right << (fEnergy_SelfReaction+fEnergy_Solvation) <<" kt" << endl;
+
+				ergr = fEnergy_SelfReaction+fEnergy_Solvation;
+
 				if(bEngOut){
 					ofstream ofEnergyFile;
 					ofEnergyFile.open(strEnergyFile,std::fstream::app);
@@ -236,15 +247,15 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 		}
 
 		if(bSurfCrgOut){
-			cout << "writing surface charge file : scrg.dat" << endl;
+			cout << " writing surface charge file      :               " << strScrgFile << endl;
 			ofstream ofScrgFile;
-			ofScrgFile.open ("scrg.dat");
+			ofScrgFile.open(strScrgFile);
 			// iSurfCrgFormatOut -> scrgfrm; integer Format of file scrgnam, = 0 if unknown format, = 1 if �PDB�.
 
 			if(iSurfCrgFormatOut==1 || iSurfCrgFormatOut==2 ){
 				ofScrgFile << "DELPHI FORMAT PDB" << endl;
 				ofScrgFile << "FORMAT NUMBER = " << iSurfCrgFormatOut << endl;
-				ofScrgFile << "      bgp# atom SC   res#      pos  scrg          surf energy" << endl;
+				ofScrgFile << "       bgp#  atom SC   res#      pos                               scrg           surf energy" << endl;
 
 			}
 			if(bBuffz){
@@ -253,6 +264,7 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 			}
 			for(i=0;i<iTotalBdyGridNum;i++){
 					ixyz = prgigBndyGrid[i];
+
 					if(bBuffz){
 						ido = 1;
 						if(optORLT<int>(ixyz,lim_min) || optORGT<int>(ixyz,lim_max)){
@@ -268,28 +280,32 @@ void CDelphiEnergy::energy_react(real& fEnergy_Solvation, real& fEnergy_AnalySur
 						ofScrgFile << setw(8) << fixed << right << i+1 << "  " << prgfgSurfCrgA[i].nX << "  " << prgfgSurfCrgA[i].nY << "  " << prgfgSurfCrgA[i].nZ << "  " << fEnergy_Temp1 << endl;
 					}
 
-					if(iSurfCrgFormatOut==1 || iSurfCrgFormatOut==2){
-						jj = atsurf[i];	   //from surface construction class
-						qq = atoi(prgapAtomPdb[jj].getAtInf().substr(11,4).c_str());
-						// line
+                    if(iSurfCrgFormatOut==1 || iSurfCrgFormatOut==2){
+                  		jj = atsurf[i];	   //from surface construction class
+						qq = atoi(prgapAtomPdb[jj-1].getAtInf().substr(11,4).c_str());
+						ofScrgFile << "ATOM  " << setw(5) << fixed << right << i+1 << " " <<  setw(5) << fixed << right << jj << " SC " << setw(6) << fixed << right << qq << "      " << setw(5) << fixed << right << prgfgSurfCrgA[i].nX << "  " << setw(5) << fixed << right << prgfgSurfCrgA[i].nY << "  " << setw(5) << fixed << right << prgfgSurfCrgA[i].nZ << "  " << setw(5) << fixed << right << scientific << fEnergy_Temp1 << "  " << setw(5) << fixed << right << scientific << spt1 << endl;
 					}
-
-
-
 			}
 		}
 
 		if(bSurfEngOut){
-			cout << " writing surface energy file: surfen.dat" << endl;
+			cout << " writing surface energy file      :               surfen.dat" << endl;
 			ofstream surfen;
 			surfen.open("surfen.dat");
 			fEnergy_Temp2=0.0;
-			for(i=0;i<iTotalBdyGridNum;i++){
 
-				fEnergy_Temp1 = sen[i]/2.0;
+			for(i=0;i<iTotalBdyGridNum;i++)
+			{
+				if(bBuffz){
+					fEnergy_Temp1 = sen[i]/2.0;
+				}
+				else{
+					fEnergy_Temp1 = 0.000;
+				}
 				surfen << setw(8) << fixed << right << i+1 << "  " << prgfgSurfCrgA[i].nX << "  " << prgfgSurfCrgA[i].nY << "  " << prgfgSurfCrgA[i].nZ << "  " << fEnergy_Temp1 << endl;
 
 			}
+
 			surfen.close();
 		}
 

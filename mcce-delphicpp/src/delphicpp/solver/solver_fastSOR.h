@@ -150,6 +150,10 @@ class CDelphiFastSOR:virtual public IAbstractModule
       vector<real> debmap1,debmap2;
       real om1,om2,om3,om4,sixth;
 
+#ifdef MCCE
+      SMCCE* pmcce;
+#endif
+
       void setDielecBndySaltMap(); // subroutine mkdbsf()
 
       void setCrg(); // subroutine setcrg()
@@ -286,6 +290,13 @@ class CDelphiFastSOR:virtual public IAbstractModule
       nxran(60),
       nyran(20)
       {      
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*               CDelphiFastSOR is constructed                  *\n";
+         cout << "****************************************************************\n";
+#endif
+
          if (0 != strBioModel.compare("PBE") && 0 != strNumSolver.compare("DELPHI"))
             throw CUnknownBioModelSolver(strBioModel,strNumSolver);
 
@@ -299,8 +310,20 @@ class CDelphiFastSOR:virtual public IAbstractModule
 
       };               
       
-      ~CDelphiFastSOR(){};
-           
+      ~CDelphiFastSOR()
+      {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                CDelphiFastSOR is destroyed                   *\n";
+         cout << "****************************************************************\n";
+#endif
+      };
+
+#ifdef MCCE
+      void getMCCE(SMCCE* mcce_data) { pmcce = mcce_data; }
+#endif
+
       virtual void validateInput();
       
       virtual void run();

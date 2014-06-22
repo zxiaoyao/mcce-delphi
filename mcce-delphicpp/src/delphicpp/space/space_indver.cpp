@@ -98,18 +98,24 @@ void CDelphiSpace::indver(integer extot1)
     //integer extot1;
     //integer iab1[0:lcb1,0:mcb1,0:ncb1],iab2[0:lcb1,0:mcb1,0:ncb1];
 
-    iab1=get_pt3d<integer>(lcb1+1,mcb1+1,ncb1+1);
-    iab2=get_pt3d<integer>(lcb1+1,mcb1+1,ncb1+1);
+    //iab1=get_pt3d<integer>(lcb1+1,mcb1+1,ncb1+1);
+    //iab2=get_pt3d<integer>(lcb1+1,mcb1+1,ncb1+1);
+
+    get_pt3d<integer>(iab1,lcb1+1,mcb1+1,ncb1+1);
+    get_pt3d<integer>(iab2,lcb1+1,mcb1+1,ncb1+1);
+
 //2011-05-27 Declarations added due to IMPLICIT NONE
     integer i,n,ix,iy,iz,k,j;
     vector < SGrid <integer> > iexpos; //iexpos now is a local variable;
 
 //2011-05-24 Array iexpos now is of int_coord type and thus 1D
     //allocate(iexpos[extot1]);
-    iexpos.assign(extot1+1, {0,0,0});
+    //iexpos.assign(extot1+1, {0,0,0});
+    iexpos.assign(extot1+1, sgrid_temp_int);
 
     if(space_debug) cout << "### in indver: ###" << endl;
     if(space_debug) cout << "lcb1,mcb1,ncb1: " << lcb1 << " " << mcb1 << " " << ncb1 << endl;
+
 //initialize grid..
 //2011-05-24 Changed to array operation
     //iab1=1;
@@ -126,7 +132,7 @@ void CDelphiSpace::indver(integer extot1)
         }
     }
 
-    cout << extot1 << endl;
+    //cout << extot1 << endl;
 //make linear arrays for expos
 //find the number of points in each box, put in iab2, make iexpos
     for(i=1; i<=extot1; i++)

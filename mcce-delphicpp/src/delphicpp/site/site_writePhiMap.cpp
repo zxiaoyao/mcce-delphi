@@ -9,7 +9,7 @@
 
 void CSite::writePhiMap(const int& formatflag,vector<real>& phimapIn,ofstream& ofFileStream)
 {
-   if (0 == phimapIn.size()) { CEmptyPhiMap warning(); return; }
+   if (0 == phimapIn.size()) { CEmptyPhiMap warning; return; }
 
    if (1 == formatflag) // formatted write
    {

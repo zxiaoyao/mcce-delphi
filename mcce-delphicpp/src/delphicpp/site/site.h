@@ -132,6 +132,10 @@ class CSite:public CIO
       void expand(const int& mgrid, vector<real>& phimapIn);
 
    public:
+#ifdef MCCE
+      vector<real> mcce_phiv; // to save phiv produced in site_writeSite()
+#endif
+
       CSite(shared_ptr<IDataContainer> pdc,shared_ptr<CTimer> pt):
          CIO(pdc->getKey_Val<real>("repsin"),pdc->getKey_Val<real>("epkt")),
          pTimer(pt),
@@ -202,17 +206,50 @@ class CSite:public CIO
          fScale(pdc->getKey_Ref<real>("scale")),
          prgfPhiMap(pdc->getKey_Ref< vector<real> >("phimap"))
       {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                    CSite is constructed                      *\n";
+         cout << "****************************************************************\n";
+#endif
+
          //----- variables inherited from CIO class
          iResidueNum  = pdc->getKey_Val<integer>("resnummax");
-         prgfMediaEps = pdc->getKey_Val< vector<real> >("medeps");
+         vctfMediaEps = pdc->getKey_Val< vector<real> >("medeps");
          iMediaNum    = pdc->getKey_Val<integer>("nmedia");
          iAtomNum     = pdc->getKey_Val<integer>("natom");
-         prgapAtomPdb = pdc->getKey_Val< vector<CAtomPdb> >("delphipdb");
+         vctapAtomPdb = pdc->getKey_Val< vector<CAtomPdb> >("delphipdb");
 
          //----- local variables
          phimap = pdc->getKey_Ptr<real>("phimap",iGrid,iGrid,iGrid); // pointer to 3D phimap
 
          //cout << "fDielec = " << fDielec << endl;
+      };
+
+      /**
+       * destructor
+       */
+      ~CSite()
+      {
+         /*
+          * delete real *** phimap without deleting underneath prgfPhiMap in data container
+          */
+         for(int i = 0; i != iGrid; ++i)
+         {
+            //for(int j = 0; j != iGrid; ++j)
+            //{
+            //    delete[] phimap[i][j];
+            //}
+            delete[] phimap[i];
+         }
+         delete[] phimap;
+
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                    CSite is destroyed                        *\n";
+         cout << "****************************************************************\n";
+#endif
       };
 
       void writeSite(const int& iisitsf);

@@ -1,3 +1,10 @@
+/*
+ * interface_datamarshal.cpp
+ *
+ *  Created on: Feb 1, 2014
+ *      Author: chuan
+ */
+
 #include "interface_datamarshal.h"
 
 using namespace std;
@@ -66,7 +73,7 @@ bool IDataMarshal::getQinclude(const string &strLineNoSpace)
     	
     cout << "QINCLUDE found - reading file " << strFileName.c_str() << endl;
     
-    this->read();
+    this->read(strFileName);
     	
     return true;
 }
@@ -104,15 +111,15 @@ bool IDataMarshal::getParameter(const string &strLineNoSpace)
 //                                                                       //
 //-----------------------------------------------------------------------//
 
-void IDataMarshal::read()
+void IDataMarshal::read(string strFileName)
 {
    ifstream ifFileHandle;
    
-   // open the file with name strParamFile
-   ifFileHandle.open(strParamFile.c_str());
+   // open the file with name strFileName
+   ifFileHandle.open(strFileName.c_str());
    
    // if the file doesnt exists, exit 
-   if (!ifFileHandle.is_open()) throw CUnknownFile(strParamFile);
+   if (!ifFileHandle.is_open()) throw CUnknownFile(strFileName);
    
    string strLineFromFile, strLineNoSpace; // strings used to read  
    
@@ -132,6 +139,16 @@ void IDataMarshal::read()
       
       if (0 == strLineNoSpace.size()) continue; // a comment line or a line of spaces, skip
       
+      /*
+       * Newlines in DOS and Windows end with the combination of two characters '\r\n',
+       * while they end with a single '\n' to indicate a new line in Unix and a single '\r' in Mac.
+       * Remove '\r' in the string if it exists (for Windows machine).
+       */
+       if('\r' == strLineNoSpace[strLineNoSpace.size()-1])
+       {
+           strLineNoSpace.erase( strLineNoSpace.size()-1);
+       }
+
       if (getBiomodel(strLineNoSpace)) // a line indicating either biomodel or numerical solver
       { strLineNoSpace.clear(); continue; }
       
@@ -141,8 +158,8 @@ void IDataMarshal::read()
       // call the function getParameter(). If the result is false, there was a problem, and an error message is displayed
       if (!getParameter(strLineNoSpace)) 
       {
-         //throw CUnknownLine(strParamFile, strLineFromFile);      
-         CUnknownLine warning(strParamFile, strLineFromFile);
+         //throw CUnknownLine(strFileName, strLineFromFile);
+         CUnknownLine warning(strFileName, strLineFromFile);
       } 
 
       strLineNoSpace.clear();      

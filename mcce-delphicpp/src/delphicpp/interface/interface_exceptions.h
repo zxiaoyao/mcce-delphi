@@ -1,8 +1,21 @@
-#ifndef INTERFACE_EXCEPTIONS_H
-#define INTERFACE_EXCEPTIONS_H
+/**
+ * @file interface_exceptions.h
+ * @brief warnings/exceptions occurring in interface classes
+ *
+ * @author Chuan Li, chuanli@clemson.edu
+ *
+ * These warnings and exceptions should inherit from the classes CWarning and CException in order to
+ * keep track the number of warnings and maintain consistent format.
+ */
+
+#ifndef INTERFACE_EXCEPTIONS_H_
+#define INTERFACE_EXCEPTIONS_H_
 
 #include "exceptions.h"
 	   
+/**
+ * user-specified key is not found in the data container
+ */
 class CInexistentKey : public CException
 {
    public:
@@ -12,6 +25,9 @@ class CInexistentKey : public CException
 	   }
 };
 
+/**
+ * user-specified file is not found
+ */
 class CUnknownFile : public CException
 {
    public:
@@ -21,15 +37,21 @@ class CUnknownFile : public CException
 	}
 };
 
-class CUnmatchSize : public CException
+/**
+ * mismatch size occurs when generating a pointer to the vector-type entry in data container
+ */
+class CMismatchSize : public CException
 {
    public:
-   CUnmatchSize(const string & strFileName)
+   CMismatchSize(const string & strKey)
    {
-      cerr << "ERROR OCCURS WHILE CONVERTING THE VECTOR " << strFileName << " TO MULTI-DIMENSIONAL ARRAY : THE SPECIFIED DIMESION DOES NOT MATCH" << endl;
+      cerr << "ERROR OCCURS WHILE CONVERTING THE VECTOR " << strKey << " TO MULTI-DIMENSIONAL ARRAY : THE SPECIFIED DIMESION DOES NOT MATCH" << endl;
    }
 };
 
+/**
+ * skip unrecognized line(s) in the parameter file
+ */
 class CUnknownLine : public CWarning
 {
    public:
@@ -39,13 +61,15 @@ class CUnknownLine : public CWarning
 	   }
 };
 
-
+/**
+ * no bio-model or solver is described in the parameter file
+ */
 class CNoBiomodel : public CWarning
 {
    public:
       CNoBiomodel(const string & strBiomodel, const string & strSolver)
       {
-         cerr << "UNDEFINED DBIOMODEL OR SOLVER (USING DEFAULT: BIOMODEL=" << strBiomodel << ", SOLVER=" << strSolver << ")" << endl;
+         cerr << "UNDEFINED BIOMODEL OR SOLVER (USING DEFAULT: BIOMODEL=" << strBiomodel << ", SOLVER=" << strSolver << ")" << endl;
       }
 };
 
@@ -60,4 +84,4 @@ class CNoBiomodel : public CWarning
 //      }
 //};
 
-#endif // INTERFACE_EXCEPTIONS_H
+#endif // INTERFACE_EXCEPTIONS_H_

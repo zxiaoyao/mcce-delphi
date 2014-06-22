@@ -13,14 +13,15 @@ void CDelphiSpace::crgarr()
 
 
     integer epsdim;
-    SGrid <real> xo,rxyz;
+    SGrid <real> rxyz;
     SGrid <integer> jxyz;
 
 //2011-05-30 Declarations added due to IMPLICIT NONE
-    integer ic1,ic2,i,ix,iiii,ii,imed,jx,jy,jz;
+    integer ic1,ic2,i,ix,ii,imed,jx,jy,jz;
     real chrg,rgrid;
     bool ipassed;
     SGridValue<real> temp;
+    //SGrid <real> sgrid_temp_real;
     real radpolext=1.0;
 
 
@@ -29,8 +30,13 @@ void CDelphiSpace::crgarr()
 //crgatn.
 
 //Part1 (easy) : from molecules
-    temp.nGrid={0.,0.,0.};
+    //temp.nGrid={0.,0.,0.};
+    temp.nGrid.nX=0.;
+    temp.nGrid.nY=0.;
+    temp.nGrid.nZ=0.;
     temp.nValue=0;
+
+
 
     ic1=0;
     for(i=1; i<=iNatom; i++)
@@ -59,7 +65,9 @@ void CDelphiSpace::crgarr()
     //allocate(crgatn[nqass],atmeps[nqass]);
 
     atmcrg_v.assign(nqass,temp);
-    chgpos_v.assign(nqass,{0.,0.,0.});
+    //chgpos_v.assign(nqass,{0.,0.,0.});
+    chgpos_v.assign(nqass,sgrid_temp_real);
+
     crgatn_v.assign(nqass,0);
     atmeps_v.assign(nqass,0.);
     atmcrg=&atmcrg_v[-1];
@@ -74,8 +82,15 @@ void CDelphiSpace::crgarr()
     qnet=0.0;
     qplus=0.0;
     qmin=0.0;
-    cqplus={0.,0.,0.};
-    cqmin={0.,0.,0.};
+    //cqplus={0.,0.,0.};
+    cqplus.nX=0.;
+    cqplus.nY=0.;
+    cqplus.nZ=0.;
+
+    //cqmin={0.,0.,0.};
+    cqmin.nX=0.;
+    cqmin.nY=0.;
+    cqmin.nZ=0.;
 
 
     ic1=0;
@@ -179,6 +194,9 @@ void CDelphiSpace::crgarr()
 // operators_on_coordinates
             jxyz=optCast<integer,real>(atmcrg[ix].nGrid+0.5);
             rxyz=atmcrg[ix].nGrid -optCast<real,integer>(jxyz);
+            jx=jxyz.nX;
+            jy=jxyz.nY;
+            jz=jxyz.nZ;
 
             if (rxyz.nZ>rxyz.nX)
             {
@@ -188,16 +206,16 @@ void CDelphiSpace::crgarr()
                     {
                         if (rxyz.nZ>-rxyz.nY)
                         {
-                            imed=iepsmp[jx][jy][jz].nZ;
+                            imed=iepsmp[jz][jy][jx].nZ;
                         }
                         else
                         {
-                            imed=iepsmp[jx][jy-1][jz].nY;
+                            imed=iepsmp[jz][jy-1][jx].nY;
                         }// if
                     }
                     else
                     {
-                        imed=iepsmp[jx][jy][jz].nY;
+                        imed=iepsmp[jz][jy][jx].nY;
                     }// if
                 }
                 else
@@ -206,16 +224,16 @@ void CDelphiSpace::crgarr()
                     {
                         if (rxyz.nY>-rxyz.nX)
                         {
-                            imed=iepsmp[jx][jy][jz].nY;
+                            imed=iepsmp[jz][jy][jx].nY;
                         }
                         else
                         {
-                            imed=iepsmp[jx-1][jy][jz].nX;
+                            imed=iepsmp[jz][jy][jx-1].nX;
                         }// if
                     }
                     else
                     {
-                        imed=iepsmp[jx][jy-1][jz].nY;
+                        imed=iepsmp[jz][jy-1][jx].nY;
                     }// if
                 }// if
             }
@@ -225,17 +243,17 @@ void CDelphiSpace::crgarr()
                 {
                     if (rxyz.nY>rxyz.nX)
                     {
-                        imed=iepsmp[jx][jy][jz].nY;
+                        imed=iepsmp[jz][jy][jx].nY;
                     }
                     else
                     {
                         if (rxyz.nY>-rxyz.nX)
                         {
-                            imed=iepsmp[jx][jy][jz].nX;
+                            imed=iepsmp[jz][jy][jx].nX;
                         }
                         else
                         {
-                            imed=iepsmp[jx][jy-1][jz].nY;
+                            imed=iepsmp[jz][jy-1][jx].nY;
                         }// if
                     }// if
                 }
@@ -243,17 +261,17 @@ void CDelphiSpace::crgarr()
                 {
                     if (rxyz.nZ>rxyz.nY)
                     {
-                        imed=iepsmp[jx][jy-1][jz].nY;
+                        imed=iepsmp[jz][jy-1][jx].nY;
                     }
                     else
                     {
                         if (rxyz.nZ>-rxyz.nY)
                         {
-                            imed=iepsmp[jx][jy][jz].nY;
+                            imed=iepsmp[jz][jy][jx].nY;
                         }
                         else
                         {
-                            imed=iepsmp[jx][jy][jz-1].nZ;
+                            imed=iepsmp[jz-1][jy][jx].nZ;
                         }// if
                     }// if
                 }// if

@@ -20,18 +20,24 @@ void CDelphiSpace::msrf()
     integer itot, vtot;
     string fixyn;
     string vdat1, line[6], fname;
-    SGrid <real> xo,xo2;
+    //SGrid <real> xo,xo2;
     bool fix;
     integer epsdim;
-    SGrid <real> v1,v2,v3,vxyz;
-    bool out,nbe[7],exists;
+    SGrid <real> v1,v2,vxyz;
+    //bool out,nbe[7],exists;
     SGrid <integer> iv123;
 //2011-05-27 Declarations added due to IMPLICIT NONE
-    integer mxvtx,i,ia1,ia2,ia3,iate,imxtri,it,imxvtx;
-    integer ib,iv1,iv2,iv3,j,k,mxtri,ntot,ntot2;
-    real aa,arear,areac,areas,area,cc,bb,rad,rad2,ss;
+    integer mxvtx,i,ia1,ia2,ia3,iate,it,imxvtx;
+    integer ib,iv1,iv2,iv3,j,k,mxtri,ntot2;
+    real aa,area,cc,bb,rad,rad2,ss;
     real tar,tne4,vmg;
 
+    iv1=0;
+    iv2=0;
+    iv3=0;
+    vtot=0;
+    itot=0;
+    ntot2=0;
 
     if(space_debug) cout << "### in msrf: ###" <<endl;
 
@@ -48,7 +54,8 @@ void CDelphiSpace::msrf()
             for(i=1; i<=iGrid; i++)
             {
 //cambiato da mod a div, mi dovrebbe servire solo il mezzo
-                egrid[i][j][k]=iEpsMap[i][j][k]/epsdim;
+                //egrid[i][j][k]=iEpsMap[i][j][k]/epsdim;
+                egrid[i][j][k]=iepsmp[i][j][k]/epsdim;
             }// do
         }// do
     }// do
@@ -95,8 +102,10 @@ void CDelphiSpace::msrf()
         vindx=int_coord(0,0,0);
         vert=coord(0,0,0);
       */
-    vindx.assign(mxtri+1, {0,0,0});
-    vert.assign(mxvtx+1, {0.,0.,0.});
+    //vindx.assign(mxtri+1, {0,0,0});
+    //vert.assign(mxvtx+1, {0.,0.,0.});
+    vindx.assign(mxtri+1, sgrid_temp_int);
+    vert.assign(mxvtx+1, sgrid_temp_real);
 
     //print*,'mxtri,mxvtx=',mxtri,mxvtx
     cout << "mxtri,mxvtx= " << " " << mxtri << " " << mxvtx << endl;
@@ -105,7 +114,7 @@ void CDelphiSpace::msrf()
 // Also array vindx was 2D here, but 1D in the EX void.
 // Also it should be clarified why file in /usr/local/bin is opened and read in ex void.
 
-    vdat1='./';
+    vdat1="./";
 
     //call ex(vtot, itot, vdat1, 2 );
 
@@ -126,8 +135,11 @@ void CDelphiSpace::msrf()
 //fScale boundary grid pointeger positions relative to acc data
     cout <<"scaling vertices" << endl;
     //allocate(vnorm(vtot),vnorm2(vtot));
-    vnorm.assign(vtot+1, {0.,0.,0.});
-    vnorm2.assign(vtot+1, {0.,0.,0.});
+
+    //vnorm.assign(vtot+1, {0.,0.,0.});
+    //vnorm2.assign(vtot+1, {0.,0.,0.});
+    vnorm.assign(vtot+1, sgrid_temp_real);
+    vnorm2.assign(vtot+1, sgrid_temp_real);
 
     //call sclbp(vert,vnorm,vtot,iab1,iab2);
 
@@ -141,21 +153,25 @@ void CDelphiSpace::msrf()
         imxvtx = mxvtx;
     }// if
 
-    if (itot < mxtri/2)
-    {
-        imxtri = itot*2;
-    }
-    else
-    {
-        imxtri = mxtri;
-    }// if
+
+//    if (itot < mxtri/2)
+//    {
+//        imxtri = itot*2;
+//    }
+//    else
+//    {
+//        imxtri = mxtri;
+//    }// if
+
 
     //allocate(vtlen(imxvtx),vtlst(6*imxvtx));
     //allocate(vtpnt(imxvtx),tmlst(9,imxvtx));
     vtlen.assign(imxvtx+1,0);
     vtpnt.assign(imxvtx+1,0);
     vtlst.assign(6*imxvtx+1,0);
-    tmlst=get_pt2d <integer> (9+1,imxvtx+1);
+
+    //tmlst=get_pt2d <integer> (9+1,imxvtx+1);
+    get_pt2d <integer> (tmlst,9+1,imxvtx+1);
 
 //2011-05-25 Arrays to void are transfered via pointers
 // module
@@ -209,7 +225,7 @@ void CDelphiSpace::msrf()
     if(vtlen.size()>0) vector <integer>().swap(vtlen);
     if(vtlst.size()>0) vector <integer>().swap(vtlst);
     if(vtpnt.size()>0) vector <integer>().swap(vtpnt);
-    free_pt2d(tmlst,9+1,imxvtx+1);
+    if(tmlst != NULL) free_pt2d(tmlst,9+1,imxvtx+1);
 
 
 
@@ -220,9 +236,9 @@ void CDelphiSpace::msrf()
 
 //calculate area
     area=0.0;
-    areas=0.0;
-    areac=0.0;
-    arear=0.0;
+    //areas=0.0;
+    //areac=0.0;
+    //arear=0.0;
 
 
     for(it=1; it<=itot; it++)

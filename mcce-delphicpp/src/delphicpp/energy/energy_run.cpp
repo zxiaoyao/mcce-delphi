@@ -16,35 +16,35 @@
 //    lognl=ionic contribution in non linear case
 //-----------------------------------------------------------------------//
 
-// inrgwrt -> bool bEngOut (flag for writing energy in unit 42 file)
-// loga -> bool bAnalyEng (flag for calculating analytic energy)
-// logg -> bool bGridEng (flag for calculating grid energy)
-// lognl -> bool bNonlinearEng	(Flag for non linear energy calculation)
-// logs -> bool bSolvEng (flag for calculating solvation energy)
-// logc -> bool bCoulombEng (flag for calculating coulombic energy)
-// logions -> bool bIonsEng (Flag for energy calculation of contribution from the solvent.)
-// nrgnam -> string	strEnergyFile
-// icount1b -> integer	iCrgedGridB	(number of charged grid points in odd/even arries, to be used in making qval and iqpos)
-// gchrgp -> int_coord	no suggested name (gchrgp is the position of each such charge on the grid)
+// inrgwrt    -> bool bEngOut (flag for writing energy in unit 42 file)
+// loga       -> bool bAnalyEng (flag for calculating analytic energy)
+// logg       -> bool bGridEng (flag for calculating grid energy)
+// lognl      -> bool bNonlinearEng	(Flag for non linear energy calculation)
+// logs       -> bool bSolvEng (flag for calculating solvation energy)
+// logc       -> bool bCoulombEng (flag for calculating coulombic energy)
+// logions    -> bool bIonsEng (Flag for energy calculation of contribution from the solvent.)
+// nrgnam     -> string	strEnergyFile
+// icount1b   -> integer	iCrgedGridB	(number of charged grid points in odd/even arries, to be used in making qval and iqpos)
+// gchrgp     -> int_coord	no suggested name (gchrgp is the position of each such charge on the grid)
 // ideveloper -> bool DEVELOPER (flag to control the precision of outputs)
-// phimap -> vector<real> prgfPhimap
+// phimap     -> vector<real> prgfPhimap
 //
-// vdrop ->
-// irea -> bool bReactFieldInFRC (flag for calculating reaction field and output it in formatted frc file)
-// isch -> bool bSurfCrgOut (flag for outputting surface charge file)
+// vdrop      ->
+// irea       -> bool bReactFieldInFRC (flag for calculating reaction field and output it in formatted frc file)
+// isch       -> bool bSurfCrgOut (flag for outputting surface charge file)
 
 void CDelphiEnergy::run()
 {
-	int i, iw, iGridOutput, iisitpot;
+   int i, iw, iGridOutput, iisitpot;
 
-    real fEnergy_Grid=0.0;
-	real fEnergy_Solvation=0.0;
-    real fEnergy_AnalySurf=0.0;
+   real fEnergy_Grid=0.0;
+   real fEnergy_Solvation=0.0;
+   real fEnergy_AnalySurf=0.0;
 	real fEnergy_Nonlinear=0.0;
-    real fEnergy_Coulombic=0.0;
+   real fEnergy_Coulombic=0.0;
     
-    real fEnergy_AnalyGrid=0.0;
-    real fEnergy_SolvToChgIn=0.0;
+   real fEnergy_AnalyGrid=0.0;
+   real fEnergy_SolvToChgIn=0.0;
 	real fEnergy_SolvToChgOut = 0.0;  // solvent contribution to fixed charges  outside the cube is zero.
 	real fEnergy_Total=0.0;
 //	real fPi = 3.1415926;
@@ -59,8 +59,8 @@ void CDelphiEnergy::run()
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ++ To set the flags for test, do it in the app_delphi.cpp   ++//
-
+#ifdef DEBUG_DELPHI_ENERGY
+   // ++ To set the flags for test, do it in the app_delphi.cpp   ++//
    cout << "bGridEng         = " << bGridEng << endl;
    cout << "bReactFieldlnFRC = " << bReactFieldlnFRC << endl;
    cout << "bSolvEng         = " << bSolvEng << endl;
@@ -71,7 +71,7 @@ void CDelphiEnergy::run()
    cout << "bBuffz           = " << bBuffz << endl;
    cout << "bCoulombEng      = " << bCoulombEng << endl;
    cout << "bIonsEng         = " << bIonsEng << endl;
-
+#endif
 
    // +++++++++++++++++++++ Analytic grid energy +++++++++++++++++++++
 
@@ -218,7 +218,7 @@ void CDelphiEnergy::run()
 		if(bIonsEng){
 			fEnergy_SolvToChgIn = 0.0;
 			energy_clbtotal(fEnergy_SolvToChgIn, fEnergy_Coulombic);	// call clbtotal function.
-            cout << " WARNING!!! This part is still under testing." << endl;
+			{CIonicCalcUnderTest waring;}
 			cout << " solvent contribution to fixed charges" << endl;
 			cout << " respectively inside and outside the cube :               ";
 			cout << setw(8) << right << fEnergy_SolvToChgIn << "  kt   " << fEnergy_SolvToChgOut << "  kt" << endl;  // where is ergestout??
@@ -307,6 +307,11 @@ void CDelphiEnergy::run()
 	cout << endl;
 //	cout << "total time of energy calculation  :  "; pTimer->showElapse(); cout << endl;
 	cout << endl;
+
+	ergg    = fEnergy_Grid;
+	ergc    = fEnergy_Coulombic;
+	ergs    = fEnergy_Solvation;
+	ergions = fEnergy_SolvToChgIn + fEnergy_SolvToChgOut;
 }
 
 

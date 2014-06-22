@@ -10,24 +10,29 @@
 
 bool CDelphiFastSOR::isFocusBndy(real *** phimap)
 {
-   cout << "\n";
-   cout << "focussing boundary condition\n";
-   cout << "read from file\n";
-   cout << strPhiiFile << endl << endl;
-
    char toblbl[20],label[10],title[60],botlbl[16];
    real fScale1,goff,gmid;
    SGrid<real> fgBoxCenter1,fgXYZ1,fgXYZ2,fgTemp;
    integer iGrid1,isgrid;
    int ix,iy,iz,iout;
 
+#ifndef MCCE
    ifstream ifPhiiFileStream;
    ifPhiiFileStream.open(strPhiiFile.c_str());
-   if (!ifPhiiFileStream.is_open()) throw CUnknownPhiiFile(strPhiiFile);
+   if (!ifPhiiFileStream.is_open())
+   {
+      throw CUnknownPhiiFile(strPhiiFile);
+      return false;
+   }
 
-   ifPhiiFileStream.read(toblbl,20);
+   cout << "\n";
+   cout << "focussing boundary condition\n";
+   cout << "read from file\n";
+   cout << strPhiiFile << endl << endl;
+
+   ifPhiiFileStream.read(toblbl,21);
    ifPhiiFileStream.read(label ,10);
-   ifPhiiFileStream.read(title ,60);
+   ifPhiiFileStream.read(title ,54);
 
    for (iz = 0; iz < iGrid; iz++)
    {
@@ -46,8 +51,14 @@ bool CDelphiFastSOR::isFocusBndy(real *** phimap)
    ifPhiiFileStream.read(reinterpret_cast<char*>(&iGrid1),sizeof(iGrid1));
 
    ifPhiiFileStream.close();
+#else
+   prgfPhiMap   = pmcce->phimap;
+   fScale1      = pmcce->scale1;
+   fgBoxCenter1 = pmcce->oldmid1;
+   iGrid1       = pmcce->igrid1;
+#endif
 
-   if (1.0e-6 > abs(fScale1-fScale))
+   if (fZero > abs(fScale1-fScale))
    {
       cout << "scales are the same.\n";
       cout << "therefore assuming this to be a continuence\n";
@@ -59,91 +70,91 @@ bool CDelphiFastSOR::isFocusBndy(real *** phimap)
       cout << title << endl;
       cout << "original scale (grids/A)      : " << fScale1 << endl;
       cout << "object centre at (A) : " << fgBoxCenter1.nX << fgBoxCenter1.nY << fgBoxCenter1.nZ << endl;
-   }
 
-   //----- check to see that new grid lies within old one that is going to provide bc's
-   iout = 0; goff = (iGrid1+1.0)/2.0;
+      //----- check to see that new grid lies within old one that is going to provide bc's
+      iout = 0; goff = (iGrid1+1.0)/2.0;
 
-   for (iz = 0; iz < iGrid; iz += iGrid-1)
-   {
-      for (iy = 0; iy < iGrid; iy += iGrid-1)
+      for (iz = 0; iz < iGrid; iz += iGrid-1)
       {
-         for (ix = 0; ix < iGrid; ix += iGrid-1)
+         for (iy = 0; iy < iGrid; iy += iGrid-1)
          {
-            fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
+            for (ix = 0; ix < iGrid; ix += iGrid-1)
+            {
+               fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
 
-            //for each new grid corner, calculate old grid coords
-            fgXYZ2 = (fgXYZ1-goff)/fScale+fgBoxCenter;
-            fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
+               //for each new grid corner, calculate old grid coords
+               fgXYZ2 = (fgXYZ1-goff)/fScale+fgBoxCenter;
+               fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
 
-            if (optORLE<real>(fgTemp,1.0) || optORGE<real>(fgTemp,(real)iGrid1)) iout = 1;
+               if (optORLE<real>(fgTemp,1.0) || optORGE<real>(fgTemp,(real)iGrid1)) iout = 1;
+            }
          }
       }
-   }
 
-   if (0 != iout) throw COutsideFocus(fScale1,fgBoxCenter1,fScale,fgBoxCenter);
+      if (0 != iout) throw COutsideFocus(fScale1,fgBoxCenter1,fScale,fgBoxCenter);
 
-   /*
-    * for each boundary point
-    *    convert to real coordinates
-    *    convert to old grid coordinates
-    *    interpolate potential
-    * note that can use same potential array for boundaries since old potentials at boundary are not used for new ones
-    */
+      /*
+       * for each boundary point
+       *    convert to real coordinates
+       *    convert to old grid coordinates
+       *    interpolate potential
+       * note that can use same potential array for boundaries since old potentials at boundary are not used for new ones
+       */
 
-   //----- save new grid size, and set temporarily to 65
-   isgrid = iGrid; iGrid  = iGrid1; gmid = (isgrid+1.0)/2.0;
-   cout << "pulling boundary values out of old potential map...\n";
+      //----- save new grid size, and set temporarily to 65
+      isgrid = iGrid; iGrid  = iGrid1; gmid = (isgrid+1.0)/2.0;
+      cout << "pulling boundary values out of old potential map...\n";
 
-   for (iz = 1; iz < isgrid-1; iz++)
-   {
-      for (iy = 1; iy < isgrid-1; iy++)
+      for (iz = 1; iz < isgrid-1; iz++)
       {
-         for (ix = 0; ix < isgrid; ix += isgrid-1)
+         for (iy = 1; iy < isgrid-1; iy++)
          {
-            fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
-            fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
-            fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
+            for (ix = 0; ix < isgrid; ix += isgrid-1)
+            {
+               fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
+               fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
+               fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
 
-            //for each new grid side, calculate old grid coords find potential
-            phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+               //for each new grid side, calculate old grid coords find potential
+               phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+            }
          }
       }
-   }
 
-   for (iz = 1; iz < isgrid-1; iz++)
-   {
-      for (iy = 0; iy < isgrid; iy += isgrid-1)
+      for (iz = 1; iz < isgrid-1; iz++)
       {
-         for (ix = 1; ix < isgrid-1; ix++)
+         for (iy = 0; iy < isgrid; iy += isgrid-1)
          {
-            fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
-            fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
-            fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
+            for (ix = 1; ix < isgrid-1; ix++)
+            {
+               fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
+               fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
+               fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
 
-            //for each new grid side, calculate old grid coords find potential
-            phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+               //for each new grid side, calculate old grid coords find potential
+               phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+            }
          }
       }
-   }
 
-   for (iz = 1; iz < isgrid; iz += isgrid-1)
-   {
-      for (iy = 1; iy < isgrid-1; iy++)
+      for (iz = 1; iz < isgrid; iz += isgrid-1)
       {
-         for (ix = 1; ix < isgrid-1; ix++)
+         for (iy = 1; iy < isgrid-1; iy++)
          {
-            fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
-            fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
-            fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
+            for (ix = 1; ix < isgrid-1; ix++)
+            {
+               fgXYZ1.nX = (real)(ix+1); fgXYZ1.nY = (real)(iy+1); fgXYZ1.nZ = (real)(iz+1);
+               fgXYZ2 = (fgXYZ1-gmid)/fScale+fgBoxCenter;
+               fgTemp = (fgXYZ2-fgBoxCenter1)*fScale1+goff;
 
-            //for each new grid side, calculate old grid coords find potential
-            phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+               //for each new grid side, calculate old grid coords find potential
+               phimap[iz][iy][ix] = interpl(iGrid,phimap,fgTemp);
+            }
          }
       }
-   }
 
-   iGrid = isgrid;
+      iGrid = isgrid;
+   }
 
    return true;
 }

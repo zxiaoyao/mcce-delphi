@@ -1,5 +1,16 @@
-#ifndef IDATAMARSHAL_H
-#define IDATAMARSHAL_H
+/**
+ * @file interface_datamarshal.h
+ * @brief interface IDataMarshal
+ *
+ * @author Chuan Li, chuanli@clemson.edu
+ *
+ * This file declares the interface IDataMarshal, the base class for CDelphiDataMarshal.
+ * Direct realizing an object of this base class is forbidden, but a point to this class can be used to point to
+ * an instance of its derived class via polymorphism to provide unified access to various classes.
+ */
+
+#ifndef IDATAMARSHAL_H_
+#define IDATAMARSHAL_H_
 
 #include <iostream>
 #include <fstream>
@@ -7,10 +18,6 @@
 
 #include "environment.h"
 #include "interface_exceptions.h"
-
-/**
- * This class is pure abstract. NO objects can be created directly!
- */
 
 class IDataMarshal
 {
@@ -61,6 +68,13 @@ class IDataMarshal
        */
       IDataMarshal()
       {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                IDataMarshal is constructed                   *\n";
+         cout << "****************************************************************\n";
+#endif
+
          strParamFile = "fort.10";
          strBioModel  = "PBE";
          strNumSolver = "DELPHI"; // default
@@ -71,6 +85,13 @@ class IDataMarshal
        */
       IDataMarshal(int argc, char *argv[])
       {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                IDataMarshal is constructed                   *\n";
+         cout << "****************************************************************\n";
+#endif
+
          strParamFile = "fort.10";
          strBioModel  = "PBE";
          strNumSolver = "DELPHI"; // default
@@ -81,16 +102,26 @@ class IDataMarshal
       /**
        * destructor
        */
-      ~IDataMarshal(){};
+      virtual ~IDataMarshal()
+      {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                 IDataMarshal is destroyed                    *\n";
+         cout << "****************************************************************\n";
+#endif
+      };
      
       /**
-       * Read each line of the file with name strParamFile and executes the parsing.
-       * This function reads each line, removing any comments and spaces.
-       * @return n/a
+       * Function to read the parameter file and executes the parsing.
+       * @param[in] strFileName Name of the parameter file
        */
-      void read();
+      void read(string strFileName);
 
+      /**
+       * Function to perform after-reading updates. Must be implemented by the derived classes.
+       */
       virtual void updateParameters() = 0;
 };
 
-#endif // IDATAMARSHAL_H
+#endif // IDATAMARSHAL_H_

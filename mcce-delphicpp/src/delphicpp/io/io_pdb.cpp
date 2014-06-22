@@ -39,21 +39,21 @@ void CIO::readStdPdbFile(ifstream& ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -71,9 +71,9 @@ void CIO::readStdPdbFile(ifstream& ifPdbFileStream)
          tmpAtomObj.setRadius((real)0.0);
          tmpAtomObj.setCharge((real)0.0);
          
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
          
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -121,21 +121,21 @@ void CIO::readModFile1(ifstream& ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -156,9 +156,9 @@ void CIO::readModFile1(ifstream& ifPdbFileStream)
          strSubLine = strLine.substr(60,7); strSubLine = removeSpace(strSubLine);         
          tmpAtomObj.setCharge( (real)atof(strSubLine.c_str()) );
          
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
          
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -207,21 +207,21 @@ void CIO::readModFile4(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -242,9 +242,9 @@ void CIO::readModFile4(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(62,8); strSubLine = removeSpace(strSubLine);
          tmpAtomObj.setRadius( (real)atof(strSubLine.c_str()) );
          
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
          
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -293,21 +293,21 @@ void CIO::readPqrFile(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -328,9 +328,9 @@ void CIO::readPqrFile(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(61,7); strSubLine = removeSpace(strSubLine);
          tmpAtomObj.setRadius( (real)atof(strSubLine.c_str()) );
          
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
 
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -379,21 +379,21 @@ void CIO::readMod4File(ifstream& ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -414,9 +414,9 @@ void CIO::readMod4File(ifstream& ifPdbFileStream)
          strSubLine = strLine.substr(61,8); strSubLine = removeSpace(strSubLine);
          tmpAtomObj.setCharge( (real)atof(strSubLine.c_str()) );
         
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
         
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -465,21 +465,21 @@ void CIO::readPqr4File(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(19,8); strSubLine = removeSpace(strSubLine);         
          fInDielec = atof( strSubLine.c_str() );
          
-         // entries of prgfMediaEps have been initialized to be 1/epkt
-         prgfMediaEps.push_back(fInDielec/fEPKT);
+         // entries of vctfMediaEps have been initialized to be 1/epkt
+         vctfMediaEps.push_back(fInDielec/fEPKT);
          
          if (0 != iObjectType)
          {
             bOnlyMolecule = false;
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(strLine); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(strLine);
+            vctstrObject.push_back(string(" "));
          }
          else
          {
             // dataobject(iObjectIndex,1) and dataobject(iObjectIndex,2)
-            prgstrObject.push_back(string("is a molecule    0")); 
-            prgstrObject.push_back(string(" "));
+            vctstrObject.push_back(string("is a molecule    0"));
+            vctstrObject.push_back(string(" "));
             prgiObjectMediaNum.push_back(iObjectMediaNum);
          }
       }
@@ -500,9 +500,9 @@ void CIO::readPqr4File(ifstream & ifPdbFileStream)
          strSubLine = strLine.substr(62,7); strSubLine = removeSpace(strSubLine);
          tmpAtomObj.setRadius( (real)atof(strSubLine.c_str()) );
          
-         prgapAtomPdb.push_back(tmpAtomObj);
+         vctapAtomPdb.push_back(tmpAtomObj);
          
-         prgiAtomMediaNum.push_back(iObjectMediaNum);
+         vctiAtomMediaNum.push_back(iObjectMediaNum);
          
          iAtomIndex += 1;       
       }
@@ -570,7 +570,7 @@ void CIO::readUnformattedPdb(const string& strPdbFile, ifstream& ifPdbFileStream
             tmpAtomObj.setRadius(fDummy[3]);
             tmpAtomObj.setCharge(fDummy[4]);   
             tmpAtomObj.setAtInf(" ");
-            prgapAtomPdb.push_back(tmpAtomObj);
+            vctapAtomPdb.push_back(tmpAtomObj);
          } 
 
          bPostProcess = true;
@@ -588,7 +588,7 @@ void CIO::readUnformattedPdb(const string& strPdbFile, ifstream& ifPdbFileStream
             tmpAtomObj.setRadius(fDummy[3]);
             tmpAtomObj.setCharge(fDummy[4]);   
             tmpAtomObj.setAtInf(strLine);
-            prgapAtomPdb.push_back(tmpAtomObj);
+            vctapAtomPdb.push_back(tmpAtomObj);
          }
          
          bPostProcess = false;
@@ -660,7 +660,7 @@ void CIO::readPdbFile(const string& strPdbFile, const int& iPdbFormat, const boo
       else                      bExistRadiiInfo = true;  // others                  
 
       // medeps(0:nmediamax)
-      prgfMediaEps.push_back(0.0); // medeps(0)
+      vctfMediaEps.push_back(0.0); // medeps(0)
 
       switch (iPdbFormat)
       {
@@ -682,7 +682,7 @@ void CIO::readPdbFile(const string& strPdbFile, const int& iPdbFormat, const boo
             break;
       }
 
-      iAtomNum = prgapAtomPdb.size();
+      iAtomNum = vctapAtomPdb.size();
       cout << "number of atoms read in = " << iAtomNum << " formatted \n";
    }   
    else // ---------- unformatted pdb file ---------- //
@@ -719,26 +719,26 @@ void CIO::readPdbFile(const string& strPdbFile, const int& iPdbFormat, const boo
    // Some post-processing
    if (bPostProcess) 
    {
-      if (0 == prgfMediaEps.size()) prgfMediaEps.push_back(0.0); // medeps(0)
+      if (0 == vctfMediaEps.size()) vctfMediaEps.push_back(0.0); // medeps(0)
 
       cout << "You are not reading from an object file! \n";
       cout << "Assuming having only molecules, and one medium \n";
    
-      prgfMediaEps.push_back(fDielec/fEPKT); // medeps(1)=repsin/epkt
+      vctfMediaEps.push_back(fDielec/fEPKT); // medeps(1)=repsin/epkt
       // dataobject(1,1) and dataobject(1,2)
-      prgstrObject.push_back(string("is a molecule    0"));
-      prgstrObject.push_back(string(" "));
+      vctstrObject.push_back(string("is a molecule    0"));
+      vctstrObject.push_back(string(" "));
       prgiObjectMediaNum.push_back(iObjectMediaNum);
    }
 
-   iObjectNum = prgstrObject.size()/2;
-   iMediaNum  = prgfMediaEps.size()-1;
+   iObjectNum = vctstrObject.size()/2;
+   iMediaNum  = vctfMediaEps.size()-1;
 
    // regardless of being a molecule or not, iatmmed has a field to say which is its medium
    if (0 != prgiObjectMediaNum.size())
    {
       for (unsigned i=0; i < prgiObjectMediaNum.size(); i++)
-         prgiAtomMediaNum.push_back(prgiObjectMediaNum[i]);
+         vctiAtomMediaNum.push_back(prgiObjectMediaNum[i]);
 
       prgiObjectMediaNum.clear();
    }
@@ -757,9 +757,9 @@ void CIO::writeUnformatPdb(const string& strPdbFile)
    
    for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
    {   
-      gXYZ    = prgapAtomPdb[iThisAtom].getPose();
-      fRadius = prgapAtomPdb[iThisAtom].getRadius();
-      fCharge = prgapAtomPdb[iThisAtom].getCharge();
+      gXYZ    = vctapAtomPdb[iThisAtom].getPose();
+      fRadius = vctapAtomPdb[iThisAtom].getRadius();
+      fCharge = vctapAtomPdb[iThisAtom].getCharge();
 
       ofPdbFileStream.write(reinterpret_cast<char*>(&gXYZ),    sizeof(gXYZ));
       ofPdbFileStream.write(reinterpret_cast<char*>(&fRadius), sizeof(fRadius));
@@ -774,7 +774,7 @@ void CIO::writeModifiedPdb(const string& strPdbFile, const int& iModPdbFormatOut
 {  
    cout << "atomic coordinates, charges and radii written to file " << strPdbFile << endl << endl;
         
-   if (0 == iAtomNum && 0 == iObjectNum) { CNoAtomObjectData warning(); return;} 
+   if (0 == iAtomNum && 0 == iObjectNum) { CNoAtomObjectData warning; return;}
 
    string strLine = "ATOM  ";
 
@@ -791,25 +791,22 @@ void CIO::writeModifiedPdb(const string& strPdbFile, const int& iModPdbFormatOut
          
          for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
          {         
-            ofPdbFileStream << setw(6)  << left << "ATOM  ";       // line(1:6)
-            ofPdbFileStream << setw(5)  << left << iThisAtom;      // line(7:11)
-            ofPdbFileStream << setw(15) << left << prgapAtomPdb[iThisAtom].getAtInf();
-																   // line(12:26)
-            ofPdbFileStream << "    ";                             // line(27:30)
+            ofPdbFileStream << setw(6)  << left  << "ATOM  ";                            // line(1:6)
+            ofPdbFileStream << setw(5)  << right << iThisAtom+1;                         // line(7:11)
+            ofPdbFileStream << setw(15) << left << vctapAtomPdb[iThisAtom].getAtInf();   // line(12:26)
+            ofPdbFileStream << "    ";                                                   // line(27:30)
 
-            SGrid<real> gXYZ = prgapAtomPdb[iThisAtom].getPose();
+            SGrid<real> gXYZ = vctapAtomPdb[iThisAtom].getPose();
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(8)  << left << gXYZ.nX;        // line(31:38) f8.3  
-            ofPdbFileStream << setw(8)  << left << gXYZ.nY;        // line(39:46) f8.3
-            ofPdbFileStream << setw(8)  << left << gXYZ.nZ;        // line(47:54) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nX;                             // line(31:38) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nY;                             // line(39:46) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nZ;                             // line(47:54) f8.3
             
             ofPdbFileStream << fixed << setprecision(2);
-            ofPdbFileStream << setw(6)  << left << prgapAtomPdb[iThisAtom].getRadius();
-                                                                   // line(55:60) f6.2
+            ofPdbFileStream << setw(6)  << right << vctapAtomPdb[iThisAtom].getRadius(); // line(55:60) f6.2
 
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(7)  << left << prgapAtomPdb[iThisAtom].getCharge();
-																  // line(61:67) f7.3
+            ofPdbFileStream << setw(7)  << right << vctapAtomPdb[iThisAtom].getCharge(); // line(61:67) f7.3
             ofPdbFileStream << "\n";                
          }
          
@@ -824,24 +821,21 @@ void CIO::writeModifiedPdb(const string& strPdbFile, const int& iModPdbFormatOut
          
          for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
          {         
-            ofPdbFileStream << setw(6)  << left << "ATOM  ";       // line(1:6)
+            ofPdbFileStream << setw(6)  << left  << "ATOM  ";                            // line(1:6)
             
-            ofPdbFileStream << setw(5)  << left << iThisAtom;      // line(7:11)
+            ofPdbFileStream << setw(5)  << right << iThisAtom+1;                         // line(7:11)
             
-            ofPdbFileStream << setw(19) << left << prgapAtomPdb[iThisAtom].getAtInf();
-																   // line(12:30)
+            ofPdbFileStream << setw(19) << left  << vctapAtomPdb[iThisAtom].getAtInf();  // line(12:30)
                         
-            SGrid<real> gXYZ = prgapAtomPdb[iThisAtom].getPose();
+            SGrid<real> gXYZ = vctapAtomPdb[iThisAtom].getPose();
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(8)  << left << gXYZ.nX;        // line(31:38) f8.3  
-            ofPdbFileStream << setw(8)  << left << gXYZ.nY;        // line(39:46) f8.3
-            ofPdbFileStream << setw(8)  << left << gXYZ.nZ;        // line(47:54) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nX;                             // line(31:38) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nY;                             // line(39:46) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nZ;                             // line(47:54) f8.3
             
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(7)  << left << prgapAtomPdb[iThisAtom].getRadius();
-																	// line(55:61) f7.3
-            ofPdbFileStream << setw(7)  << left << prgapAtomPdb[iThisAtom].getCharge();
-																	// line(62:68) f7.3
+            ofPdbFileStream << setw(7)  << right << vctapAtomPdb[iThisAtom].getCharge(); // line(55:61) f7.3
+            ofPdbFileStream << setw(7)  << right << vctapAtomPdb[iThisAtom].getRadius(); // line(62:68) f7.3
             ofPdbFileStream << "\n";                
          }
 
@@ -857,24 +851,21 @@ void CIO::writeModifiedPdb(const string& strPdbFile, const int& iModPdbFormatOut
          
          for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
          {         
-            ofPdbFileStream << setw(6)  << left << "ATOM  ";       // line(1:6)
+            ofPdbFileStream << setw(6)  << left  << "ATOM  ";                            // line(1:6)
             
-            ofPdbFileStream << setw(5)  << left << iThisAtom;      // line(7:11)
+            ofPdbFileStream << setw(5)  << right << iThisAtom+1;                         // line(7:11)
             
-            ofPdbFileStream << setw(19) << left 
-                            << prgapAtomPdb[iThisAtom].getAtInf(); // line(12:30)
+            ofPdbFileStream << setw(19) << left  << vctapAtomPdb[iThisAtom].getAtInf();  // line(12:30)
                         
-            SGrid<real> gXYZ = prgapAtomPdb[iThisAtom].getPose();
+            SGrid<real> gXYZ = vctapAtomPdb[iThisAtom].getPose();
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(8)  << left << gXYZ.nX;        // line(31:38) f8.3  
-            ofPdbFileStream << setw(8)  << left << gXYZ.nY;        // line(39:46) f8.3
-            ofPdbFileStream << setw(8)  << left << gXYZ.nZ;        // line(47:54) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nX;                             // line(31:38) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nY;                             // line(39:46) f8.3
+            ofPdbFileStream << setw(8)  << right << gXYZ.nZ;                             // line(47:54) f8.3
             
             ofPdbFileStream << fixed << setprecision(4);
-            ofPdbFileStream << setw(7)  << left << prgapAtomPdb[iThisAtom].getRadius();
-																   // line(55:61) f7.4
-            ofPdbFileStream << setw(8)  << left << prgapAtomPdb[iThisAtom].getCharge();
-																   // line(62:69) f8.4
+            ofPdbFileStream << setw(7)  << right << vctapAtomPdb[iThisAtom].getRadius(); // line(55:61) f7.4
+            ofPdbFileStream << setw(8)  << right << vctapAtomPdb[iThisAtom].getCharge(); // line(62:69) f8.4
             ofPdbFileStream << "\n";                
          }
 
@@ -883,33 +874,27 @@ void CIO::writeModifiedPdb(const string& strPdbFile, const int& iModPdbFormatOut
       case PQR4PDB: // pqr4 pdb
          ofPdbFileStream << "DELPHI PDB FILE" << endl;  
          ofPdbFileStream << "FORMAT = PQR" << endl;
-         ofPdbFileStream << "4 digits precison" << endl;
+         ofPdbFileStream << "4 digits precision" << endl;
          ofPdbFileStream << "HEADER output from qdiff" << endl;
          ofPdbFileStream << "HEADER atom charges in columns 55-62" << endl;
          ofPdbFileStream << "HEADER atom radii   in columns 63-69" << endl;
          
          for (integer iThisAtom = 0; iThisAtom < iAtomNum; iThisAtom++)
          {         
-            ofPdbFileStream << setw(6)  << left << "ATOM  ";       // line(1:6)
+            ofPdbFileStream << setw(6)  << left  << "ATOM  ";                               // line(1:6)
             
-            ofPdbFileStream << setw(5)  << left << iThisAtom;      // line(7:11)
+            ofPdbFileStream << setw(5)  << right << iThisAtom+1;                            // line(7:11)
             
-            ofPdbFileStream << setw(19) << left 
-                            << prgapAtomPdb[iThisAtom].getAtInf(); // line(12:30)
+            ofPdbFileStream << setw(19) << left  << vctapAtomPdb[iThisAtom].getAtInf();     // line(12:30)
                         
             ofPdbFileStream << fixed << setprecision(3);
-            ofPdbFileStream << setw(8)  << left << (prgapAtomPdb[iThisAtom].getPose()).nX;
-                                                                   // line(31:38) f8.3
-            ofPdbFileStream << setw(8)  << left << (prgapAtomPdb[iThisAtom].getPose()).nY;
-                                                                   // line(39:46) f8.3
-            ofPdbFileStream << setw(8)  << left << (prgapAtomPdb[iThisAtom].getPose()).nZ;
-                                                                   // line(47:54) f8.3
+            ofPdbFileStream << setw(8)  << right << (vctapAtomPdb[iThisAtom].getPose()).nX; // line(31:38) f8.3
+            ofPdbFileStream << setw(8)  << right << (vctapAtomPdb[iThisAtom].getPose()).nY; // line(39:46) f8.3
+            ofPdbFileStream << setw(8)  << right << (vctapAtomPdb[iThisAtom].getPose()).nZ; // line(47:54) f8.3
             
             ofPdbFileStream << fixed << setprecision(4);
-            ofPdbFileStream << setw(8)  << left << prgapAtomPdb[iThisAtom].getRadius();
-                                                                   // line(55:62) f7.4
-            ofPdbFileStream << setw(7)  << left << prgapAtomPdb[iThisAtom].getCharge();
-																   // line(63:69) f8.4
+            ofPdbFileStream << setw(8)  << right << vctapAtomPdb[iThisAtom].getCharge();    // line(55:62) f7.4
+            ofPdbFileStream << setw(7)  << right << vctapAtomPdb[iThisAtom].getRadius();    // line(63:69) f8.4
             ofPdbFileStream << "\n";                
          }
 
@@ -935,8 +920,8 @@ void CIO::printPDB()
    {
       cout << setw(4) << i+1 << " : ";
 
-      cout << setw(8)  << left << (prgapAtomPdb[i].getPose()).nX << "  "   << setw(8) << left << (prgapAtomPdb[i].getPose()).nY << "  "   << setw(8)  << left << (prgapAtomPdb[i].getPose()).nZ << " || ";
-           << setw(8)  << left << prgapAtomPdb[i].getRadius()    << " || " << setw(8) << left << prgapAtomPdb[i].getCharge()    << " || " << setw(15) << left << prgapAtomPdb[i].getAtInf()     << endl;
+      cout << setw(8)  << left << (vctapAtomPdb[i].getPose()).nX << "  "   << setw(8) << left << (vctapAtomPdb[i].getPose()).nY << "  "   << setw(8)  << left << (vctapAtomPdb[i].getPose()).nZ << " || ";
+           << setw(8)  << left << vctapAtomPdb[i].getRadius()    << " || " << setw(8) << left << vctapAtomPdb[i].getCharge()    << " || " << setw(15) << left << vctapAtomPdb[i].getAtInf()     << endl;
    }
 
    cout << "========================================================== \n";

@@ -38,7 +38,7 @@ void CDelphiFastSOR::initOddEvenItr(const int& forWhom)
          iadd1 = iz*iGrid*iGrid;
          for (ix = 1; ix < iGrid-1; ix++)
          {
-            iadd2 = (iadd1+ix)/2;
+            iadd2 = (iadd1+ix+2)/2;
             ibndy.push_back(iadd2);
          }
       }
@@ -50,7 +50,7 @@ void CDelphiFastSOR::initOddEvenItr(const int& forWhom)
    {
       for (ix = 1; ix < iGrid-1; ix++)
       {
-         iadd1 = ix + 1;
+         iadd1 = ix+2;
          for (iy = 1; iy < iGrid-1; iy++)
          {
             iadd2 = (iadd1+iy*iGrid)/2;
@@ -58,7 +58,7 @@ void CDelphiFastSOR::initOddEvenItr(const int& forWhom)
          }
       }
 
-      idif1z = iGrid*(iGrid-2)/2; idif2z = idif1z+1; inc1za = iGrid*iGrid/2+1; inc1zb = inc1za; inc2za = inc1zb; inc2zb = inc1za;
+      idif1z = iGrid*iGrid*(iGrid-2)/2; idif2z = idif1z+1; inc1za = iGrid*iGrid/2+1; inc1zb = inc1za; inc2za = inc1zb; inc2zb = inc1za;
    }
 
    /*
@@ -82,8 +82,16 @@ void CDelphiFastSOR::initOddEvenItr(const int& forWhom)
    for (ip = 0; ip < iHalfGridNum; ip++)
    {
       iq = ip*2;
-      phimap1.push_back(prgfPhiMap[iq]);
-      phimap2.push_back(prgfPhiMap[iq+1]);
+
+      if (prgfPhiMap.size() > iq)
+         phimap1.push_back(prgfPhiMap[iq]);
+      else
+         phimap1.push_back(0.0);
+
+      if (prgfPhiMap.size() > iq+1)
+         phimap2.push_back(prgfPhiMap[iq+1]);
+      else
+         phimap2.push_back(0.0);
    }
 
    /*

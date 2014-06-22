@@ -18,7 +18,7 @@
 #include "io.h"
 
 void CIO::writeEpsMap(const integer& iAtomNumIn,const integer& iObjectNumIn,const integer& iGrid,const real& fScale,
-                      const SGrid<real>& fgBoxCenter, const vector< SGrid<integer> >& prgigEpsMap,const vector<bool>& prgbDielecMap,
+                      const SGrid<real>& fgBoxCenter, const vector< SGrid<integer> >& vctigEpsMap,const vector<bool>& vctbDielecMap,
                       const string& strEpsFile)
 {
    iAtomNum = iAtomNumIn; iObjectNum = iObjectNumIn;
@@ -84,10 +84,10 @@ void CIO::writeEpsMap(const integer& iAtomNumIn,const integer& iObjectNumIn,cons
             j123.nX = 0; j123.nY = 0; j123.nZ = 0; k1 = 0;
 
             iw = iz*iGrid*iGrid + iy*iGrid + ix;
-            if (0 != prgigEpsMap[iw].nX/iEpsDim) j123.nX = ip2[ix];
-            if (0 != prgigEpsMap[iw].nY/iEpsDim) j123.nY = ip2[ix];
-            if (0 != prgigEpsMap[iw].nZ/iEpsDim) j123.nZ = ip2[ix];
-            if (prgbDielecMap[iw])               k1      = ip2[ix];
+            if (0 != vctigEpsMap[iw].nX/iEpsDim) j123.nX = ip2[ix];
+            if (0 != vctigEpsMap[iw].nY/iEpsDim) j123.nY = ip2[ix];
+            if (0 != vctigEpsMap[iw].nZ/iEpsDim) j123.nZ = ip2[ix];
+            if (vctbDielecMap[iw])               k1      = ip2[ix];
 
             neps[iz][iy][i-1] = neps[iz][iy][i-1] + j123;
             keps[iz][iy][i-1] = keps[iz][iy][i-1] + k1;

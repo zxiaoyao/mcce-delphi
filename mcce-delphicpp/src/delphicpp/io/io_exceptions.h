@@ -63,16 +63,6 @@ class CUnsupportedCRGDST : public CException
       }
 };
 
-class CUnknownRadius : public CException
-{
-   public:
-      CUnknownRadius(const string & strLine)
-      {
-         cerr << "NO RADIUS RECORD FOUND FOR \"" << strLine << "\" " << endl;
-         cerr << "\t PLEASE CHECK THE .siz FILE AND RETRY..." << endl;
-      }
-};
-
 class CNoAtomObjectData : public CException
 {
    public:
@@ -80,6 +70,16 @@ class CNoAtomObjectData : public CException
       {
          cerr << "# OF ATOMS = 0 AND # OF OBJECTS = 0" << endl;
          cerr << "\t EXITING DUE T NON-EXISTENCE OF ATOM FILE NOR OBJECT DATA" << endl;
+      }
+};
+
+class CUnknownRadius : public CWarning
+{
+   public:
+      CUnknownRadius(const string & strLine)
+      {
+         cerr << "NO RADIUS RECORD FOUND FOR \"" << strLine << "\" " << endl;
+         //cerr << "\t PLEASE CHECK THE .siz FILE AND RETRY..." << endl;
       }
 };
 
@@ -118,5 +118,15 @@ class CEmptyAtomsInFile : public CWarning
          cerr << "EMPTY ATOMS FOR MIDPOINT DETERMINATION IN FILE "  << strFile << " (ASSUMING ZERO OFFSETS)" << endl;
       }	   
 };	   
+
+class CReadSizeCrgFromPDB : public CWarning
+{
+   public:
+      CReadSizeCrgFromPDB()
+      {
+         cerr << "IN PARAMETER FILE, USER SPECIFIES TO READ PDB FILE IN MODIFIED FORMAT "
+              << "(CHARGE AND SIZE ARE READ FROM THE PDB FILE AS WELL) \n";
+      }
+};
 
 #endif // IO_EXCEPTIONS_H

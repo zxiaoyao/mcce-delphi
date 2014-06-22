@@ -1,5 +1,16 @@
-#ifndef CDELPHIDATAMARSHAL_H
-#define CDELPHIDATAMARSHAL_H
+/**
+ * @file delphi_datamarshal.h
+ * @brief class CDelphiDataMarshal
+ *
+ * @author Chuan Li, chuanli@clemson.edu
+ *
+ * This file declares the class CDelphiDataMarshal, which inherits from the interface class IDataMarshal.
+ * An object of CDelphiDataMarshal defines the variables to be contained in the implemented data container
+ * and must be paired with one object of CDelphiData.
+ */
+
+#ifndef CDELPHIDATAMARSHAL_H_
+#define CDELPHIDATAMARSHAL_H_
 
 #include <iostream>
 #include <string>
@@ -16,6 +27,14 @@
 
 using namespace std;
 
+/**
+ * class CDelphiDataMarshal is an implementation of the interface IDataMarshal. It provides not only
+ * a particular set of statements and functions allowed in the parameter file, but also the set of variables
+ * contained in the private map of class CDelphiDtata and their default values.
+ *
+ * @note This class must be paired with the class CDelphiData for practical uses. They together define
+ * the particular application, namely the delphicpp.
+ */
 class CDelphiDataMarshal:virtual public IDataMarshal
 {
    private:             
@@ -24,9 +43,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
       
       /**
        * Function to determine the presence of YES, TRUE, T, ON, FALSE, NO, F, and OFF.
-       * @param strArgument The argument where the yes or no are looked for
-       * @param strStatement The whole statement. Used to print it to stdout if there is an error.
-       * @return
+       *
+       * @param[in] strArgument The argument where the yes or no are looked for
+       * @param[in] strStatement The whole statement. Used to print it to stdout if there is an error.
+       * @return    1 if YES/TRUE/T/ON, 0 if FALSE/NO/F/OFF and -1 otherwise
        */
       int yesno(string strArgument, string strStatement);
 
@@ -34,26 +54,33 @@ class CDelphiDataMarshal:virtual public IDataMarshal
       virtual bool getFunction(string strLineNoSpace);   
         
       /**
-       * Function which removes brackets and non standard characters from the string to obtain the name of a file
-       * @param strArgument The argument where the filename is.
-       * @param iUnitPosit Position of the UNIT argument
-       * @param iFilePosit Position of the FILE argument
-       * @return
+       * Function which removes brackets and non standard characters from the string to obtain the file name
+       * or file format
+       *
+       * @param[in] strArg_UpperCase The argument in upper case.
+       * @param[in] strArg_fromInput The argument read from parameter file
+       * @return a string in upper case if it indicates the format of the file or a string of the file name
        */
-      string getFileName(string strArgument, int iUnitPosit, int iFilePosit);
+      string getFile_Name_or_Format(string strArg_UpperCase,string strArg_fromInput);
       
+      inline vector<string> getArguments(string strParameters);
+
       //----------------incl_delphimarshal_showParameters.cpp-----------------//
 
       /**
        * Function to show read-in parameters
+       *
+       * part of the outputs in the standard log file
        */
       void showParameters() const; 
        
    public:
-      // delphi valid statements shown in user manual version 5.1
-      // see the table of "index of statments and their shorthand" in the manual @ pp.19
+      /*
+       * delphi valid statements shown in user manual version 5.1
+       * see the table of "index of statements and their shorthand" in the manual @ pp.19
+       */
 
-      //----------------------- set by Statments ------------------------//
+      //----------------------- set by Statements ------------------------//
 
       /**
        * - Long form :
@@ -67,12 +94,13 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: iautocon
        * - Default : TRUE
        * - Description: \n
-       * A flag for automatic convergence. The program by default will automatically calculate the number of iterations
-       * needed to attain convergence. It is automatically set if no number of iteration is specified otherwise. \n
+       * A flag for automatic convergence. The program by default will automatically calculate the
+       * number of iterations needed to attain convergence. It is automatically set if no number of
+       * iteration is specified otherwise. \n
        *
        * \note
-       * When AUTOC = FLASE, either LINIT or NONIT must be set nonzero so that the solver knows which solver to
-       * use and how many iterations to take.
+       * When AUTOC = FLASE, either LINIT or NONIT must be set nonzero so that the solver knows which
+       * solver to use and how many iterations to take.
        */
       bool bAutoConverge;
 
@@ -87,22 +115,27 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: ibctyp
        * - Default : 2(=DIPOLAR)
        * - Description: \n
-       * An integer flag specifying the type of boundary condition imposed on the edge of the lattice. Allowed options: \n\n
+       * An integer flag specifying the type of boundary condition imposed on the edge of the lattice.
+       * Allowed options: \n\n
        * (1) potential is zero. \n\n
-       * (2) dipolar. The boundary potentials are approximated by the Debye-Huckel potential of the equivalent dipole to
-       *     the molecular charge distribution. Phi is the potential estimated at a given lattice boundary point, q+ (q-)
-       *     is the sum of all positive (negative) charges, and r+(r-) is distance from the point to the center of positive
-       *     (negative) charge, lambda is the Debye length. \n\n
-       * (3) focusing. The potential map from a previous calculation is read in unit 18, and values for the potential at
-       *     the lattice edge are interpolated from this map- clearly the first map should have been generated with a coarser
-       *     grid (greater distance between lattice points) and positioned such that current lattice lies completely within
-       *     old lattice or the program will protest. For focusing boundary conditions, the program reads in a potential map
-       *     from a previous run, and compares the scale of the focusing map with that for the current run. If they are the
-       *     same, it assumes that this is a continuation of a previous run, and iteration of the potentials contained in the
-       *     previous potential map is continued. If the scale is not the same, it checks to ensure that the new lattice lies
+       * (2) dipolar. The boundary potentials are approximated by the Debye-Huckel potential of the
+       *     equivalent dipole to the molecular charge distribution. Phi is the potential estimated
+       *     at a given lattice boundary point, q+ (q-) is the sum of all positive (negative) charges,
+       *     and r+(r-) is distance from the point to the center of positive (negative) charge, lambda
+       *     is the Debye length. \n\n
+       * (3) focusing. The potential map from a previous calculation is read in unit 18, and values
+       *     for the potential at the lattice edge are interpolated from this map- clearly the first
+       *     map should have been generated with a coarser grid (greater distance between lattice
+       *     points) and positioned such that current lattice lies completely within old lattice or
+       *     the program will protest. For focusing boundary conditions, the program reads in a
+       *     potential map from a previous run, and compares the scale of the focusing map with that
+       *     for the current run. If they are the same, it assumes that this is a continuation of a
+       *     previous run, and iteration of the potentials contained in the previous potential map is
+       *     continued. If the scale is not the same, it checks to ensure that the new lattice lies
        *     completely within the old lattice before interpolating the boundary conditions. \n\n
-       * (4) coulombic. They are approximated by the sum of Debye-Huckel potentials of all the charges. qi is the i'th charge,
-       *     and ri is the distance from the lattice boundary point to the charge.
+       * (4) coulombic. They are approximated by the sum of Debye-Huckel potentials of all the
+       *     charges. qi is the i'th charge, and ri is the distance from the lattice boundary point
+       *     to the charge.
        */
       int iBndyType;
 
@@ -118,32 +151,39 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: perfil
        * - Default : 80.0
        * - Description: \n
-       * A percentage of the object longest linear dimension to the lattice linear dimension. This will affect
-       * the scale of the lattice (grids/angstrom). The percentage fill of the lattice will depend on the application. A large
-       * percentage fill will provide a more detailed mapping of the molecular shape onto the lattice. A perfil less than 20%
-       * is not usually necessary or advisable. A very large filling will bring the dielectric boundary of the molecule closer
-       * to the lattice edge. This will cause larger errors arising from the boundary potential estimates, which are set to zero
-       * or approximated by coulombic/Debye-Huckel-type functions using a uniform solvent dielectric. The error will be minimal
-       * for higher salt concentrations or weakly charged molecules. Smaller percentages will increase the accuracy of the boundary
-       * conditions, but result in a coarser representation of the molecule. Higher resolution can be achieved more efficiently
-       * using focusing. \n
+       * A percentage of the object longest linear dimension to the lattice linear dimension. This
+       * will affect the scale of the lattice (grids/angstrom). The percentage fill of the lattice
+       * will depend on the application. A large percentage fill will provide a more detailed mapping
+       * of the molecular shape onto the lattice. A perfil less than 20% is not usually necessary or
+       * advisable. A very large filling will bring the dielectric boundary of the molecule closer
+       * to the lattice edge. This will cause larger errors arising from the boundary potential
+       * estimates, which are set to zero or approximated by coulombic/Debye-Huckel-type functions
+       * using a uniform solvent dielectric. The error will be minimal for higher salt concentrations
+       * or weakly charged molecules. Smaller percentages will increase the accuracy of the boundary
+       * conditions, but result in a coarser representation of the molecule. Higher resolution can be
+       * achieved more efficiently using focusing. \n
        *
        * \note
-       * If the molecule is not centered in the origin of the coordinate system, the perfil reflects the percentage of the system
-       * that is actually contained in the lattice. For example, if the maximum dimension of a molecule is 100Å, there is no
-       * offset and perfil is 50%, then the box side will be 200Å; but if there is an offset of 20Å in the maximum dimension
-       * direction, then the box side will be 280Å. \n\n
-       * Scale, grid size and perfil are not independent variables so they cannot all be assigned simultaneously in a single run.
-       * In any quantitative calculation, the largest possible scale should be used, preferably greater than 2 grids/angstrom.
-       * Without focusing, a perfil of around 50% or 60% is reasonable. For example, if scale is set to 2 and perfil is set to 50,
-       * the grid size is calculated automatically given the size of the structure. For larger molecules this could mean a
-       * prohibitively large memory requirement. In this case a compromise must be found or focusing could be used. Regardless of
-       * grid scale, calculations should be repeated at different scales to assess the size of lattice resolution errors. \n\n
-       * A good approach to the calculation could start with a small percentage, say 20%, using Debye-Huckel boundary conditions,
-       * and then focus in to say 90% or more, in one (or two) stages, using focusing boundary conditions for the second (and
-       * third) runs. It is not necessary for the molecule to lie completely within the grid although then the potential boundary
-       * conditions must be generated by focusing. However when calculating solvation energies with box fills of > 100% remember
-       * that unexpected results may be obtained since parts of the surface, (and perhaps some charges) are not included in the grid.
+       * If the molecule is not centered in the origin of the coordinate system, the perfil reflects
+       * the percentage of the system that is actually contained in the lattice. For example, if the
+       * maximum dimension of a molecule is 100Å, there is no offset and perfil is 50%, then the box
+       * side will be 200Å; but if there is an offset of 20Å in the maximum dimension direction, then
+       * the box side will be 280Å. \n\n
+       * Scale, grid size and perfil are not independent variables so they cannot all be assigned
+       * simultaneously in a single run. In any quantitative calculation, the largest possible scale
+       * should be used, preferably greater than 2 grids/angstrom. Without focusing, a perfil of
+       * around 50% or 60% is reasonable. For example, if scale is set to 2 and perfil is set to 50,
+       * the grid size is calculated automatically given the size of the structure. For larger
+       * molecules this could mean a prohibitively large memory requirement. In this case a compromise
+       * must be found or focusing could be used. Regardless of grid scale, calculations should be
+       * repeated at different scales to assess the size of lattice resolution errors. \n\n
+       * A good approach to the calculation could start with a small percentage, say 20%, using
+       * Debye-Huckel boundary conditions, and then focus in to say 90% or more, in one (or two)
+       * stages, using focusing boundary conditions for the second (and third) runs. It is not
+       * necessary for the molecule to lie completely within the grid although then the potential
+       * boundary conditions must be generated by focusing. However when calculating solvation
+       * energies with box fills of > 100% remember that unexpected results may be obtained since
+       * parts of the surface, (and perhaps some charges) are not included in the grid.
        */
       real fPercentageFill;
 
@@ -157,8 +197,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: icheb
        * - Default : FALSE
        * - Description: \n
-       * A flag, that if it is true the relaxation parameter for linear convergence process is set equal to 1
-       * (usually not modified from default).
+       * A flag, that if it is true the relaxation parameter for linear convergence process is set
+       * equal to 1 (usually not modified from default).
        */
       bool bFixedRelaxParam;
 
@@ -172,7 +212,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: isrf
        * - Default : FALSE
        * - Description: \n
-       * A flag, that when set to true, outputs a GRASP viewable surface file in the file named grasp.srf.
+       * A flag, that when set to true, outputs a GRASP viewable surface file in the file named
+       * grasp.srf.
        */
       bool bOutGraspSurf;
 
@@ -186,8 +227,9 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: icon2
        * - Default : 1
        * - Description: \n
-       * A flag that determines the convergence fraction. It decides what fraction of grid points are used in assessing
-       * convergence (1=all, 2=half, 5=fifth etc). By default it equals 1 (usually not modified from default).
+       * A flag that determines the convergence fraction. It decides what fraction of grid points are
+       * used in assessing convergence (1=all, 2=half, 5=fifth etc). By default it equals 1 (usually
+       * not modified from default).
        */
       int iConvergeFract;
 
@@ -201,9 +243,9 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: icon1
        * - Default : 10
        * - Description: \n
-       * A flag that determines at what iteration interval convergence is checked, by default it equals 10.(usually not modified
-       * from default) The idea behind this parameter is to allow convergence to be checked less frequently to reduce the amount
-       * of time spent.
+       * A flag that determines at what iteration interval convergence is checked, by default it
+       * equals 10.(usually not modified from default) The idea behind this parameter is to allow
+       * convergence to be checked less frequently to reduce the amount of time spent.
        */
       int iIterateInterval;
 
@@ -217,7 +259,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: iexun
        * - Default : FALSE
        * - Description: \n
-       * A flag to terminate the program if uniform dielectric is present (INDI=EXDI). Usually not modified.
+       * A flag to terminate the program if uniform dielectric is present (INDI=EXDI). Usually not
+       * modified.
        */
       bool bExitUniformDielect;
 
@@ -232,9 +275,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: repsout
        * - Default : 80.0
        * - Description: \n
-       * The external (solution) dielectric constant. A value of EXDI=1 corresponds to the molecule in vacuum, EXDI=80 to the
-       * molecule in water. Depending on the application runs with EXDI equal to either of these values may be used to represent
-       * different states in a thermodynamic cycle.
+       * The external (solution) dielectric constant. A value of EXDI=1 corresponds to the molecule
+       * in vacuum, EXDI=80 to the molecule in water. Depending on the application runs with EXDI
+       * equal to either of these values may be used to represent different states in a thermodynamic
+       * cycle.
        */
       real fExDielec;
 
@@ -249,12 +293,14 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: isph
        * - Default : FALSE
        * - Description: \n
-       * A flag, normally set to false indicating a linear cubic interpolation of charges to grid points; set to true this turns
-       * on a spherical charge interpolation. If an atomic charge does not lie exactly on a grid point, then it must somehow be
-       * distributed onto the grid points. If this flag is set false, the standard algorithm is used which distributes a charge to
-       * the nearest 8 grid points (quick and simple, see the Proteins paper of Klapper et al.). If this flag is set true, then an
-       * algorithm is used which gives a more spherically symmetric charge distribution, although the charge is now spread over a
-       * wider region of space. For certain cases this gives higher accuracy for potentials less than 3 grid units from a charge
+       * A flag, normally set to false indicating a linear cubic interpolation of charges to grid
+       * points; set to true this turns on a spherical charge interpolation. If an atomic charge does
+       * not lie exactly on a grid point, then it must somehow be distributed onto the grid points.
+       * If this flag is set false, the standard algorithm is used which distributes a charge to
+       * the nearest 8 grid points (quick and simple, see the Proteins paper of Klapper et al.). If
+       * this flag is set true, then an algorithm is used which gives a more spherically symmetric
+       * charge distribution, although the charge is now spread over a wider region of space. For
+       * certain cases this gives higher accuracy for potentials less than 3 grid units from a charge
        * (see Gilson et al. J.Comp. Chem paper), although this point has not been exhaustively explored.
        */
       bool bCrgInterplateType;
@@ -269,8 +315,9 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: gten
        * - Default : 0.0
        * - Description: \n
-       * The value for grid convergence. When set, the criterion used to stop the iterative process is the difference on values of
-       * grid energy, this option might slow down the calculation a bit, but provides a very strong criterion.
+       * The value for grid convergence. When set, the criterion used to stop the iterative process is
+       * the difference on values of grid energy, this option might slow down the calculation a bit,
+       * but provides a very strong criterion.
        */
       real fGridConverge;
 
@@ -284,11 +331,13 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: igrid
        * - Default : 0.0
        * - Description: \n
-       * An odd integer number of points per side of the cubic lattice, min=5, max=571 (=NGRID, platform dependent). A larger grid
-       * size will in general mean a better resolution representation of the molecule on the lattice. This will results in more
-       * accurate potentials, but will require more time. The number of iterations required to reach a certain convergence will
-       * increase approximately linearly with parameter GS. Since the time per iteration will go up as the cube of this parameter
-       * the amount of calculation will thus increase at about the fourth power of GS.
+       * An odd integer number of points per side of the cubic lattice, min=5, max=571 (=NGRID,
+       * platform dependent). A larger grid size will in general mean a better resolution
+       * representation of the molecule on the lattice. This will results in more accurate potentials,
+       * but will require more time. The number of iterations required to reach a certain convergence
+       * will increase approximately linearly with parameter GS. Since the time per iteration will go
+       * up as the cube of this parameter the amount of calculation will thus increase at about the
+       * fourth power of GS.
        */
       integer iGrid;
 
@@ -302,17 +351,21 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: repsin
        * - Default : 2.0
        * - Description: \n
-       * The internal (molecules) dielectric constant. It is used only in single molecule systems for compatibility with the old
-       * version. A value of INDI=1 corresponds to a molecule with no polarizability- the state assumed in most molecular mechanics
-       * applications. INDI=2 represents a molecule with only electronic polarizability (i.e. assuming no reorientation of fixed
-       * dipoles, peptide bonds, etc). A value of 2 is based on the experimentally observed high frequency dielectric behavior of
-       * essentially all organic materials. INDI=4-6 represents a process where some small reorganization of molecular dipoles
-       * occurs which is not represented explicitly (for example in modeling the effects of site directed mutagenesis experiments,
-       * when the structure of the wild type, but not mutant protein is known). According to M.K. Gilson and B. Honig, Biopolymers,
-       * 25:2097 (1986) for instance, materials having similar dipole density, dipole moment and flexibility as globular proteins
-       * have a dielectric between 4 and 6. In modeling any process where large reorientations of dipoles, or large conformational
-       * change occurs, i.e. upon folding or denaturation, using a simple dielectric constant for the molecule would be
-       * inappropriate, and the change in conformation should be modeled explicitly.
+       * The internal (molecules) dielectric constant. It is used only in single molecule systems for
+       * compatibility with the old version. A value of INDI=1 corresponds to a molecule with no
+       * polarizability- the state assumed in most molecular mechanics applications. INDI=2 represents
+       * a molecule with only electronic polarizability (i.e. assuming no reorientation of fixed
+       * dipoles, peptide bonds, etc). A value of 2 is based on the experimentally observed high
+       * frequency dielectric behavior of essentially all organic materials. INDI=4-6 represents a
+       * process where some small reorganization of molecular dipoles occurs which is not represented
+       * explicitly (for example in modeling the effects of site directed mutagenesis experiments,
+       * when the structure of the wild type, but not mutant protein is known). According to M.K.
+       * Gilson and B. Honig, Biopolymers, 25:2097 (1986) for instance, materials having similar
+       * dipole density, dipole moment and flexibility as globular proteins have a dielectric between
+       * 4 and 6. In modeling any process where large reorientations of dipoles, or large
+       * conformational change occurs, i.e. upon folding or denaturation, using a simple dielectric
+       * constant for the molecule would be inappropriate, and the change in conformation should be
+       * modeled explicitly.
        */
       real fInDielec;
 
@@ -328,10 +381,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: conc
        * - Default : 0.0/0.0
        * - Description: \n
-       * The concentration of first and second kind of salt,(moles/liter). In the case of a single 1:1 salt, it coincides with
-       * ionic strength.
+       * The concentration of first and second kind of salt,(moles/liter). In the case of a single
+       * 1:1 salt, it coincides with ionic strength.
        */
-      vector<real> rgfSalt;
+      vector<real> vctfSalt;
 
       /**
        * - Long form :
@@ -343,14 +396,17 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: exrad
        * - Default : 2.0
        * - Description: \n
-       * The thickness of the ion exclusion layer around molecule (Å). IONRAD, in combination with the atomic van der Waals radii
-       * in the siz file, determines the regions of space, and hence the lattice points, which are inaccessible to solvent ions.
-       * Suggested values is IONRAD = 2.0 for sodium chloride. For the purpose of DelPhi, a solvent ion is considered as a point
-       * charge, which can approach no closer than its ionic radius, IONRAD, to any atoms van der Waals surface. The ion excluded
-       * volume is thus bounded by the contact surface, which is the locus of the ion centres when in van der Waals contact with
-       * any accessible atom of the molecule. A zero value for IONRAD will just yield the van der Waals surface. A non zero value
-       * of IONRAD will thus introduce a Stern, or ion exclusion layer, around the molecule where the solvent ion concentration
-       * will be zero and whose dielectric constant is that of the solvent, EXDI.
+       * The thickness of the ion exclusion layer around molecule (Å). IONRAD, in combination with
+       * the atomic van der Waals radii in the siz file, determines the regions of space, and hence
+       * the lattice points, which are inaccessible to solvent ions. Suggested values is IONRAD = 2.0
+       * for sodium chloride. For the purpose of DelPhi, a solvent ion is considered as a point
+       * charge, which can approach no closer than its ionic radius, IONRAD, to any atoms van der
+       * Waals surface. The ion excluded volume is thus bounded by the contact surface, which is the
+       * locus of the ion centres when in van der Waals contact with any accessible atom of the
+       * molecule. A zero value for IONRAD will just yield the van der Waals surface. A non zero value
+       * of IONRAD will thus introduce a Stern, or ion exclusion layer, around the molecule where the
+       * solvent ion concentration will be zero and whose dielectric constant is that of the solvent,
+       * EXDI.
        */
       real fIonRadius;
 
@@ -366,18 +422,21 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: nlit
        * - Default : 0
        * - Description: \n
-       * An integer number (> 3) of iterations with linear equation. The convergence behavior of the finite difference procedure
-       * is reported in the log file as both the mean and maximum absolute change in potential at the grid points between
-       * successive iterations. The latter is probably more important since it puts an upper bound on how much the potential is
-       * changing at the grid points. It is suggested that sufficient iterations be performed to give a final maximum change of
-       * less than 0.001 kT/e. The number of iterations per se is not important, as long as its sufficient to give the required
-       * convergence. The convergence behavior can also be judged from the slope of the semi-log plot of the mean and max changes
-       * given in the log file. LINIT is best determined by experience, since the convergence rate depends on several factors. Start
-       * with say 100 iterations, and then increase the number of iterations until sufficient. Note that a run can be restarted by
-       * using focusing boundary conditions with exactly the same SCALE, PERFIL and ACENTER values (see note 5). Some guidelines
-       * are: The number of iterations needed will increase with grid size (GSIZE). It will decrease with decreasing PERFIL, since
-       * the potentials converge more rapidly in the solvent. It will decrease with increasing ionic strength. The number is fairly
-       * insensitive to the size and number of charges on the molecule.
+       * An integer number (> 3) of iterations with linear equation. The convergence behavior of the
+       * finite difference procedure is reported in the log file as both the mean and maximum absolute
+       * change in potential at the grid points between successive iterations. The latter is probably
+       * more important since it puts an upper bound on how much the potential is changing at the grid
+       * points. It is suggested that sufficient iterations be performed to give a final maximum
+       * change of less than 0.001 kT/e. The number of iterations per se is not important, as long as
+       * its sufficient to give the required convergence. The convergence behavior can also be judged
+       * from the slope of the semi-log plot of the mean and max changes given in the log file. LINIT
+       * is best determined by experience, since the convergence rate depends on several factors.
+       * Start with say 100 iterations, and then increase the number of iterations until sufficient.
+       * Note that a run can be restarted by using focusing boundary conditions with exactly the same
+       * SCALE, PERFIL and ACENTER values (see note 5). Some guidelines are: The number of iterations
+       * needed will increase with grid size (GSIZE). It will decrease with decreasing PERFIL, since
+       * the potentials converge more rapidly in the solvent. It will decrease with increasing ionic
+       * strength. The number is fairly insensitive to the size and number of charges on the molecule.
        */
       int iLinIterateNum;
 
@@ -434,7 +493,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: nnit
        * - Default : 0
        * - Description: \n
-       * An integer number (> = 0) of non-linear iterations. If linear PB equation only is required, NONIT is set to be 0.
+       * An integer number (> = 0) of non-linear iterations. If linear PB equation only is required,
+       * NONIT is set to be 0.
        */
       int iNonIterateNum;
 
@@ -448,20 +508,23 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: iper
        * - Default : FALSE/FALSE/FALSE
        * - Description: \n
-       * They are the three logical flags (t/f) for periodic boundary conditions for the x,y,z edges of the lattice respectively. Note that
-       * periodic boundary conditions will override other boundary conditions on edges to which they are applied. Periodic boundary
-       * conditions can be applied in one or more of the x, y or z directions. When applied, the potential at each periodic lattice
-       * boundary point is iterated by supplying its missing neighbor(s) from the corresponding point on the opposite edge of the
-       * lattice. This can be used for example to model an infinite length of DNA. Assume that the helical axis of the DNA in the
-       * pdb file is aligned along the Z axis. The periodic boundary flags are set to false, false, true, and the percent fill of
-       * the box, PERFIL, is adjusted so that an integral number of turns just fill the box in the Z direction. Normal boundary
-       * conditions are applied to the X,Y boundaries. By setting two, or three of the boundary flags to true, one can simulate 2
-       * dimensional or 3 dimensional cubic lattices of molecules.
+       * They are the three logical flags (t/f) for periodic boundary conditions for the x,y,z edges
+       * of the lattice respectively. Note that periodic boundary conditions will override other
+       * boundary conditions on edges to which they are applied. Periodic boundary conditions can be
+       * applied in one or more of the x, y or z directions. When applied, the potential at each
+       * periodic lattice boundary point is iterated by supplying its missing neighbor(s) from the
+       * corresponding point on the opposite edge of the lattice. This can be used for example to
+       * model an infinite length of DNA. Assume that the helical axis of the DNA in the pdb file is
+       * aligned along the Z axis. The periodic boundary flags are set to false, false, true, and the
+       * percent fill of the box, PERFIL, is adjusted so that an integral number of turns just fill
+       * the box in the Z direction. Normal boundary conditions are applied to the X,Y boundaries.
+       * By setting two, or three of the boundary flags to true, one can simulate 2 * dimensional
+       * or 3 dimensional cubic lattices of molecules.
        *
        * \note
        * iper(1:3) are for periodic boundary conditions on the x,y,z edges and iper(4:6) are for corresponding voltage drop.
        */
-      vector<bool> rgbPeriodicBndy;
+      vector<bool> vctbPeriodicBndy;
 
       /**
        * - Long form :
@@ -473,11 +536,12 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: iconc
        * - Default : FALSE
        * - Description: \n
-       * A flag, that maps charge density in a .phi file, with a procedure that is equivalent to the one that saves the potential
-       * map. phicon=f produces standard potential output in kT/e (approximately equal to 25.6 mV at 25oC, or to 0.593 kcal/mole of
-       * charge). phicon=t will give net solvent ion concentration output in M/l, where for every lattice point inside the molecule
-       * the concentration is 0, and the outside concentration is obtained from: (-ionic strength*2*sinh(potential)) or its
-       * linearized version if linear PBE is used.
+       * A flag, that maps charge density in a .phi file, with a procedure that is equivalent to the
+       * one that saves the potential map. phicon=f produces standard potential output in kT/e
+       * (approximately equal to 25.6 mV at 25oC, or to 0.593 kcal/mole of charge). phicon=t will
+       * give net solvent ion concentration output in M/l, where for every lattice point inside
+       * the molecule the concentration is 0, and the outside concentration is obtained from:
+       * (-ionic strength*2*sinh(potential)) or its linearized version if linear PBE is used.
        */
       bool bOutCrgDensity;
 
@@ -491,17 +555,20 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: radprb
        * - Default : 1.4/-1.0
        * - Description: \n
-       * A radius (Å) of probe molecule that will define solvent accessible surface in the Lee and Richard's sense
-       * (relative to the part of the molecule which is internal to an object). In combination
-       * with the atomic van der Waals radii in the siz file, PRBRAD determines the regions of space, and hence the lattice points,
-       * that are inaccessible to solvent molecules (water). Suggested value is PRBRAD 1.4 for water. To understand how these
-       * parameters work, you should be familiar with the concepts of contact and solvent accessible surface, as discussed by Lee
-       * and Richards, and by Mike Connolly. For the purpose of DelPhi, any region of space that is accessible to any part of a
-       * solvent (water) molecule is considered as having a dielectric of EXDI. A value of zero for PRBRAD used with a siz file
-       * containing the standard van der Waals radii values will assign any region of space not inside any atom's van der Waals
-       * sphere to the solvent. For more details, please refer to Rocchia et al. J. Comp. Chem. paper.
+       * A radius (Å) of probe molecule that will define solvent accessible surface in the Lee and
+       * Richard's sense (relative to the part of the molecule which is internal to an object). In
+       * combination with the atomic van der Waals radii in the siz file, PRBRAD determines the
+       * regions of space, and hence the lattice points, that are inaccessible to solvent molecules
+       * (water). Suggested value is PRBRAD 1.4 for water. To understand how these parameters work,
+       * you should be familiar with the concepts of contact and solvent accessible surface, as
+       * discussed by Lee and Richards, and by Mike Connolly. For the purpose of DelPhi, any region
+       * of space that is accessible to any part of a solvent (water) molecule is considered as
+       * having a dielectric of EXDI. A value of zero for PRBRAD used with a siz file containing the
+       * standard van der Waals radii values will assign any region of space not inside any atom's
+       * van der Waals sphere to the solvent. For more details, please refer to Rocchia et al. J.
+       * Comp. Chem. paper.
        */
-      vector<real> rgfProbeRadius;
+      vector<real> vctfProbeRadius;
 
       /**
        * - Long form :
@@ -513,7 +580,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: uspec
        * - Default : 0.9975
        * - Description: \n
-       * The externally assigned value for spectral radius (define spectral radius) (usually not modified from default).
+       * The externally assigned value for spectral radius (define spectral radius) (usually not
+       * modified from default).
        */
       real fSpectralRadius;
 
@@ -569,9 +637,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: isolv
        * - Default : TRUE
        * - Description: \n
-       * A flag, which controls the Poisson-Boltzmann solver. Normally DelPhi will invoke the Poisson-Boltzmann solver but if you
-       * are interested in using DelPhi for other things such as calculating surface area or producing a GRASP viewable surface
-       * file, you can turn off the solver using this option.
+       * A flag, which controls the Poisson-Boltzmann solver. Normally DelPhi will invoke the
+       * Poisson-Boltzmann solver but if you are interested in using DelPhi for other things such as
+       * calculating surface area or producing a GRASP viewable surface file, you can turn off the
+       * solver using this option.
        */
       bool bSolvePB;
 
@@ -587,7 +656,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * A number > 0, valence of positive (negative) ion constituting salt one.
        */
-      vector<int> rgiValence1;
+      vector<int> vctiValence1;
 
       /**
        * - Long form :
@@ -601,7 +670,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * A number > 0, valence of positive (negative) ion constituting salt two.
        */
-      vector<int> rgiValence2;
+      vector<int> vctiValence2;
 
       /**
        * - Long form :
@@ -641,9 +710,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: vdrop
        * - Default : 0.0/0.0/0.0
        * - Description: \n
-       * vdrop%x = “VDROPX”; iper(4)=.true. vdrop%y = “VDROPY”; iper(5)=.true. vdrop%z = “VDROPZ” ; iper(6)=.true.
+       * vdrop%x = “VDROPX”; iper(4)=.true. vdrop%y = “VDROPY”; iper(5)=.true. vdrop%z = “VDROPZ”;
+       * iper(6)=.true.
        */
-      SGrid<real> fgPotentialDrop;
+      SGrid<real> gfPotentialDrop;
 
       /**
        * - F95 var.: iuspec
@@ -677,12 +747,14 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: siznam
        * - Default : fort.11
        * - Description: \n
-       * Default extension siz. List describing the van der Waals radii to be assigned to each atom/residue pdb record type. A
-       * sample file is provided together with the code. Note the atom and residue fields ignore case and leading blanks. The
-       * residue field may be left blank (wild card), causing a match with the given atom type of any residue. ONLY if the residue
-       * field is left blank, the LAST 5 characters of the atom record may be left blank. In this case all atom types beginning with
-       * the letter in column 1 will be matched. Records of greater specificity override those of less specificity. Beware of
-       * ambiguities like calcium (ca) and alpha carbon! All atoms of an input pdb file must be assigned a radius through the siz
+       * Default extension siz. List describing the van der Waals radii to be assigned to each
+       * atom/residue pdb record type. A sample file is provided together with the code. Note the
+       * atom and residue fields ignore case and leading blanks. The residue field may be left blank
+       * (wild card), causing a match with the given atom type of any residue. ONLY if the residue
+       * field is left blank, the LAST 5 characters of the atom record may be left blank. In this
+       * case all atom types beginning with the letter in column 1 will be matched. Records of greater
+       * specificity override those of less specificity. Beware of ambiguities like calcium (ca) and
+       * alpha carbon! All atoms of an input pdb file must be assigned a radius through the siz
        * file, even if it is 0, or the output will be flagged with a warning.
        */
       string strSizeFile;
@@ -692,10 +764,11 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: crgnam
        * - Default : fort.12
        * - Description: \n
-       * Default extension crg. List of the atomic charges to be assigned to each atom/residue/number/chain pdb record type. A
-       * sample file is provided together with the code. The ascii fields for atom, residue, number and chain ignore case and
-       * leading blanks. Any field except the atom name may be left blank and will be treated as a wild card. Records of greater
-       * specificity override those of lesser specificity as for the siz file above.
+       * Default extension crg. List of the atomic charges to be assigned to each
+       * atom/residue/number/chain pdb record type. A sample file is provided together with the code.
+       * The ascii fields for atom, residue, number and chain ignore case and leading blanks. Any
+       * field except the atom name may be left blank and will be treated as a wild card. Records of
+       * greater specificity override those of lesser specificity as for the siz file above.
        */
       string strCrgFile;
 
@@ -704,15 +777,20 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: pdbnam
        * - Default : fort.13
        * - Description: \n
-       * A Brookhaven protein data bank standard format file containing atom labels and coordinates, or a modified OBJECTFILE. Only
-       * records starting with ATOM or HETATM are read; if objects or multi-dielectric option are used, also the keywords MEDIA,
-       * OBJECT, CRGDST, DATA are also read. The default extension is pdb. The precise format is essential; using Fortran syntax,
-       * (6A1,I5,1X,A4,A1,A3,1X,A1,I4,A1,3X,3F8.3,2F6.2,1X,I3) is used for the atom record. From left to right, the fields contain
-       * 'ATOM--' or 'HETATM' atom serial number, atom name, alternate location indicator, residue name, chain identifier, residue
-       * sequence number, residue insertion code, x, y, and z coordinates, occupancy, temperature factor, footnote number. Note that
-       * the program treats the residue number as an ascii string, not as an integer. As a warning to the user, there are many
-       * variations, and even outright errors found in the format of pdb files obtained from the web. It would be wise to
-       * double-check the contents of a file to save any heartache.
+       * A Brookhaven protein data bank standard format file containing atom labels and coordinates,
+       * or a modified OBJECTFILE. Only records starting with ATOM or HETATM are read; if objects or
+       * multi-dielectric option are used, also the keywords MEDIA, OBJECT, CRGDST, DATA are also
+       * read. The default extension is pdb. The precise format is essential; using Fortran syntax,
+       * (6A1,I5,1X,A4,A1,A3,1X,A1,I4,A1,3X,3F8.3,2F6.2,1X,I3) is used for the atom record. From left
+       * to right, the fields contain 'ATOM--' or 'HETATM' atom serial number, atom name, alternate
+       * location indicator, residue name, chain identifier, residue sequence number, residue
+       * insertion code, x, y, and z coordinates, occupancy, temperature factor, footnote number.
+       *
+       * \note
+       * The program treats the residue number as an ascii string, not as an integer. As a warning
+       * to the user, there are many variations, and even outright errors found in the format of pdb
+       * files obtained from the web. It would be wise to double-check the contents of a file to
+       * save any heartache.
        */
       string strPdbFile;
 
@@ -721,18 +799,21 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: phinam
        * - Default : fort.14
        * - Description: \n
-       * If the flag IBIOS (BIOSYM) is false, then output is in DELPHI format, default extension phi. The output can be either a
-       * potential map or a concentration map, with format same as for unit 18 above. The output phi map has the same scale as used
-       * in the calculation (i.e, variable) unless format=grasp is specified. The grasp-style phi map format will always interpolate
-       * to a 65 x 65 x 65 grid for use in Grasp (or other hardwired display/analysis programs). If the flag IBIOS (BIOSYM) is true,
-       * then output is in INSIGHT format, default extension ins. This is an unformatted (binary) file. As it was explained above,
-       * the format is provided only for completeness in case that one wants to visualize the file with different than Insight
+       * If the flag IBIOS (BIOSYM) is false, then output is in DELPHI format, default extension phi.
+       * The output can be either a potential map or a concentration map, with format same as for unit
+       * 18 above. The output phi map has the same scale as used in the calculation (i.e, variable)
+       * unless format=grasp is specified. The grasp-style phi map format will always interpolate
+       * to a 65 x 65 x 65 grid for use in Grasp (or other hardwired display/analysis programs). If
+       * the flag IBIOS (BIOSYM) is true, then output is in INSIGHT format, default extension ins.
+       * This is an unformatted (binary) file. As it was explained above, the format is provided only
+       * for completeness in case that one wants to visualize the file with different than Insight
        * software.
        *
        * \note
-       * Note that for grid sizes less than 65, INSIGHT format files will occupy less disk space than the corresponding DELPHI
-       * files. ins files are designed as input to a Biosym Corp. stand alone utility called CONTOUR, supplied with INSIGHT Version
-       * 2.4. This program will produce contour files for display with INSIGHT.33 \n\n
+       * Note that for grid sizes less than 65, INSIGHT format files will occupy less disk space than
+       * the corresponding DELPHI files. ins files are designed as input to a Biosym Corp. stand alone
+       * utility called CONTOUR, supplied with INSIGHT Version 2.4. This program will produce contour
+       * files for display with INSIGHT.33 \n\n
        * If the flag CUBE is true, then output is in CUBE format (Gaussian Cube). Example:
        * \code
        * Out(phi,file=’phimap.txt’,form=’cube’)
@@ -746,7 +827,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: frcinam
        * - Default : fort.15
        * - Description: \n
-       * Default extension: pdb or frc. List of coordinates where site potentials are output in Unit 16. Format as for Unit 13.
+       * Default extension: pdb or frc. List of coordinates where site potentials are output in Unit
+       * 16. Format as for Unit 13.
        */
       string strFrciFile;
 
@@ -755,15 +837,17 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: frcnam
        * - Default : fort.16
        * - Description: \n
-       * Default extension frc. A list of potentials and fields at coordinates in pdb file read on unit 15. Format: 12 lines of ascii
-       * header information, followed by a variable number of records written as: \n
+       * Default extension frc. A list of potentials and fields at coordinates in pdb file read on
+       * unit 15. Format: 12 lines of ascii header information, followed by a variable number of
+       * records written as: \n
        * \code
        *       230 format(8G10.3) \n
        *       write(16,230)xo,chrgv,phiv,fx,fy,fz \n
        * \endcode
-       * where xo(3) are x ,y ,z coordinates of charge, chrgv is the charge value, phiv is the potential (in kT/e) at that point,
-       * and fx, fy, fz are the field components (in kT/e/Å ). The last line of the file is the sum of chrgv*phiv/2 over all the
-       * charges in the file. This quantity can be used for calculating solvation and interaction energies.
+       * where xo(3) are x ,y ,z coordinates of charge, chrgv is the charge value, phiv is the
+       * potential (in kT/e) at that point, and fx, fy, fz are the field components (in kT/e/Å ).
+       * The last line of the file is the sum of chrgv*phiv/2 over all the charges in the file. This
+       * quantity can be used for calculating solvation and interaction energies.
        */
       string strFrcFile;
 
@@ -772,24 +856,28 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: epsnam
        * - Default : fort.17
        * - Description: \n
-       * Dielectric bit map, default extension: eps. If grid size=65, there are 3*65*65*65 lines joining neighboring grid points,
-       * 65*65*65 each in of the x,y,z directions. The midpoint of each line is given a value of 1 if it lies within the solvent
-       * accessible volume of the system, 0 if outside. This defines the shape of the molecule and separates the space into
-       * different dielectric regions. The format of the output files is described below in case that the user wants to build own
-       * software to visualize the map. For compact output purposes the array of INTEGER*4, epsmap(65,65,65,3), is compressed into
-       * an INTEGER*2 array, neps(5,65,65), by bit-mapping: the first index of epsmap, range 1-65 is compressed into the first index
-       * of neps, range 1-5, where the indices 1-16 go into bits 0-15 of the word with index 1, indices 17-32 -> bits 0-15 of word
-       * with index 2 etc. The array neps is then written to an unformatted binary file:
+       * Dielectric bit map, default extension: eps. If grid size=65, there are 3*65*65*65 lines
+       * joining neighboring grid points, 65*65*65 each in of the x,y,z directions. The midpoint of
+       * each line is given a value of 1 if it lies within the solvent accessible volume of the
+       * system, 0 if outside. This defines the shape of the molecule and separates the space into
+       * different dielectric regions. The format of the output files is described below in case that
+       * the user wants to build own software to visualize the map. For compact output purposes the
+       * array of INTEGER*4, epsmap(65,65,65,3), is compressed into an INTEGER*2 array, neps(5,65,65),
+       * by bit-mapping: the first index of epsmap, range 1-65 is compressed into the first index
+       * of neps, range 1-5, where the indices 1-16 go into bits 0-15 of the word with index 1,
+       * indices 17-32 -> bits 0-15 of word with index 2 etc. The array neps is then written to an
+       * unformatted binary file:
        * \code
        * write (17) imap, scale, oldmid
        * write (17) neps
        * \endcode
-       * where imap is an unused integer*4 flag and scale, oldmid(3) are real*4 scaling information as above.
+       * where imap is an unused integer*4 flag and scale, oldmid(3) are real*4 scaling information
+       * as above.
        *
        * \note
-       * In the case that the solute is composed of more than one dielectric media, in this release (v.6.1 up to rel. 1.1) the
-       * additional information is not included in the fort.17, in order to maintain compatibility with software packages that take
-       * it as an input.
+       * In the case that the solute is composed of more than one dielectric media, in this release
+       * (v.6.1 up to rel. 1.1) the additional information is not included in the fort.17, in order
+       * to maintain compatibility with software packages that take it as an input.
        */
       string strEpsFile;
 
@@ -798,10 +886,11 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: phiinam
        * - Default : fort.18
        * - Description: \n
-       * Default extension phi, potential map for focusing boundary conditions. Potentials are in kT/e (25.6mV, 0.593
-       * kcal/mole/charge at 25°C). \n\n
-       * The format of the file is given below in case that the user wants to adopt the file to its own software. If the users wants
-       * to visualize the file with Grasp or Insight, no action should be taken.
+       * Default extension phi, potential map for focusing boundary conditions. Potentials are in
+       * kT/e (25.6mV, 0.593 kcal/mole/charge at 25°C). \n\n
+       * The format of the file is given below in case that the user wants to adopt the file to its
+       * own software. If the users wants to visualize the file with Grasp or Insight, no action
+       * should be taken.
        * \code
        *    unformatted (binary file)
        *    character*20 uplbl
@@ -810,10 +899,11 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        *    character*16 botlbl
        *    real*4 scale,oldmid(3)
        * \endcode
-       * uplbl, nxtlbl, toplbl, botlbl are ascii information. Phi is the 3D array containing values of potential for all the lattice
-       * points. Index order is x,y,z. Scale is lattice scale in grid/Å. Oldmid is the x,y,z coordinates in real space (angstroms)
-       * of the centre of the lattice: thus the real space coordinates x,y,z of the lattice point for phi(IX,IY,IZ), for the case
-       * where IGRID = 65, are:
+       * uplbl, nxtlbl, toplbl, botlbl are ascii information. Phi is the 3D array containing values
+       * of potential for all the lattice points. Index order is x,y,z. Scale is lattice scale in
+       * grid/Å. Oldmid is the x,y,z coordinates in real space (angstroms) of the centre of the
+       * lattice: thus the real space coordinates x,y,z of the lattice point for phi(IX,IY,IZ),
+       * for the case where IGRID = 65, are:
        * \code
        *   x = (IX - 33)/scale + oldmid(1)
        *   y = (IY - 33)/scale + oldmid(2)
@@ -828,11 +918,13 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: mpdbnam
        * - Default : fort.19
        * - Description: \n
-       * If the "modified pdb file" option is activated in a WRITE/OUT function, a logical flag (t/f), iatout, will be set to true
-       * and will produce a modified PDB file written on unit 19, containing the: radius and charge assigned to each atom written
-       * after the coordinates, in the fields used for occupancy and B factor. It is recommended that this option be set initially
-       * so that the user can check that all the radius and charge assignments are correct. An additional check on the charge
-       * assignment can be made by looking at the total charge written to the log file.
+       * If the "modified pdb file" option is activated in a WRITE/OUT function, a logical flag (t/f),
+       * iatout, will be set to true and will produce a modified PDB file written on unit 19,
+       * containing the: radius and charge assigned to each atom written after the coordinates, in
+       * the fields used for occupancy and B factor. It is recommended that this option be set
+       * initially so that the user can check that all the radius and charge assignments are correct.
+       * An additional check on the charge assignment can be made by looking at the total charge
+       * written to the log file.
        */
       string strModifiedPdbFile;
 
@@ -899,7 +991,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      SGrid<real> fgOffCenter;
+      SGrid<real> gfOffCenter;
 
       /**
        * - F95 var.: acent
@@ -908,7 +1000,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * Used to set oldmid when iacent = .true.
        */
-      SGrid<real> fgAcent;
+      SGrid<real> gfAcent;
 
       /**
        * - F95 var.: iacent
@@ -953,7 +1045,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Set by func.: WRITE or OUT
        * - Default : 0
        * - Description: \n
-       * Format of file phinam, = 0 if unknown format,= 1 if “BIOSYS”, = 2 if “GRASP”, = 3 if “CCP4”, = 4 if “DIFF”, = 5 if “CUBE”.
+       * Format of file phinam, = 0 if unknown format,= 1 if “BIOSYS”, = 2 if “GRASP”, = 3 if “CCP4”,
+       * = 4 if “DIFF”, = 5 if “CUBE”.
        */
       int iPhiFormatOut;
 
@@ -962,7 +1055,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Set by func.: WRITE or OUT
        * - Default : FALSE
        * - Description: \n
-       * Flag for format of output file fort.14. = .false. to output in DELPHI format, = .true. to output in INSIGHT format.
+       * Flag for format of output file fort.14. = .false. to output in DELPHI format, = .true. to
+       * output in INSIGHT format.
        */
       bool bBiosystemOut;
 
@@ -1331,10 +1425,11 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Set by func.: BUFFZ
        * - Default : {0,0,0,0,0,0}
        * - Description: \n
-       * Defines a box with sides parallel to grid unit vectors that the reaction field energy will then be calculated using ONLY
-       * the polarization charges contained in that box. The fixed format is BUFFZ(6i3).
+       * Defines a box with sides parallel to grid unit vectors that the reaction field energy will
+       * then be calculated using ONLY the polarization charges contained in that box. The fixed
+       * format is BUFFZ(6i3).
        */
-      SExtrema<integer> ieBuffz;
+      SExtrema<integer> eiBuffz;
 
       /**
        * - F95 var.: ibufz
@@ -1355,10 +1450,11 @@ class CDelphiDataMarshal:virtual public IDataMarshal
       int iTypeSurf;
 
       //---------------------------- statements -------------------------//
-      array<string,45> strFullState, strShortState;
+      array<string,iStatementNum> rgstrStatement_ShortForm, rgstrStatement_2lAbbre;
 
       //------------------------------ functions ------------------------//
-      array<string,12> strFullFunc; array<string,5>  strShortFunc;                      
+      array<string,iFunctionNum_FullName>   rgstrFunction_FullForm;
+      array<string,iFunctionNum_ShortName>  rgstrFunction_ShortForm;
 
       //------------------------------ DelPhi ---------------------------//
       /**
@@ -1383,7 +1479,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * range of x-, y- and z- coordinates
        */
-      SGrid<real> fgCoordinateRange;
+      SGrid<real> gfCoordinateRange;
 
       /**
        * - F95 var.: pmid
@@ -1391,7 +1487,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * system geometric center
        */
-      SGrid<real> fgGeometricCenter;
+      SGrid<real> gfGeometricCenter;
 
       /**
        * - F95 var.: oldmid
@@ -1399,7 +1495,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * grid box center
        */
-      SGrid<real> fgBoxCenter;
+      SGrid<real> gfBoxCenter;
 
       /**
        * - F95 var.: rionst
@@ -1519,7 +1615,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * contains extreme values of each object, for a molecule it has extreme but without radii
        */
-      vector< SExtrema<real> > prgfeExtrema;
+      vector< SExtrema<real> > vctefExtrema;
 
       /**
        * - F95 var.: xn1(natom)
@@ -1527,7 +1623,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * atom coordinates in angstroms
        */
-      vector< SGrid<real> > prgfgAtomCoordA;
+      vector< SGrid<real> > vctgfAtomCoordA;
 
       /**
        * - F95 var.: xn2(natom)
@@ -1535,7 +1631,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * atom coordinates in grid units
        */
-      vector< SGrid<real> > prgfgAtomCoordG;
+      vector< SGrid<real> > vctgfAtomCoordG;
 
       //-------------------------------- IO -----------------------------//
 
@@ -1585,7 +1681,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * array of structure to store info read from pdb file
        */
-      vector<CAtomPdb> prgapAtomPdb;
+      vector<CAtomPdb> vctapAtomPdb;
 
       /**
        * - F95 var.: medeps(0:nmedia)
@@ -1593,15 +1689,15 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * vector containing correspondence media<->epsilon/epkt
        */
-      vector<real> prgfMediaEps;
+      vector<real> vctfMediaEps;
 
       /**
        * - F95 var.: dataobject(nobject,2)
        * - Default : AUTOMATIC
        * - Description: \n
-       * vector containing string with object data, and pre-elab data changed it to prgstrObject(2*nobjectmax)
+       * vector containing string with object data, and pre-elab data changed it to vctstrObject(2*nobjectmax)
        */
-      vector<string> prgstrObject;
+      vector<string> vctstrObject;
 
       /**
        * - F95 var.: iatmmed(Natom+Nobjectmax)
@@ -1609,7 +1705,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * vector containing internal media-number per atom and object
        */
-      vector<integer> prgiAtomMediaNum;
+      vector<integer> vctiAtomMediaNum;
 
       //------------------------------ Surface --------------------------//
 
@@ -1651,7 +1747,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * Center of assigned positive charge
        */
-      SGrid<real> fgPlusCrgCenter;
+      SGrid<real> gfPlusCrgCenter;
 
       /**
        * - F95 var.: cqmin
@@ -1659,7 +1755,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * Center of assigned negative charge
        */
-      SGrid<real> fgMinusCrgCenter;
+      SGrid<real> gfMinusCrgCenter;
 
       /**
        * - F95 var.: cmin
@@ -1667,7 +1763,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * minimal x-, y- and z- coordinates
        */
-      SGrid<real> fgMinCoordinate;
+      SGrid<real> gfMinCoordinate;
 
       /**
        * - F95 var.: cmax
@@ -1675,7 +1771,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * maximal x-, y- and z- coordinates
        */
-      SGrid<real> fgMaxCoordinate;
+      SGrid<real> gfMaxCoordinate;
 
       /**
        * - F95 var.: ibnum
@@ -1689,10 +1785,10 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: iepsmp(igrid,igrid,igrid)
        * - Default : AUTOMATIC
        * - Description: \n
-       * a listing of boundary elements 3D eps map, used to constrcut db array. (Can't get rid of for calculating the nonlinear
-       * energy)
+       * a listing of boundary elements 3D eps map, used to constrcut db array. (Can't get rid of for
+       * calculating the nonlinear energy)
        */
-      vector< SGrid<integer> > prgigEpsMap;
+      vector< SGrid<integer> > vctgiEpsMap;
 
       /**
        * - F95 var.: idebmap(igrid,igrid,igrid)
@@ -1700,7 +1796,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * logical 3D array for assigning dielectric constants used for the molecular surface scaling
        */
-      vector<bool> prgbDielecMap;
+      vector<bool> vctbDielecMap;
 
       /**
        * - F95 var.: ibgrd(ibnum)
@@ -1708,7 +1804,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * boundary grids
        */
-      vector< SGrid<integer> > prgigBndyGrid;
+      vector< SGrid<integer> > vctgiBndyGrid;
 
       /**
        * - F95 var.: nqgrd
@@ -1724,7 +1820,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * charges which will be charging the grid
        */
-      vector< SGridValue<real> > prggvCrg2Grid;
+      vector< SGridValue<real> > vctgvfCrg2Grid;
 
       /**
        * - F95 var.: nqgrdtonqass(nqgrd)
@@ -1732,7 +1828,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * nqgrdtonqass maps ic2-th charge internal atmeps6 to ic1-th general charge
        */
-      vector<integer> prgiCrg2GridMap;
+      vector<integer> vctiCrg2GridMap;
 
       /**
        * - F95 var.: atmcrg(nqass)
@@ -1740,7 +1836,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * atmcrg contains grid positions of all charges AND the charge in the 4th field
        */
-      vector< SGridValue<real> > prggvAtomCrg;   
+      vector< SGridValue<real> > vctgvfAtomCrg;
 
       /**
        * - F95 var.: chgpos(nqass)
@@ -1748,7 +1844,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * charge position in angstroms
        */
-      vector< SGrid<real> > prgfgCrgPoseA;
+      vector< SGrid<real> > vctgfCrgPoseA;
 
       /**
        * - F95 var.: scspos(ibnum)
@@ -1756,7 +1852,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * position in angstroms of induced surface charges
        */
-      vector< SGrid<real> > prgfgSurfCrgA;    
+      vector< SGrid<real> > vctgfSurfCrgA;
 
       /**
        * - F95 var.: crgatn(nqass)
@@ -1764,7 +1860,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      vector<integer> prgiCrgAt;
+      vector<integer> vctiCrgAt;
 
       /**
        * - F95 var.: atsurf(ibnum)
@@ -1772,7 +1868,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      vector<integer> prgiAtSurf;
+      vector<integer> vctiAtSurf;
 
       /**
        * - F95 var.: atndx(ibnum)
@@ -1780,7 +1876,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      vector<integer> prgfAtNdx;
+      vector<integer> vctiAtNdx;
 
       /**
        * - F95 var.: scsnor(ibnum)
@@ -1788,7 +1884,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      vector< SGrid<real> > prgfgSurfCrgE;
+      vector< SGrid<real> > vctgfSurfCrgE;
 
       /**
        * - F95 var.: atmeps(nqass)
@@ -1796,7 +1892,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        *
        */
-      vector<real> prgfAtomEps;
+      vector<real> vctfAtomEps;
 
       //------------------------------ Solver ---------------------------//
 
@@ -1822,7 +1918,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * fractional charge in electron units assigned to each grid point
        */
-      vector<real> prgfGridCrg;
+      vector<real> vctfGridCrg;
 
       /**
        * - F95 var.: gchrgp(icount1b)
@@ -1830,7 +1926,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * position of each such charge on the grid
        */
-      vector< SGrid<integer> > prgigGridCrgPose;
+      vector< SGrid<integer> > vctgiGridCrgPose;
 
       /**
        * - F95 var.: ibc
@@ -1846,7 +1942,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * information on the charged boundary grid points
        */
-      vector<SDoubleGridValue> prgdgvCrgBndyGrid;
+      vector<SDoubleGridValue> vctdgvCrgBndyGrid;
 
       /**
        * - F95 var.: phimap(igrid,igrid,igrid)
@@ -1854,7 +1950,7 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * 3D potential map
        */
-      vector<real> prgfPhimap;
+      vector<real> vctfPhiMap;
 
       //------------------------------ Energy ---------------------------//
 
@@ -1864,7 +1960,47 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - Description: \n
        * the induced surface charges in electrons
        */
-      vector<real> prgfSurfCrgE;
+      vector<real> vctfSurfCrgE;
+
+      /**
+       * - F95 var.: test_ergg
+       * - Default : 0.0
+       * - Description: \n
+       * total grid energy
+       */
+      real fEngGrid;
+
+      /**
+       * - F95 var.: test_ergc
+       * - Default : 0.0
+       * - Description: \n
+       * coulombic energy
+       */
+      real fEngCoul;
+
+      /**
+       * - F95 var.: test_ergs
+       * - Default : 0.0
+       * - Description: \n
+       * corrected reaction field energy
+       */
+      real fEngCorrect;
+
+      /**
+       * - F95 var.: test_ergr
+       * - Default : 0.0
+       * - Description: \n
+       * total reaction field energy
+       */
+      real fEngReact;
+
+      /**
+       * - F95 var.: test_ergions
+       * - Default : 0.0
+       * - Description: \n
+       * total ionic direct contribution
+       */
+      real fEngIons;
 
       //------------------------- NOT TO BE MAPPED ----------------------//  
 
@@ -1872,7 +2008,8 @@ class CDelphiDataMarshal:virtual public IDataMarshal
        * - F95 var.: centnam
        * - Default : fort.27
        * - Description: \n
-       * Site coordinates file. List of coordinates where site potentials are output in Unit 16. Format as for Unit 13.
+       * Site coordinates file. List of coordinates where site potentials are output in Unit 16.
+       * Format as for Unit 13.
        */
       string strCentFile;
 
@@ -1887,43 +2024,64 @@ class CDelphiDataMarshal:virtual public IDataMarshal
       shared_ptr<CTimer> pTimer;   //pointer to an object of CTimer class
          
       /**
-       * constructor I (for regular delphi runs)
+       * constructor to generate regular stand-alone executable delphicpp.
+       *
+       * @param[in] argc   Number of parameters in the command line
+       * @param[in] argv[] paraemters in the command line
+       * @param[in] pt     pointer to an object of class CTimer to report execution time
        */
       CDelphiDataMarshal(int argc,char* argv[],shared_ptr<CTimer> pt):IDataMarshal(argc,argv),pTimer(pt)
       {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*             CDelphiDataMarshal is constructed                *\n";
+         cout << "****************************************************************\n";
+#endif
+
          setDefault();
       };
 
       /**
-       * constructor II (for mcce runs)
+       * constructor to allow delphicpp to be compiled with mcce in order to avoid intensive IO operations.
+       *
+       * @param[in] mcce_data A pointer to the interface struct SMCCE
+       * @param[in] pt        pointer to an object of class CTimer to report execution time
        */
-      CDelphiDataMarshal(SMCCE * mcce_data,shared_ptr<CTimer> pt):IDataMarshal(),pTimer(pt)
+      CDelphiDataMarshal(shared_ptr<CTimer> pt):IDataMarshal(),pTimer(pt)
       {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*             CDelphiDataMarshal is constructed                *\n";
+         cout << "****************************************************************\n";
+#endif
+
          setDefault();
-
-         /*
-          * update variables based on the input struct mcce_data
-          */
-         iGrid             = mcce_data->gsize;
-         fScale            = mcce_data->scale;
-         fInDielec         = mcce_data->indi;
-         fExDielec         = mcce_data->exdi;
-         fIonRadius        = mcce_data->ionrad;
-         rgfProbeRadius[0] = mcce_data->prbrad;
-         rgfSalt[0]        = mcce_data->salt;
-         iBndyType         = mcce_data->bndcon;
-         fgOffCenter.nX    = mcce_data->center[0];
-         fgOffCenter.nY    = mcce_data->center[1];
-         fgOffCenter.nZ    = mcce_data->center[2];
-
-
-
       };
 
+      /**
+       * destructor
+       */
+      ~CDelphiDataMarshal()
+      {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                CDelphiDataMarshal is destroyed               *\n";
+         cout << "****************************************************************\n";
+#endif
+      };
+
+      /**
+       * set default values for all variables contained in data container
+       */
       void setDefault();
 
-      //---------------incl_delphimarshal_updateParameters.cpp----------------//
-      virtual void updateParameters();    
+      /**
+       * function implementing post-reading updates of parameters
+       */
+      virtual void updateParameters();
 };
 
-#endif // CDELPHIDATAMARSHAL_H
+#endif // CDELPHIDATAMARSHAL_H_

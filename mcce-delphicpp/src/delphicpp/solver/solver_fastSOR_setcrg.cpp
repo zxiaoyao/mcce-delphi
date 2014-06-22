@@ -29,7 +29,7 @@ void CDelphiFastSOR::setCrg()
    const vector<real>& atmeps = prgfAtomEps;
 
    //++++++++++ LOCAL:
-   int kb1,kb2,kb3,i,j,k,n,m,ix,iy,iz;
+   int kb1,kb2,kb3,i,j,k,m,ix,iy,iz;
    integer iw;
    real cg1,cg2,cg3,re,deb;
    SGrid<integer> igCoord;
@@ -73,7 +73,6 @@ void CDelphiFastSOR::setCrg()
       }
    }
 
-   n = 0;
    for (k = 2; k < iGrid; k++)
    {
       for (j = 2; j < iGrid; j++)
@@ -81,7 +80,7 @@ void CDelphiFastSOR::setCrg()
          for (i = 2; i < iGrid; i++)
          {
             m = (k-1)*iGrid*iGrid+(j-1)*iGrid+(i-1);
-            if(abs(phimap[m]) > 1.0e-6) // phimap(i,j,k).ne.0.
+            if(abs(phimap[m]) > fZero) // phimap(i,j,k).ne.0.
             {
                igCoord.nX = i; igCoord.nY = j; igCoord.nZ = k;
                gchrgp.push_back(igCoord);
@@ -130,7 +129,7 @@ void CDelphiFastSOR::setCrg()
       gchrgtmp.push_back(phimap[iw]);
    }
 
-   phimap.clear(); // Removes all elements from the vector (which are destroyed), leaving the container with a size of 0
+   vector<real>().swap(phimap); // remove the vector phimap. No need in below
 
    //---------------------------- Begin of wrtcrg.f -----------------------------//
    if (bGridCrgOut)
@@ -143,17 +142,20 @@ void CDelphiFastSOR::setCrg()
 
       ofCrgFileStream << "DELPHI OUTPUT FILE: GRID CHARGE" << endl;
       ofCrgFileStream << "FORMAT NUMBER= 1" << endl;
-      ofCrgFileStream << "NUMBER OF CHARGES=" << setw(8) << left << icount1b << endl;
+      ofCrgFileStream << "NUMBER OF CHARGES=" << setw(8) << right << icount1b << endl;
 
-      for (int i = 0; i < icount1b; i++)
-         ofCrgFileStream << "DIELECTRIC IN MEDIUM NUMBER " << setw(3) << left << i << " : "
-                         << setw(8) << left << prgfMediaEps[i]*fEPKT << endl;
+      for (int i = 0; i <= iMediaNum; i++)
+         ofCrgFileStream << "DIELECTRIC IN MEDIUM NUMBER " << setw(3) << right << i << " : "
+                         << setw(8) << right << prgfMediaEps[i]*fEPKT << endl;
 
       ofCrgFileStream << "GRID SCALE=" << fScale << endl;
 
       for (int i = 0; i < icount1b; i++)
-         ofCrgFileStream << setw(8) << left << gchrg[i] << setw(6) << left << gchrgp[i].nX
-                         << setw(6) << left << gchrgp[i].nY << setw(6) << left << gchrgp[i].nZ << endl;
+      {
+         ofCrgFileStream << scientific << setprecision(17) << setw(25) << right << gchrg[i];
+         ofCrgFileStream << fixed << setw(8) << right << gchrgp[i].nX
+                         << setw(8) << right << gchrgp[i].nY << setw(8) << right << gchrgp[i].nZ << endl;
+      }
 
       ofCrgFileStream.close();
    }
@@ -260,7 +262,7 @@ void CDelphiFastSOR::setCrg()
       gval[j-1] = gchrg[i];
    }
 
-   gchrgd.clear();
+   vector<real>().swap(gchrgd); // remove gchrgd, need in below
 
    iqpos.assign(icount1b,0);
    for (i = 0; i < icount1b; i++)
@@ -295,7 +297,7 @@ void CDelphiFastSOR::setCrg()
       for (vector<real>::iterator it = gchrg.begin(); it != gchrg.end(); ++it)
       {
          index += 1;
-         ofTestStream << "gchrg(" << setw(6) << right << index << ") = " << setw(11) << right << *it << endl;
+         ofTestStream << "gchrg(" << setw(6) << right << index << ") = " << setw(12) << right << *it << endl;
       }
 
       index = 0;
@@ -318,14 +320,14 @@ void CDelphiFastSOR::setCrg()
       for (vector<real>::iterator it = qval.begin(); it != qval.end(); ++it)
       {
          index += 1;
-         ofTestStream << "qval(" << setw(6) << right << index << ") = " << setw(11) << right << *it << endl;
+         ofTestStream << "qval(" << setw(6) << right << index << ") = " << setw(12) << right << *it << endl;
       }
 
       index = 0;
       for (vector<real>::iterator it = gval.begin(); it != gval.end(); ++it)
       {
          index += 1;
-         ofTestStream << "gval(" << setw(6) << right << index << ") = " << setw(11) << right << *it << endl;
+         ofTestStream << "gval(" << setw(6) << right << index << ") = " << setw(12) << right << *it << endl;
       }
 
       ofTestStream.close();

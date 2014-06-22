@@ -1,12 +1,12 @@
+/*
+ * interface_datacontainer.cpp
+ *
+ *  Created on: Feb 1, 2014
+ *      Author: chuan
+ */
+
 #include "interface_datacontainer.h"
-
 #include "interface_datacontainer_impls.cpp"
-
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          public members                               //
-//                                                                       //
-//-----------------------------------------------------------------------//
 
 //-----------------------------------------------------------------------//
 bool IDataContainer::keyExists(const string& strKey)
@@ -47,7 +47,7 @@ template <class T> const T ** IDataContainer::getKey_constPtr(const string& strK
 
    vector<T> * nConstVectorPtr = any_cast< vector<T> >(&myData[strKey]);
 
-   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns) throw CUnmatchSize(strKey);
+   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns) throw CMismatchSize(strKey);
 
    const T * nConstDataPtr = nConstVectorPtr->data();
 
@@ -66,7 +66,7 @@ template <class T> const T *** IDataContainer::getKey_constPtr(const string& str
 
    vector<T> * nConstVectorPtr = any_cast< vector<T> >(&myData[strKey]);
 
-   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages) throw CUnmatchSize(strKey);
+   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages) throw CMismatchSize(strKey);
 
    T * nConstDataPtr = nConstVectorPtr->data();
 
@@ -90,7 +90,7 @@ template <class T> T *** IDataContainer::getKey_Ptr(const string& strKey, const 
 
    vector<T> * nConstVectorPtr = any_cast< vector<T> >(&myData[strKey]);
 
-   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages) throw CUnmatchSize(strKey);
+   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages) throw CMismatchSize(strKey);
 
    T * nConstDataPtr = nConstVectorPtr->data();
 
@@ -114,7 +114,7 @@ template <class T> const T **** IDataContainer::getKey_constPtr(const string& st
 
    vector<T> * nConstVectorPtr = any_cast< vector<T> >(&myData[strKey]);
 
-   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages*iSects) throw CUnmatchSize(strKey);
+   if (nConstVectorPtr->size() != (unsigned int)iRows*iColumns*iPages*iSects) throw CMismatchSize(strKey);
 
    const T * nConstDataPtr = nConstVectorPtr->data();
 

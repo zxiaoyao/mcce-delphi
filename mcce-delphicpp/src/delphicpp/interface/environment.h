@@ -1,12 +1,44 @@
 /**
- * Globally defined enviromental varibales.
+ * @file environment.h
+ * @brief pre-processor marco's used for compiling the code
+ *
+ * @author Chuan Li, chuanli@clemson.edu
  */
 
-#define MX  // MX -- double      &      int [most cases]
-            // SP -- float       &      int [small/short runs]
-            // DP -- double      & long int [large/long runs] 
-            // LD -- long double & long int [extreme cases,rarely used]
+#ifndef ENVIRONMENT_H_
+#define ENVIRONMENT_H_
 
+/**
+ * preprocessor marco to choose data types for real and integer numbers \n
+ * - MX -- double      &      int [mixed double/single precision, mostly used]
+ * - SP -- float       &      int [single precision]
+ * - DP -- double      & long int [double precision]
+ * - LD -- long double & long int [extreme case,rarely used]
+ */
+#define MX
+
+/**
+ * flag for additional outputs at run time
+ */
+#define VERBOSE
+
+/**
+ * flag to control the precision of output numbers
+ */
+#define DEVELOPER
+
+/**
+ * flag to embed delphicpp in mcce
+ */
+#define MCCE
+
+/**
+ * Introduce namespace "delphi" here and used in getFunction and getStatement to avoid ambiguous reference
+ * to data type "real" when compiling the code in Mac system
+ */
+
+namespace delphi
+{
 #ifdef SP
 typedef int   integer;
 typedef float real;
@@ -25,34 +57,53 @@ typedef double   real;
 #ifdef LD
 typedef long int    integer;
 typedef long double real;
-#endif 
+#endif
 
-//-----------------------------------------------------------------------//
+/**
+ * flag to debug the function(s) of reading SIZE file
+ */
+//#define DEBUG_IO_SIZE
 
-#define VERBOSE   // flag for removing part of standard output
-
-#define DEVELOPER // flag to control the precision of outputs between developers and users
-                  
-//#define DEBUG_IO_SIZE            // debug reading size file
-//#define DEBUG_IO_CHARGE          // debug reading charge file
-//#define DEBUG_IO_PDB             // debug reading PDB file
-//#define DEBUG_DATAMARSHAL        // debug datamarshal class
-//#define DEBUG_DELPHI_MAP         // debug delphi_data class
 #ifdef DEBUG_IO_SIZE
 #define DEBUG_IO_FORCE
 #endif
+
+/**
+ * flag to debug the function(s) of reading CHARGE file
+ */
+//#define DEBUG_IO_CHARGE
 
 #ifdef DEBUG_IO_CHARGE
 #define DEBUG_IO_FORCE
 #endif
 
+/**
+ * flag to debug the function(s) of reading PDB file
+ */
+//#define DEBUG_IO_PDB
+
+/**
+ * flag to debug the function(s) of IDataMarshal class
+ */
+//#define DEBUG_DATAMARSHAL
+
+/**
+ * flag to debug the function(s) of CDelphiData class
+ */
+//#define DEBUG_DELPHI_MAP
+
+/**
+ * flag to debug the function(s) of CSpace class
+ */
 //#define DEBUG_DELPHI_SPACE
 
-//#define DEBUG_DELPHI_SOLVER        // debug delphi_fastSOR class
-
+/**
+ * flag to debug the function(s) of CDelphiFastSOR class
+ */
+//#define DEBUG_DELPHI_SOLVER
 
 #ifdef DEBUG_DELPHI_SOLVER
-//#define DEBUG_DELPHI_SOLVER_MKDBSF1
+#define DEBUG_DELPHI_SOLVER_MKDBSF1
 #define DEBUG_DELPHI_SOLVER_MKDBSF
 #define DEBUG_DELPHI_SOLVER_ITIT
 #define DEBUG_DELPHI_SOLVER_RELFAC
@@ -60,11 +111,28 @@ typedef long double real;
 #define DEBUG_DELPHI_SOLVER_SETCRG
 #endif
 
+/**
+ * flag to debug the function(s) of CDelphiEnergy class
+ */
+//#define DEBUG_DELPHI_ENERGY
 
-//#define DEBUG_DELPHI_ENERGY        // debug CDelphiEnergy class
-
+/**
+ * flag to debug the function(s) of CSite class
+ */
 //#define DEBUG_DELPHI_SITE
 
+/**
+ * flag to debug calling delphicpp in mcce
+ */
+//#define DEBUG_MCCE
 
+/**
+ * flag to debug constructing/destroying objects
+ */
+#define DEBUG_OBJECT
 
+}
 
+using namespace delphi;
+
+#endif //ENVIRONMENT_H_

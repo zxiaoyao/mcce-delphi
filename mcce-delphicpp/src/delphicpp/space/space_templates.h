@@ -3,10 +3,11 @@
 
 #include "../interface/environment.h"
 
-template <class T> T ** get_pt2d(const integer& length, const integer& width)
+//template <class T> T ** get_pt2d(const integer& length, const integer& width)
+template <class T> void get_pt2d(T ** & pt2d, const integer& length, const integer& width)
 {
-    integer i,j;
-    T ** pt2d;
+    integer i;
+    //T ** pt2d;
 
     pt2d= new T *[length];
     for (i=0; i<length; i++)
@@ -15,14 +16,15 @@ template <class T> T ** get_pt2d(const integer& length, const integer& width)
 
     }
 
-    return (pt2d);
+    //return (pt2d);
 }
 
-template <class T> T *** get_pt3d(const integer& length, const integer& width, const integer& hight)
+//template <class T> T *** get_pt3d(const integer& length, const integer& width, const integer& hight)
+template <class T> void get_pt3d(T *** & pt3d, const integer& length, const integer& width, const integer& hight)
 //template <class T> T *** get_pt3d( integer& length,  integer& width,  integer& hight)
 {
     integer i,j;
-    T *** pt3d;
+    //T *** pt3d;
 
     pt3d= new T **[length];
     for (i=0; i<length; i++)
@@ -34,14 +36,15 @@ template <class T> T *** get_pt3d(const integer& length, const integer& width, c
         }
     }
 
-    return (pt3d);
+    //return (pt3d);
 }
 
-template <class T> T **** get_pt4d(const integer& length, const integer& width, const integer& hight, const integer& page)
+//template <class T> T **** get_pt4d(const integer& length, const integer& width, const integer& hight, const integer& page)
+template <class T> void get_pt4d(T **** & pt4d, const integer& length, const integer& width, const integer& hight, const integer& page)
 //template <class T> T *** get_pt3d( integer& length,  integer& width,  integer& hight)
 {
     integer i,j,k;
-    T **** pt4d;
+    //T **** pt4d;
 
     pt4d= new T ***[length];
     for (i=0; i<length; i++)
@@ -56,26 +59,27 @@ template <class T> T **** get_pt4d(const integer& length, const integer& width, 
         }
     }
 
-    return (pt4d);
+    //return (pt4d);
 }
 
 
 
-template <class T> void free_pt2d(T ** pt2d, const integer& length, const integer& width)
+template <class T> void free_pt2d(T ** & pt2d, const integer& length, const integer& width)
 {
-    integer i,j;
+    integer i;
 
 
     pt2d= new T *[length];
     for (i=0; i<length; i++)
     {
         //pt2d[i] = new T [width]();
-        delete pt2d[i];
+        delete [] pt2d[i];
     }
-    delete pt2d;
+    delete [] pt2d;
+    pt2d=NULL;
 
 }
- template <class T> void free_pt3d(T *** pt3d, const integer& length, const integer& width, const integer& hight)
+ template <class T> void free_pt3d(T *** & pt3d, const integer& length, const integer& width, const integer& hight)
 //template <class T> T *** get_pt3d( integer& length,  integer& width,  integer& hight)
 {
     integer i,j;
@@ -88,16 +92,18 @@ template <class T> void free_pt2d(T ** pt2d, const integer& length, const intege
         for (j=0; j<width; j++)
         {
             //pt3d[i][j]= new T[hight]();
-            delete pt3d[i][j];
+            delete [] pt3d[i][j];
         }
-        delete pt3d[i];
-
+        delete [] pt3d[i];
 
     }
-    delete pt3d;
+    delete [] pt3d;
+    pt3d=NULL;
 }
 
-template <class T> void free_pt4d(T **** pt4d, const integer& length, const integer& width, const integer& hight, const integer& page)
+
+
+template <class T> void free_pt4d(T **** & pt4d, const integer& length, const integer& width, const integer& hight, const integer& page)
 //template <class T> T *** get_pt3d( integer& length,  integer& width,  integer& hight)
 {
    integer i,j,k;
@@ -118,30 +124,33 @@ template <class T> void free_pt4d(T **** pt4d, const integer& length, const inte
         }
         delete [] pt4d[i];
     }
-    	//delete [] pt4d;
+    delete [] pt4d;
+    pt4d=NULL;
 }
 
 
 
-
+/*
 // Move index:
-template <class T> T ** Move_index_2d(T ** ptr_old,const int& length, const int& width)
+//template <class T> T ** Move_index_2d(T ** ptr_old,const int& length, const int& width)
+template <class T> void Move_index_2d(T ** & ptr_new, T ** & ptr_old,const int& length, const int& width)
 {
     int i;
-    T ** ptr_new;
+    //T ** ptr_new;
     ptr_new=new T *[length+1];
     for(i=0;i<=length-1;i++){
         ptr_new[i+1] = new T [width+1];
         ptr_new[i+1]=ptr_old[i]-1;
     }
-    return(ptr_new);
+    //return(ptr_new);
 
 }
 
-template <class T> T *** Move_index_3d(T *** ptr_old,const int& length, const int& width, const int& height)
+//template <class T> T *** Move_index_3d(T *** ptr_old,const int& length, const int& width, const int& height)
+template <class T> void Move_index_3d(T *** & ptr_new, T *** & ptr_old,const int& length, const int& width, const int& height)
 {
     int i,j;
-    T *** ptr_new;
+    //T *** ptr_new;
 
     ptr_new=new T ** [length+1];
     for(i=0;i<=length-1;i++){
@@ -152,9 +161,34 @@ template <class T> T *** Move_index_3d(T *** ptr_old,const int& length, const in
             ptr_new[i+1][j+1]=ptr_old[i][j]-1;
         }
     }
-    return(ptr_new);
+    //return(ptr_new);
 
 }
 
+template <class T> void free_index_3d(T *** & ptr_new,const int& length, const int& width, const int& height)
+{
+    int i,j;
+    //T *** ptr_new;
+
+
+    for(i=2;i<=length-1;i++){
+
+        for(j=2;j<=width-1;j++){
+            //cout << "i,j: " << i << j << endl;
+            cout << "### i,j: " << i << j << endl;
+            delete [] ptr_new[i][j];
+
+            //ptr_new[i+1][j+1]=ptr_old[i][j]-1;
+        }
+
+        delete [] ptr_new[i];
+
+    }
+
+    delete [] ptr_new;
+    //return(ptr_new);
+
+}
+*/
 
 #endif // SPACE_TEMPLATES_H

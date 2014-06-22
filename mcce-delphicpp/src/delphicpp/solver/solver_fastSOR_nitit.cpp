@@ -240,7 +240,7 @@ void CDelphiFastSOR::nitit(const real& qfact)
 
          if (!bManualRelaxParam && inewfirst && (3.2 < qfact))
          {
-            factor    = exp(-qfact*2.1)+1.0e-6;
+            factor    = exp(-qfact*2.1)+fZero;
             ichangeom = true;
          }
 
@@ -255,7 +255,7 @@ void CDelphiFastSOR::nitit(const real& qfact)
             {
                derprec = der; der = (conv[0]-conv[1])/conv[1];
 
-               if (1.0e-6 > rmxch)
+               if (fZero > rmxch)
                {
                   factor = 1.2; ichangeom = true;
                }
@@ -301,7 +301,7 @@ void CDelphiFastSOR::nitit(const real& qfact)
 
       itr++;
 
-      if ((iLinIterateNum >= itr || !istop) && 1.0e-6 > abs(ires) ) continue;
+      if ((iLinIterateNum >= itr || !istop) && fZero > abs(ires) ) continue;
 
       if (0 < iNonIterateNum && 0 == itnum)
       {

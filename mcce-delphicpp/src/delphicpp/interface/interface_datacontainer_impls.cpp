@@ -1,3 +1,12 @@
+/**
+ * @file interface_datacontainer_impls.h
+ * @brief concrete implementations of template member functions in IDataContainer
+ *
+ * @author Chuan Li, chuanli@clemson.edu
+ *
+ * DO NOT COMPILE THIS FILE SEPERATELY! ONLY NEED THIS FILE TO BE INCLUDED IN interface_datacontainer.cpp!!
+ */
+
 //----------template <class T> const T& getKey_constRef(const string& strKey)
 template const int& IDataContainer::getKey_constRef(const string&);
 template const long int& IDataContainer::getKey_constRef(const string&);

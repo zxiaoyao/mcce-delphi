@@ -133,7 +133,7 @@ real CSite::tops(const SGrid<real>& xxo,const SGrid<real>& xxu,const real& crg,c
 
       for (j = 0; j < 8; j++)
       {
-         if (1.0e-6 < abs(crgrid[j]))
+         if (fZero < abs(crgrid[j]))
          {
             for (k = 0; k < 3; k++) vec[k] = trgridpos[k][i] - crgridpos[k][j];
 

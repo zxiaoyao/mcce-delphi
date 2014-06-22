@@ -35,6 +35,27 @@ void CDelphiFastSOR::itit()
       ofTestStream << fixed << setprecision(7);
 
       ix = 1;
+      for (vector<integer>::iterator it = ibndx.begin(); it != ibndx.end(); ++it)
+      {
+         ofTestStream << "ibndx[" << setw(6) << right << ix << "] = " << setw(8) << right << *it << endl;
+         ix++;
+      }
+
+      ix = 1;
+      for (vector<integer>::iterator it = ibndy.begin(); it != ibndy.end(); ++it)
+      {
+         ofTestStream << "ibndy[" << setw(6) << right << ix << "] = " << setw(8) << right << *it << endl;
+         ix++;
+      }
+
+      ix = 1;
+      for (vector<integer>::iterator it = ibndz.begin(); it != ibndz.end(); ++it)
+      {
+         ofTestStream << "ibndz[" << setw(6) << right << ix << "] = " << setw(8) << right << *it << endl;
+         ix++;
+      }
+
+      ix = 1;
       for (vector<real>::iterator it = bndx1.begin(); it != bndx1.end(); ++it)
       {
          ofTestStream << "bndx1[" << setw(6) << right << ix << "] = " << setw(11) << right << *it << endl;
@@ -78,7 +99,7 @@ void CDelphiFastSOR::itit()
 
       ofTestStream.close();
    }
-#endif // DEBUG_DELPHI_SOLVER
+#endif // DEBUG_DELPHI_SOLVER_ITIT
 
    itr = 1; ires = 0;
    do
@@ -94,7 +115,7 @@ void CDelphiFastSOR::itit()
       {
          int itr2 = 2*itr-1;
          om3 = 1.0/(1.0-om2*fSpec*0.25);
-         if (1.0e-6 > om1) om3 = 1.0/(1.0-om2*fSpec*0.5);
+         if (fZero > om1) om3 = 1.0/(1.0-om2*fSpec*0.5);
          om4 = om3/om2; om2 = om3; om1 = 1.0-om2;
 
          if (0.0 < fIonStrength)
@@ -145,7 +166,7 @@ void CDelphiFastSOR::itit()
 
          ofTestStream.close();
       }
-#endif // DEBUG_DELPHI_SOLVER
+#endif // DEBUG_DELPHI_SOLVER_ITIT
 
       /*
        * Next update phimap2 using the new phimap1
@@ -156,7 +177,7 @@ void CDelphiFastSOR::itit()
       {
          int itr2 = 2*itr;
          om3 = 1.0/(1.0-om2*fSpec*0.25);
-         if (1.0e-6 > om1) om3 = 1.0/(1.0-om2*fSpec*0.5);
+         if (fZero > om1) om3 = 1.0/(1.0-om2*fSpec*0.5);
          om4 = om3/om2; om2 = om3; om1 = 1.0-om2;
 
          if (0.0 < fIonStrength)
@@ -207,7 +228,7 @@ void CDelphiFastSOR::itit()
 
          ofTestStream.close();
       }
-#endif // DEBUG_DELPHI_SOLVER
+#endif // DEBUG_DELPHI_SOLVER_ITIT
 
       /*
        * we also save time by only checking convergence every 10 iterations, rather than every single iteration.
@@ -296,14 +317,14 @@ void CDelphiFastSOR::itit()
        */
       if (1.0e-7 > maxres)
       {
-         if (iLinIterateNum > itr && 0 == ires)
+         if (iLinIterateNum >= itr && 0 == ires)
             continue;
          else
             break;
       }
       else
       {
-         if ((iLinIterateNum > itr || bAutoConverge) && (0 == ires))
+         if ((iLinIterateNum >= itr || bAutoConverge) && (0 == ires))
             continue;
          else
             break;
@@ -338,12 +359,12 @@ void CDelphiFastSOR::itit()
             for (ix = 0; ix < iGrid; ix++)
             {
                ofTestStream << "phimap[" << setw(6) << right << iz+1 << "," << setw(6) << right << iy+1 << ","
-                            << setw(6) << right << ix+1 << "] = " << setw(11) << right << phimap[iz][iy][ix] << endl;
+                            << setw(6) << right << ix+1 << "] = " << setw(12) << right << phimap[iz][iy][ix] << endl;
             }
          }
       }
 
       ofTestStream.close();
    }
-#endif // DEBUG_DELPHI_SOLVER
+#endif // DEBUG_DELPHI_SOLVER_ITIT
 }

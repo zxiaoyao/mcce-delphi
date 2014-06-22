@@ -32,7 +32,7 @@ void CSite::phicon()
 
       if (0 != iNonIterateNum)
       {
-         if (1.0e-6 > tmp)
+         if (fZero > tmp)
          {
             for (iz = 0; iz < iGrid; iz++)
             {
@@ -106,5 +106,5 @@ void CSite::phicon()
       }
    }
 
-   if (1.0e-6 > abs(fIonStrength)) CNoPotential2CrgConcentrate warning;
+   if (fZero > abs(fIonStrength)) CNoPotential2CrgConcentrate warning;
 }

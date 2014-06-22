@@ -11,7 +11,7 @@ void CDelphiData::flash() const
 {
    //---------------------------- delphiflash --------------------------//
    cout << "                                                                \n";
-   cout << "   ____________________DelPhi C++ V. alpha ___________________  \n";
+   cout << "   ____________________DelPhi C++ V. alpha____________________  \n";
    cout << "  |                                                           | \n";
    cout << "  | A program to solve the PB equation in 3D, using non-linear| \n";
    cout << "  | form, incorporating many dielectric regions, multisalt    | \n";
@@ -28,7 +28,7 @@ void CDelphiData::flash() const
    cout << "  |             http://compbio.clemson.edu/forum/             | \n";
    cout << "  |                                                           | \n";
    cout << "  |            June 2013,by DelPhi Development Team           | \n";
-   cout << "  |_______________________             _______________________| \n";
-   cout << "                          DelPhi V. alpha                       \n";
+   cout << "  |____________________                   ____________________| \n";
+   cout << "                       DelPhi C++ V. alpha                      \n";
    cout << "                                                                \n";
 }

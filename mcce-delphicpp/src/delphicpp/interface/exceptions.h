@@ -1,16 +1,27 @@
-#ifndef CEXCEPTIONS_H
-#define CEXCEPTIONS_H
+/**
+ * @file exceptions.h
+ * @brief This file defines the format of warnings and exceptions
+ *
+ * @author Chuan Li, chuanli@clemson.edu
+ */
+#ifndef CEXCEPTIONS_H_
+#define CEXCEPTIONS_H_
 
 #include <iostream>
 
 using namespace std;
 
-class CException // Program exits when exception occurs
+/**
+ * class CException defines the format of exceptions shown in the log file.
+ *
+ * Exception is a severe problem that the program does not know how to correct it. Program terminates
+ * immediately with a message when an exception is thrown.
+ */
+class CException
 {
    public:
       CException()
       {
-         //cout << "\n[[EXCEPTION]] ";
          cerr << "\033[1;31m" << "[EXCEPTION]";
       }
 
@@ -20,7 +31,13 @@ class CException // Program exits when exception occurs
       }
 };
 
-
+/**
+ * class CWarning defines the format of warnings shown in the log file.
+ *
+ * Warning is a problem that the program can correct (usually reset the variable to its default value)
+ * for the user without terminating the current run. Instead, a message is shown to remind the user
+ * what has been corrected.
+ */
 class CWarning // Program continues its run with warnings
 {
    private:
@@ -32,7 +49,6 @@ class CWarning // Program continues its run with warnings
       {
          iWarningNum++;     
       
-         //cout << "\n@@WARNING_" << iWarningNum << "@@ ";
          cerr << "   " << "\033[1;34m" << "[WARNING #" << iWarningNum << "] ";
       }
 
@@ -42,4 +58,4 @@ class CWarning // Program continues its run with warnings
       }
 };
 
-#endif // CEXCEPTIONS_H
+#endif // CEXCEPTIONS_H_

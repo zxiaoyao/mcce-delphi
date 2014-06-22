@@ -52,31 +52,31 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isita)
    {
-      vrow.substr(j,15) = "ATOM DESCRIPTOR"; datum.substr(k,5) = "ATOM ";
+      vrow.replace(j,15,"ATOM DESCRIPTOR"); datum.replace(k,5,"ATOM ");
       j += 20; k += 5;
    }
 
    if (isitx)
    {
-      vrow.substr(j+4,24) = "ATOM COORDINATES (X,Y,Z)"; datum.substr(k,12) = "COORDINATES ";
+      vrow.replace(j+4,24,"ATOM COORDINATES (X,Y,Z)"); datum.replace(k,12,"COORDINATES ");
       j += 30; k += 12;
    }
 
    if (isitq)
    {
-      vrow.substr(j+3,6) = "CHARGE"; datum.substr(k,7) = "CHARGE ";
+      vrow.replace(j+3,6,"CHARGE"); datum.replace(k,7,"CHARGE ");
       j += 10; k += 7;
    }
 
    if (isitp)
    {
-      vrow.substr(j+2,8) = "GRID PT."; datum.substr(k,11) = "POTENTIALS ";
+      vrow.replace(j+2,8,"GRID PT."); datum.replace(k,11,"POTENTIALS ");
       j += 10; k += 11;
    }
 
    if (isiti)
    {
-      vrow.substr(j+1,8) = "SALT CON"; datum.substr(k,5) = "SALT ";
+      vrow.replace(j+1,8,"SALT CON"); datum.replace(k,5,"SALT ");
       j += 10; k += 5;
    }
 
@@ -88,7 +88,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitr)
    {
-      vrow.substr(j,10) = " REAC. PT."; datum.substr(k,9) = "REACTION ";
+      vrow.replace(j,10," REAC. PT."); datum.replace(k,9,"REACTION ");
       j += 10; k += 9;
    }
 
@@ -100,7 +100,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitc)
    {
-      vrow.substr(j,10) = " COUL. POT"; datum.substr(k,10) = "COULOMBIC ";
+      vrow.replace(j,10," COUL. POT"); datum.replace(k,10,"COULOMBIC ");
       j += 10; k += 10;
    }
 
@@ -112,7 +112,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitap)
    {
-      vrow.substr(j+2,8) = "ATOM PT."; datum.substr(k,11) = "ATOMIC PT. ";
+      vrow.replace(j+2,8,"ATOM PT."); datum.replace(k,11,"ATOMIC PT. ");
       j += 10; k += 11;
    }
 
@@ -124,7 +124,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitdeb)
    {
-      vrow.substr(j+3,11) = "DEBFRACTION"; datum.substr(k,12) = "DEBFRACTION ";
+      vrow.replace(j+3,11,"DEBFRACTION"); datum.replace(k,12,"DEBFRACTION ");
       j += 14; k += 12;
    }
 
@@ -136,7 +136,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitf)
    {
-      vrow.substr(j+4,25) = "GRID FIELDS: (Ex, Ey, Ez)"; datum.substr(k,7) = "FIELDS ";
+      vrow.replace(j+4,25,"GRID FIELDS: (Ex, Ey, Ez)"); datum.replace(k,7,"FIELDS ");
       j += 30;
    }
 
@@ -147,7 +147,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitrf)
    {
-      vrow.substr(j+4,25) = "REAC. FORCE: (Rx, Ry, Rz)"; datum.substr(k,7) = "RFORCE ";
+      vrow.replace(j+4,25,"REAC. FORCE: (Rx, Ry, Rz)"); datum.replace(k,7,"RFORCE ");
       j += 30;
    }
 
@@ -158,7 +158,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitcf)
    {
-      vrow.substr(j+4,25) = "COUL. FORCE: (Cx, Cy, Cz)"; datum.substr(k,7) = "CFORCE ";
+      vrow.replace(j+4,25,"COUL. FORCE: (Cx, Cy, Cz)"); datum.replace(k,7,"CFORCE ");
       j += 30;
    }
 
@@ -169,7 +169,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isittf)
    {
-      vrow.substr(j+4,25) = "TOTAL FORCE: (Tx, Ty, Tz)"; datum.substr(k,7) = "TFORCE ";
+      vrow.replace(j+4,25,"TOTAL FORCE: (Tx, Ty, Tz)"); datum.replace(k,7,"TFORCE ");
       j += 30;
    }
 
@@ -180,7 +180,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitt)
    {
-      vrow.substr(j+4,6) = " TOTAL"; datum.substr(k,6) = "TOTAL ";
+      vrow.replace(j+4,6," TOTAL"); datum.replace(k,6,"TOTAL ");
       j += 10;
    }
 
@@ -188,8 +188,8 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitsf)
    {
-      vrow.substr(j+4,65) = "sCharge,    x          y       z       urf.E°n,surf. E[kT/(qA)]";
-      datum.substr(k,35)  = "SCh, x, y, z, surf En, surf. E";
+      vrow.replace(j+4,65,"sCharge,    x          y       z       urf.E°n,surf. E[kT/(qA)]");
+      datum.replace(k,35,"SCh, x, y, z, surf En, surf. E");
       j += 50;
    }
 
@@ -212,7 +212,7 @@ void CSite::writeSite(const int& iisitsf)
    {
       if (!isitpot)
       {
-         ifFileStream.open(strFrciFile.c_str());
+         ifFileStream.open(strFrciFile.c_str()); // just inquire whether the file exists or not
          if (!ifFileStream.is_open())
          {
             CUnknownInFrcFile warning(strFrciFile);
@@ -224,6 +224,8 @@ void CSite::writeSite(const int& iisitsf)
             cout << "coordinates, etc for potential output read from file " << strFrciFile << endl;
             ifrm2 = checkFileFormat(strFrciFile);
          }
+
+         ifFileStream.close();
       }
    }
 
@@ -250,7 +252,7 @@ void CSite::writeSite(const int& iisitsf)
       string strLine,strHead;
       int iresnum;
 
-      ifFileStream15.open(strFrciFile.c_str());
+      ifFileStream15.open(strFrciFile.c_str()); // just inquire whether the file exists or not
       if (!ifFileStream15.is_open())
       {
          CUnknownInFrcFile warning(strFrciFile);
@@ -268,6 +270,7 @@ void CSite::writeSite(const int& iisitsf)
             residsf[iresnum-1] = true;
          }
       }
+
       ifFileStream15.close();
    }
 
@@ -282,16 +285,16 @@ void CSite::writeSite(const int& iisitsf)
    if (ofrm)
    {
       ofFileStream << "DELPHI SITE POTENTIAL FILE\n";
-      ofFileStream << "grid size,percent fill:" << iGrid << " " << fPercentageFill << endl;
-      ofFileStream << "outer diel. and first one assigned : " << fExDielec << " " << prgfMediaEps[1]*fEPKT << endl;
-      ofFileStream << "ionic strength (M): " << fIonStrength << endl;
-      ofFileStream << "ion excl., probe radii: " << fIonRadius << " " << rgfProbeRadius[0] << " " << rgfProbeRadius[1] << endl;
-      ofFileStream << "linear, nolinear iterations: " << iLinIterateNum << " " << iNonIterateNum << endl;
-      ofFileStream << "boundary condition: " << iBndyType << endl;
-      ofFileStream << "Data Output: " << datum << endl;
+      ofFileStream << "grid size,percent fill:   " << iGrid << "    " << fPercentageFill << endl;
+      ofFileStream << "outer diel. and first one assigned :   " << fExDielec << "    " << vctfMediaEps[1]*fEPKT << endl;
+      ofFileStream << "ionic strength (M):   " << fIonStrength << endl;
+      ofFileStream << "ion excl., probe radii:   " << fIonRadius << "    " << rgfProbeRadius[0] << "    " << rgfProbeRadius[1] << endl;
+      ofFileStream << "linear, nolinear iterations:   " << iLinIterateNum << "    " << iNonIterateNum << endl;
+      ofFileStream << "boundary condition:   " << iBndyType << endl;
+      ofFileStream << "Data Output:   " << datum << endl;
       ofFileStream << "title: " << rgcFileMap << endl;
       ofFileStream << "\n\n";
-      ofFileStream << vrow;
+      ofFileStream << vrow << endl;
    }
 
    if (!ofrm && (!(isitmd || isitpot)))
@@ -305,7 +308,7 @@ void CSite::writeSite(const int& iisitsf)
       ofFileStream << setw(5) << right << iGrid << setw(10) << right << fPercentageFill << setw(10) << right << fExDielec
                    << setw(10) << right << fIonStrength << endl;
       for (int i = 1; i <= iMediaNum; i++)
-         ofFileStream << "dielectric in medium nr. " << i << ": " << prgfMediaEps[i]*fEPKT << endl;
+         ofFileStream << "dielectric in medium nr. " << i << ": " << vctfMediaEps[i]*fEPKT << endl;
       ofFileStream << setw(10) << right << fIonRadius << setw(10) << right << rgfProbeRadius[0] << setw(10) << right << rgfProbeRadius[1]
                    << setw(5) << right << iLinIterateNum << setw(5) << right << iNonIterateNum << setw(5) << right << iBndyType << endl;
 
@@ -322,7 +325,7 @@ void CSite::writeSite(const int& iisitsf)
 
    if (isitrf || isitmd || isittf)
    {
-      if (1 == iMediaNum && 1.0e-6 > abs(prgfMediaEps[1]*fEPKT-1.0))
+      if (1 == iMediaNum && fZero > abs(vctfMediaEps[1]*fEPKT-1.0))
          rfield = rforceeps1();
       else
          rfield = rforce();
@@ -355,20 +358,23 @@ void CSite::writeSite(const int& iisitsf)
          {
             if (iAtomNum == nnatom) break;
             xo    = prgfgAtomCoordA[nnatom];
-            chrgv = prgapAtomPdb[nnatom].getCharge();
-            radu  = prgapAtomPdb[nnatom].getRadius()*fScale;
-            atm   = prgapAtomPdb[nnatom].getAtInf().substr(0,4);
-            res   = prgapAtomPdb[nnatom].getAtInf().substr(6,3);
-            rnum  = prgapAtomPdb[nnatom].getAtInf().substr(11,4);
-            chn   = prgapAtomPdb[nnatom].getAtInf().substr(10,1);
+            chrgv = vctapAtomPdb[nnatom].getCharge();
+            radu  = vctapAtomPdb[nnatom].getRadius()*fScale;
+            atm   = vctapAtomPdb[nnatom].getAtInf().substr(0,4);
+            res   = vctapAtomPdb[nnatom].getAtInf().substr(6,3);
+            rnum  = vctapAtomPdb[nnatom].getAtInf().substr(11,4);
+            chn   = vctapAtomPdb[nnatom].getAtInf().substr(10,1);
          }
          else
          {
-            if (!ifFileStream.is_open()) break;
+            //if (!ifFileStream.is_open()) break;
 
             if(ifrm2) // formatted reading
             {
                getline(ifFileStream,strLine);
+
+               if (ifFileStream.eof()) break;
+
                strHead = strLine.substr(0,6); strHead = toUpperCase(strHead);
                if (0 != strHead.compare("ATOM  ") && 0 != strHead.compare("HETATM")) continue;
                crdstr = strLine.substr(30,24);
@@ -407,17 +413,17 @@ void CSite::writeSite(const int& iisitsf)
 
          if (isita)
          {
-            atdes.substr(0,4)  = atm.substr(0,4);
-            atdes.substr(5,3)  = res.substr(0,3);
-            atdes.substr(9,1)  = chn.substr(0,1);
-            atdes.substr(11,4) = rnum.substr(0,4);
+            atdes.assign(16,' ');
+            atdes.replace( 0,atm.size(),atm);
+            atdes.replace( 5,res.size(),res);
+            atdes.replace( 9,chn.size(),chn);
+            atdes.replace(11,rnum.size(),rnum);
          }
 
          /*
           * assign charge to atom, searching for decreasingly specific specification
           * note if no charge record found, is assumed to be 0.0
           */
-
          if(!iself && ifrm2 && isitmp)
          {
             chrgv = 0.0;
@@ -433,7 +439,7 @@ void CSite::writeSite(const int& iisitsf)
             if (residsf[iresnum-1]) atmsf[nnatom-1] = true;
          }
 
-         if(isitap && 1.0e-6 < abs(chrgv))
+         if(isitap && fZero < abs(chrgv))
          {
             real rads = min(radu,fPotentialUpperBond*fScale);
             SGrid<real> xt;
@@ -465,10 +471,10 @@ void CSite::writeSite(const int& iisitsf)
             aphi = aphi/6.0;
          }
 
-         if (isitp || isiti || (isitap && 1.0e-6 > abs(chrgv)))
+         if (isitp || isiti || (isitap && fZero > abs(chrgv)))
          {
             vphi = interpl(iGrid,phimap,xn);
-            if (isitap && 1.0e-6 > abs(chrgv)) aphi = vphi;
+            if (isitap && fZero > abs(chrgv)) aphi = vphi;
             if (isitp) { etot += chrgv*vphi; phiv = vphi; }
 
             if (isiti)
@@ -567,7 +573,7 @@ void CSite::writeSite(const int& iisitsf)
 
                      if (5.0 > dist)
                      {
-                        if (1.0e-6 < dist) {temp = prggvAtomicCrg[i].nValue/dist; phic += temp/prgfAtomEps[i];}
+                        if (fZero < dist) {temp = prggvAtomicCrg[i].nValue/dist; phic += temp/prgfAtomEps[i];}
                         //----- find analytic potential from this real charge..=phiac
                         xu  = prgfgCrgPoseA[i]; crgs = prggvAtomicCrg[i].nValue;
                         xu2 = (xu-fgBoxCenter)*fScale+goff;
@@ -589,11 +595,11 @@ void CSite::writeSite(const int& iisitsf)
                phiv = interpl(iGrid,phimap,xn);
 
                string strFileName7 = "extra.dat";
-               ofstream ofFileSteam;
-               ofFileSteam.open(strFileName7.c_str());
-               ofFileSteam << phic << " " << phir << " " << phiv << " " << phias << " " << phiac << " "<< ncrg << " "
-                           << ncrgs << " " << tcrgs << endl;
-               ofFileSteam.close();
+               ofstream ofFileSteam7;
+               ofFileSteam7.open(strFileName7.c_str());
+               ofFileSteam7 << phic << " " << phir << " " << phiv << " " << phias << " " << phiac << " "<< ncrg << " "
+                            << ncrgs << " " << tcrgs << endl;
+               ofFileSteam7.close();
 
                phit = phic + phir + phiv - phias - phiac;
             }
@@ -640,12 +646,12 @@ void CSite::writeSite(const int& iisitsf)
          {
             cxyz.nX = 0.0; cxyz.nY = 0.0; cxyz.nZ = 0.0;
 
-            if (1.0e-6 < abs(chrgv))
+            if (fZero < abs(chrgv))
             {
                for (integer i = 0; i < iCrgGridNum; i++)
                {
                   vtemp = xo - prgfgCrgPoseA[i]; dist = optDot(vtemp,vtemp);
-                  if (1.0e-6 < dist)
+                  if (fZero < dist)
                   {
                      sdist = sqrt(dist)*dist;
                      temp  = prggvAtomicCrg[i].nValue/(prgfAtomEps[i]*sdist);
@@ -667,7 +673,7 @@ void CSite::writeSite(const int& iisitsf)
             for (integer i = 0; i < iCrgGridNum; i++)
             {
                vtemp = xo - prgfgCrgPoseA[i]; dist = optDot(vtemp,vtemp);
-               if (1.0e-6 < dist)
+               if (fZero < dist)
                {
                   sdist = sqrt(dist);
                   temp  = prggvAtomicCrg[i].nValue/sdist;
@@ -688,83 +694,88 @@ void CSite::writeSite(const int& iisitsf)
           * need otemp cos can not write into a substring apparently
           * otemp needs to be at least 15 long to avoid an error!!
           */
+         oline.assign(80,' '); // reset oline
          j = 0;
 
          if (isita)
          {
-            oline.substr(j,16) = atdes.substr(0,16);
+            oline.replace(j,16,atdes.substr(0,16));
             j += 20;
          }
 
          if (isitx)
          {
-            sprintf(otemp,"%10.4f",xo.nX); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",xo.nY); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",xo.nZ); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",xo.nX); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",xo.nY); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",xo.nZ); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitq)
          {
-            sprintf(otemp,"%10.4f",chrgv); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",chrgv); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitp)
          {
-            sprintf(otemp,"%10.4f",phiv);  oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",phiv);  oline.replace(j,10,otemp); j += 10;
+
+#ifdef MCCE
+            mcce_phiv.push_back(phiv);
+#endif
          }
 
          if (isiti)
          {
-            sprintf(otemp,"%10.4f",phii);  oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",phii);  oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitr)
          {
-            sprintf(otemp,"%10.4f",phir);  oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",phir);  oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitc)
          {
-            sprintf(otemp,"%10.4f",phic);  oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",phic);  oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitap)
          {
-            sprintf(otemp,"%10.4f",aphi);  oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",aphi);  oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitdeb)
          {
-            sprintf(otemp,"%10.4f",debyefraction); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",debyefraction); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitf)
          {
-            sprintf(otemp,"%10.4f",fxyz.nX); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",fxyz.nY); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",fxyz.nZ); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",fxyz.nX); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",fxyz.nY); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",fxyz.nZ); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitrf)
          {
-            sprintf(otemp,"%10.4f",rxyz.nX); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",rxyz.nY); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",rxyz.nZ); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",rxyz.nX); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",rxyz.nY); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",rxyz.nZ); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitcf)
          {
-            sprintf(otemp,"%10.4f",cxyz.nX); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",cxyz.nY); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",cxyz.nZ); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",cxyz.nX); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",cxyz.nY); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",cxyz.nZ); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isittf)
          {
             vtemp = rxyz + cxyz;
-            sprintf(otemp,"%10.4f",vtemp.nX); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",vtemp.nY); oline.substr(j,10) = otemp; j += 10;
-            sprintf(otemp,"%10.4f",vtemp.nZ); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",vtemp.nX); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",vtemp.nY); oline.replace(j,10,otemp); j += 10;
+            sprintf(otemp,"%10.4f",vtemp.nZ); oline.replace(j,10,otemp); j += 10;
          }
 
          if (isitmd)
@@ -777,7 +788,7 @@ void CSite::writeSite(const int& iisitsf)
 
          if (isitt)
          {
-            sprintf(otemp,"%10.4f",phit); oline.substr(j,10) = otemp; j += 10;
+            sprintf(otemp,"%10.4f",phit); oline.replace(j,10,otemp); j += 10;
          }
 
          if (ofrm && isitmp1) ofFileStream << oline << endl;
@@ -797,6 +808,7 @@ void CSite::writeSite(const int& iisitsf)
             if (isitcf) ofFileStream << cxyz  << endl;
             if (isittf) { vtemp = rxyz + cxyz; ofFileStream << vtemp << endl;}
          }
+
       } while(true); // end of the big loop on natom
    }
 
@@ -831,12 +843,12 @@ void CSite::writeSite(const int& iisitsf)
             {
                jtmp = j;
 
-               sprintf(otemp,"%10.4f",prgfSurfCrgE[jj]); oline.substr(jtmp,10) = otemp; jtmp += 10;
-               sprintf(otemp,"%10.4f",xo.nX);            oline.substr(jtmp,10) = otemp; jtmp += 10;
-               sprintf(otemp,"%10.4f",xo.nY);            oline.substr(jtmp,10) = otemp; jtmp += 10;
-               sprintf(otemp,"%10.4f",xo.nZ);            oline.substr(jtmp,10) = otemp; jtmp += 10;
-               sprintf(otemp,"%10.4f",fn);               oline.substr(jtmp,10) = otemp; jtmp += 10;
-               sprintf(otemp,"%10.4f",ff);               oline.substr(jtmp,10) = otemp; jtmp += 10;
+               sprintf(otemp,"%10.4f",prgfSurfCrgE[jj]); oline.replace(jtmp,10,otemp); jtmp += 10;
+               sprintf(otemp,"%10.4f",xo.nX);            oline.replace(jtmp,10,otemp); jtmp += 10;
+               sprintf(otemp,"%10.4f",xo.nY);            oline.replace(jtmp,10,otemp); jtmp += 10;
+               sprintf(otemp,"%10.4f",xo.nZ);            oline.replace(jtmp,10,otemp); jtmp += 10;
+               sprintf(otemp,"%10.4f",fn);               oline.replace(jtmp,10,otemp); jtmp += 10;
+               sprintf(otemp,"%10.4f",ff);               oline.replace(jtmp,10,otemp); jtmp += 10;
 
                ofFileStream << oline << endl;
             }
@@ -884,7 +896,7 @@ void CSite::writeSite(const int& iisitsf)
     * end of formatted frc read/write and unformatted frc write
     * end of unformatted frc.pdb read and frc write
     */
-   ofFileStream.close();
+   if (ofFileStream.is_open()) ofFileStream.close();
 
 #ifdef VERBOSE
    cout << "frc stuff now done at "; pTimer->showTime(); cout << endl;

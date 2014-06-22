@@ -14,29 +14,32 @@ void CDelphiSpace::VdwToMs()
 //2011-05-17 bndeps is declared in pointers module
     integer eps[7],nt;
     integer itmp[7],dim1,cont;
-    integer iaprec,objecttype,dim,sign,epsdim,isign;
+    integer iaprec,dim,epsdim,isign;
 //    integer imap[4][6]= {0}; //use same indexes
     integer imap[5][7]= {0};
-    integer kind,eps2[7],j3;
+    integer kind,eps2[7];
     bool remov;
     string strtmp;
-    SGrid <real> itemp, rtemp,xq,dxyz,dr123,dx123,u123;
+    SGrid <real> xq,dxyz,dr123,dx123,u123;
     SGrid <real> goff[7]= {0.,0.,0.},xg,x1xyz,s123,xxyyzz;
-    SGrid <integer> ixyz,it123,ixyz2,jxyz;
+    SGrid <integer> ixyz,it123,jxyz;
     //type(int_coord), allocatable :: ibgrd_temp(:);
-    SGrid <integer> * ibgrd_temp;
-    bool out,intb,exists,flag,cycle_flag=false;
+    //SGrid <integer> * ibgrd_temp;
+    //bool out,intb;
+    bool exists,flag,cycle_flag=false;
     bool nbe[7]= {false};
 //2011-05-27 Declarations added due to IMPLICIT NONE
     real offf,cbln,cba,del,dis,dmn,dist=0,ds2,off,dsr,r0a;
-    real s1,s2,s3,x1,radp,prbrd12,prbrd22,rsm,rsm1,prbrd2;
-    integer ia,i,iac,ibgp,ii,iext,iarv,iacv,iiii,imedia;
-    integer iiord,ios,it1,it2,it3,iv,ix2,iy2,iz2,ix,iy,iz;
+    real x1,prbrd12,prbrd22,rsm,prbrd2;
+    integer ia,i,iac,ibgp,ii,iext,iarv,iacv,imedia;
+    integer iiord,ix2,iy2,iz2,ix,iy,iz;
     integer iii,iord,j,jj,jjj,jx,jy,jz,limu,liml,kk,m,k,n;
-    integer mr,mpr,n2,nacc,natm,nmmt,ndv,ncms,ncav,nnn,nnbr;
-    integer nn,ntt,nmt,n1,Nar,iqqq;
+    integer mr,mpr,n2,ndv,ncav,nnn,nnbr;
+    //integer nmt,nmmt,ncms;
+    integer nn,ntt,n1,Nar;
     integer **** bndeps;  //bndeps is a local variable in C++
     integer ibmx=1000000; //ibmx is a local variable in C++
+
 
 //2011-05-17 Arrays allocated by ordinary F95 allocate statement
     //allocate(ibnd(ibmx),r0(iNatom),r02(iNatom),rs2(iNatom));
@@ -48,7 +51,7 @@ void CDelphiSpace::VdwToMs()
     if(space_debug) cout << "iAtomMed_v.size(): " << iAtomMed_v.size() << endl;
 /*
     for (i=0;i<=iAtomMed_v.size()-1;i++){
-        cout << i << " " << iAtomMed[i+1] << " " << endl;
+        cout << i << " " << iAtomMfed[i+1] << " " << endl;
 
     }
     cout << endl;
@@ -63,7 +66,8 @@ void CDelphiSpace::VdwToMs()
     rs2.assign(iNatom+1,0.0);
     ast.assign(iNatom+1,0);
 
-    bndeps = get_pt4d <integer> (iGrid+1,iGrid+1,iGrid+1,3);
+    //bndeps = get_pt4d <integer> (iGrid+1,iGrid+1,iGrid+1,3);
+    get_pt4d <integer> (bndeps,iGrid+1,iGrid+1,iGrid+1,3);
 
 
 
@@ -120,8 +124,19 @@ void CDelphiSpace::VdwToMs()
     if(space_debug) cout << "cMin,cMax: " << cMin << " " << cMax <<endl;
 
 //find global extrema
-    cMin= {6000.0,6000.0,6000.0};
-    cMax= {-6000,-6000,-6000};
+    //cMin= {6000.0,6000.0,6000.0};
+    //cMax= {-6000,-6000,-6000};
+
+        //cMin= {6000.,6000.,6000.};
+        cMin.nX=6000.;
+        cMin.nY=6000.;
+        cMin.nZ=6000.;
+
+        //cMax= {-6000.,-6000.,-6000.};
+        cMax.nX=-6000.;
+        cMax.nY=-6000.;
+        cMax.nZ=-6000.;
+
     for(ii=0; ii<=iNObject-1; ii++)
     {
         cMin=optMin(cMin,sLimObject[ii].nMin);
@@ -135,8 +150,8 @@ void CDelphiSpace::VdwToMs()
 //find vanderwaals boundary
     n=0;
     nn=0;
-    nmt=0;
-    nmmt=0;
+    //nmt=0;
+    //nmmt=0;
 
 //NB change limits to those of the molecule. set for iepsmp NOT equal to unity
     if(space_debug) cout << "LimEps: " << LimEps.nMin << LimEps.nMax << endl;
@@ -155,12 +170,12 @@ void CDelphiSpace::VdwToMs()
                 ibgp=0;
 
                 //Lin Li: six neighbors: itmp is iatmmed or 0;
-                itmp[1]=abs(iepsmp[i][j][k].nX)/epsdim; //right
-                itmp[2]=abs(iepsmp[i][j][k].nY)/epsdim; //front
-                itmp[3]=abs(iepsmp[i][j][k].nZ)/epsdim; //up
-                itmp[4]=abs(iepsmp[i-1][j][k].nX)/epsdim; //left
-                itmp[5]=abs(iepsmp[i][j-1][k].nY)/epsdim; //back
-                itmp[6]=abs(iepsmp[i][j][k-1].nZ)/epsdim; //down
+                itmp[1]=abs(iepsmp[k][j][i].nX)/epsdim; //right
+                itmp[2]=abs(iepsmp[k][j][i].nY)/epsdim; //front
+                itmp[3]=abs(iepsmp[k][j][i].nZ)/epsdim; //up
+                itmp[4]=abs(iepsmp[k][j][i-1].nX)/epsdim; //left
+                itmp[5]=abs(iepsmp[k][j-1][i].nY)/epsdim; //back
+                itmp[6]=abs(iepsmp[k-1][j][i].nZ)/epsdim; //down
 
                 //cout << itmp[1] << " "<< itmp[2] << " "<< itmp[3] << " "<< itmp[4] << " "<< itmp[5] << " "<< itmp[6] << endl;
                 if(itmp[1]==0) iext=1; //external point
@@ -194,15 +209,16 @@ void CDelphiSpace::VdwToMs()
                 }// if
 
                 {
+/*
 #ifdef DEBUG
                     nt=0;
 //passed from mod to dim, I need the medium
-                    if((iepsmp[i][j][k].nX/epsdim)>0)nt=nt+1;
-                    if((iepsmp[i][j][k].nY/epsdim)>0)nt=nt+1;
-                    if((iepsmp[i][j][k].nZ/epsdim)>0)nt=nt+1;
-                    if((iepsmp[i-1][j][k].nX/epsdim)>0)nt=nt+1;
-                    if((iepsmp[i][j-1][k].nY/epsdim)>0)nt=nt+1;
-                    if((iepsmp[i][j][k-1].nZ/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k][j][i].nX/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k][j][i].nY/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k][j][i].nZ/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k][j][i-1].nX/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k][j-1][i].nY/epsdim)>0)nt=nt+1;
+                    if((iepsmp[k-1][j][i].nZ/epsdim)>0)nt=nt+1;
 
                     if (nbe[nt] != ((iext==1)&&(ibgp==1)))
                     {
@@ -216,9 +232,10 @@ void CDelphiSpace::VdwToMs()
                         rtemp=((itemp-offf)/fScale)+cOldMid;
 
                         cout <<rtemp << endl;
-                        //cout <<iepsmp[i][j][k] << iepsmp[i-1][j][k].nX << iepsmp[i << j-1 << k].nY << iepsmp[i << j << k-1].nZ << endl;
+                        //cout <<iepsmp[k][j][i] << iepsmp[i-1][j][k].nX << iepsmp[i << j-1 << k].nY << iepsmp[i << j << k-1].nZ << endl;
                     }// if
 #endif //DEBUG
+ */
                 };
             }// do
         }// do
@@ -269,8 +286,9 @@ void CDelphiSpace::VdwToMs()
     if (radpmax<1.e-6) //prob radius = 0
     {
         //allocate(ibgrd(iBoundNum));
-        ibgrd_v.assign(iBoundNum+1, {0,0,0});
-	ibgrd=&ibgrd_v[-1];
+        //ibgrd_v.assign(iBoundNum+1, {0,0,0});
+        ibgrd_v.assign(iBoundNum+1, sgrid_temp_int);
+        ibgrd=&ibgrd_v[-1];
 
 //2011-05-17 Changed to array operations, but keeping some assignment in a cycle due to array size mismatch
         //ast=0; already initialized.
@@ -356,9 +374,10 @@ void CDelphiSpace::VdwToMs()
         //cout << "extot: " << extot << endl;
         //inquire(file='ARCDAT',exist=exists);
         flag=true;
+        /*
         if (exists&&bOnlyMol) // ARCDAT related, forget it now...
         {
-            /*
+
             open(1,file='ARCDAT',form='unformatted',status='old',iostat=ios);
             read(1)natm,radp,nacc,rsm1;
 
@@ -384,9 +403,9 @@ void CDelphiSpace::VdwToMs()
             {
             //close (1);
             }// if
-            */
-        }// if
 
+        }// if
+        */
         //if (flag) //if no ARCDAT
         if(true)
         {
@@ -530,7 +549,7 @@ void CDelphiSpace::VdwToMs()
         mpr=100000;
         ndv=0;
 
-        if(space_debug) if(space_debug) cout << "### start while loop: ###" << endl;
+        if(space_debug) cout << "### start while loop: ###" << endl;
 //D100:
         while(true)
         {
@@ -554,24 +573,24 @@ void CDelphiSpace::VdwToMs()
                     remov=false;
 
 //tengo il mod perche' deve pr}//ere solo punti in atomi
-                    eps[1]=(iepsmp[ix][iy][iz].nX%epsdim);
-                    eps[2]=(iepsmp[ix][iy][iz].nY%epsdim);
-                    eps[3]=(iepsmp[ix][iy][iz].nZ%epsdim);
-                    eps[4]=(iepsmp[ix-1][iy][iz].nX%epsdim);
-                    eps[5]=(iepsmp[ix][iy-1][iz].nY%epsdim);
-                    eps[6]=(iepsmp[ix][iy][iz-1].nZ%epsdim);
+                    eps[1]=(iepsmp[iz][iy][ix].nX%epsdim);
+                    eps[2]=(iepsmp[iz][iy][ix].nY%epsdim);
+                    eps[3]=(iepsmp[iz][iy][ix].nZ%epsdim);
+                    eps[4]=(iepsmp[iz][iy][ix-1].nX%epsdim);
+                    eps[5]=(iepsmp[iz][iy-1][ix].nY%epsdim);
+                    eps[6]=(iepsmp[iz-1][iy][ix].nZ%epsdim);
 
                     remov=((eps[1]>1&&eps[1]<=iNatom+1)||(eps[2]>1&&eps[2]<=iNatom+1));
                     remov=((eps[3]>1&&eps[3]<=iNatom+1)||(eps[4]>1&&eps[4]<=iNatom+1))||remov;
                     remov=((eps[5]>1&&eps[5]<=iNatom+1)||(eps[6]>1&&eps[6]<=iNatom+1))||remov;
 
 //da farsi solo se pores eps2 contiene il mezzo
-                    eps2[1]=(iepsmp[ix][iy][iz].nX/epsdim);
-                    eps2[2]=(iepsmp[ix][iy][iz].nY/epsdim);
-                    eps2[3]=(iepsmp[ix][iy][iz].nZ/epsdim);
-                    eps2[4]=(iepsmp[ix-1][iy][iz].nX/epsdim);
-                    eps2[5]=(iepsmp[ix][iy-1][iz].nY/epsdim);
-                    eps2[6]=(iepsmp[ix][iy][iz-1].nZ/epsdim);
+                    eps2[1]=(iepsmp[iz][iy][ix].nX/epsdim);
+                    eps2[2]=(iepsmp[iz][iy][ix].nY/epsdim);
+                    eps2[3]=(iepsmp[iz][iy][ix].nZ/epsdim);
+                    eps2[4]=(iepsmp[iz][iy][ix-1].nX/epsdim);
+                    eps2[5]=(iepsmp[iz][iy-1][ix].nY/epsdim);
+                    eps2[6]=(iepsmp[iz-1][iy][ix].nZ/epsdim);
 
 //cWWW there is still an issue in case there are both molecules and objects: since parent object of
 //reentrant points is only known in sclbp, filling reentrant regions due to molecules in objects might fail
@@ -611,12 +630,12 @@ void CDelphiSpace::VdwToMs()
                             {
                                 cout <<"midpoint out of cube" << endl;
                                 //write(6,'(2i5,3f8.3,3i6,3i8)')i,j,xxyyzz,jxyz,lmncb1;
-                                cout <<iepsmp[ix ][ iy ][ iz].nX << endl;
-                                cout <<iepsmp[ix ][ iy ][ iz].nY << endl;
-                                cout <<iepsmp[ix ][ iy ][ iz].nZ << endl;
-                                cout <<iepsmp[ix-1 ][ iy ][ iz].nX << endl;
-                                cout <<iepsmp[ix ][ iy-1 ][ iz].nY << endl;
-                                cout <<iepsmp[ix ][ iy ][ iz-1].nZ << endl;
+                                cout <<iepsmp[ iz][ iy ][ix ].nX << endl;
+                                cout <<iepsmp[ iz][ iy ][ix ].nY << endl;
+                                cout <<iepsmp[ iz][ iy ][ix ].nZ << endl;
+                                cout <<iepsmp[ iz][ iy ][ix-1 ].nX << endl;
+                                cout <<iepsmp[ iz][ iy-1 ][ix ].nY << endl;
+                                cout <<iepsmp[ iz-1][ iy ][ix ].nZ << endl;
                             }// if
         //if(i==119) cout<< "flag 7:" << endl;
                             dmn=1000.;
@@ -823,10 +842,15 @@ void CDelphiSpace::VdwToMs()
                             //cout << "liml,limu: " << liml << " " << limu << endl;
 
 //DOKK:
+
+                            //if(liml==3911) cout << "liml;limu: " << liml << " " << limu << endl;
                             for( kk=liml; kk<=limu; kk++)
                             {
                                 ia=cbal[kk];
+                                //if(liml==3911) cout << "kk,ia: " << kk << " " << ia << endl;
+                                //if (ia==0) cout << "ia: " << ia << endl;
                                 if (ia==0) cout <<"problems with cube" << endl;
+                                //if (ia==0) cout << "liml;limu: " << liml << " " << limu << endl;
 
                                 if (ia<=iNatom&&ia>0)
                                 {
@@ -896,6 +920,7 @@ void CDelphiSpace::VdwToMs()
 
                             if (iac==0)
                             {
+/*
 #ifdef DEBUG
 
                                 cout <<"bgp:" << i << " might be a cavity point" << ix << iy << iz << endl;
@@ -903,6 +928,7 @@ void CDelphiSpace::VdwToMs()
                                 cout <<"it1:" << it1 << " it2:" << it2 << " it3:" << it3 << endl;
 
 #endif //DEBUG
+*/
                                 ncav=ncav+1;
 
 //possibly a cavity point
@@ -1004,14 +1030,14 @@ void CDelphiSpace::VdwToMs()
                             switch (imap[4][j])
                             {
                             case 1:
-                                iepsmp[ix+imap[1][j]][iy+imap[2][j]][iz+imap[3][j]].nX=eps[j]+imedia*epsdim;
-                                //cout << "i,j,ix+imap[1][j],iy+imap[2][j],iz+imap[3][j],iepsmp: " << i << " " << j << " " << ix+imap[1][j] << " " <<iy+imap[2][j] << " " << iz+imap[3][j]<< " "  << iepsmp[ix+imap[1][j]][iy+imap[2][j]][iz+imap[3][j]] << endl;
+                                iepsmp[iz+imap[3][j]][iy+imap[2][j]][ix+imap[1][j]].nX=eps[j]+imedia*epsdim;
+                                //cout << "i,j,ix+imap[1][j],iy+imap[2][j],iz+imap[3][j],iepsmp: " << i << " " << j << " " << ix+imap[1][j] << " " <<iy+imap[2][j] << " " << iz+imap[3][j]<< " "  << iepsmp[iz+imap[3][j]][iy+imap[2][j]][ix+imap[1][j]] << endl;
                                 break;
                             case 2:
-                                iepsmp[ix+imap[1][j]][iy+imap[2][j]][iz+imap[3][j]].nY=eps[j]+imedia*epsdim;
+                                iepsmp[iz+imap[3][j]][iy+imap[2][j]][ix+imap[1][j]].nY=eps[j]+imedia*epsdim;
                                 break;
                             case 3:
-                                iepsmp[ix+imap[1][j]][iy+imap[2][j]][iz+imap[3][j]].nZ=eps[j]+imedia*epsdim;
+                                iepsmp[iz+imap[3][j]][iy+imap[2][j]][ix+imap[1][j]].nZ=eps[j]+imedia*epsdim;
                                 break;
                             default:
                                 cout <<"????? flag1" << endl;
@@ -1061,12 +1087,12 @@ void CDelphiSpace::VdwToMs()
                             ibgp=0;
 
 //2011-05-18 Changed to i nt_coord derived type
-                            itmp[1]=abs(iepsmp[ix2][iy2][iz2].nX)/epsdim;
-                            itmp[2]=abs(iepsmp[ix2][iy2][iz2].nY)/epsdim;
-                            itmp[3]=abs(iepsmp[ix2][iy2][iz2].nZ)/epsdim;
-                            itmp[4]=abs(iepsmp[ix2-1][iy2][iz2].nX)/epsdim;
-                            itmp[5]=abs(iepsmp[ix2][iy2-1][iz2].nY)/epsdim;
-                            itmp[6]=abs(iepsmp[ix2][iy2][iz2-1].nZ)/epsdim;
+                            itmp[1]=abs(iepsmp[iz2][iy2][ix2].nX)/epsdim;
+                            itmp[2]=abs(iepsmp[iz2][iy2][ix2].nY)/epsdim;
+                            itmp[3]=abs(iepsmp[iz2][iy2][ix2].nZ)/epsdim;
+                            itmp[4]=abs(iepsmp[iz2][iy2][ix2-1].nX)/epsdim;
+                            itmp[5]=abs(iepsmp[iz2][iy2-1][ix2].nY)/epsdim;
+                            itmp[6]=abs(iepsmp[iz2-1][iy2][ix2].nZ)/epsdim;
 
                             if(itmp[1]==0) iext=1;
                             if(itmp[1]!=itmp[6]) ibgp=1;
@@ -1079,12 +1105,12 @@ void CDelphiSpace::VdwToMs()
 
 #ifdef DEBUG
                             nt=0;
-                            if((iepsmp[ix2][iy2][iz2].nX/epsdim)>0) nt=nt+1;
-                            if((iepsmp[ix2][iy2][iz2].nY/epsdim)>0) nt=nt+1;
-                            if((iepsmp[ix2][iy2][iz2].nZ/epsdim)>0) nt=nt+1;
-                            if((iepsmp[ix2-1][iy2][iz2].nX/epsdim)>0) nt=nt+1;
-                            if((iepsmp[ix2][iy2-1][iz2].nY/epsdim)>0) nt=nt+1;
-                            if((iepsmp[ix2][iy2][iz2-1].nZ/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2][iy2][ix2].nX/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2][iy2][ix2].nY/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2][iy2][ix2].nZ/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2][iy2][ix2-1].nX/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2][iy2-1][ix2].nY/epsdim)>0) nt=nt+1;
+                            if((iepsmp[iz2-1][iy2][ix2].nZ/epsdim)>0) nt=nt+1;
                             if(nbe[nt]!=(ibgp==1&&iext==1))
                             {
                                 cout <<"PROBLEMS3" << ix2 << iy2 << iz2 << endl;
@@ -1128,16 +1154,17 @@ void CDelphiSpace::VdwToMs()
 //remap iepsmp in case there have been changes.. (that is some 0's became -1's)
 //in other words: midpoint must remain external to objects
                     for(jj=1; jj<=6; jj++)
+
                     {
 //in this way I can deal with eps[jj]<0
                         isign=1;
 
 //iord=owner of the midpoint jj before change or after eps=1
-                        iiord=optComp(iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]],imap[4][jj]);
+                        iiord=optComp(iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]],imap[4][jj]);
                         iord=(iiord%epsdim);
                         //if(i==562){
                         //    cout << "ix+imap[1][jj],iy+imap[2][jj],iz+imap[3][jj]" << ix+imap[1][jj] << " " << iy+imap[2][jj] << " " << iz+imap[3][jj] << endl;
-                        //    cout << "jj,iiord,iepsmp,imap[4][jj]: " << jj << " " << iiord << " " << iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]] << " " << imap[4][jj] << endl;
+                        //    cout << "jj,iiord,iepsmp,imap[4][jj]: " << jj << " " << iiord << " " << iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]] << " " << imap[4][jj] << endl;
                         //}
                         //if (iord<0){
                         //    cout << "i,jj,iord,iiord,epsdim: " << i << " " << jj << " " << iord << " " << iiord << " " << epsdim << endl;
@@ -1162,16 +1189,16 @@ void CDelphiSpace::VdwToMs()
                         {
                         case 1:
                             //cout << "case 1:" << endl;
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nX=isign*(iord+jjj*epsdim);
-                            //cout << "i,jj,ix+imap[1][jj],iy+imap[2][jj],iz+imap[3][jj],iepsmp: " << i << " " << jj << " " << ix+imap[1][jj] << " " <<iy+imap[2][jj] << " " << iz+imap[3][jj]<< " "  << iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]] << endl;
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nX=isign*(iord+jjj*epsdim);
+                            //cout << "i,jj,ix+imap[1][jj],iy+imap[2][jj],iz+imap[3][jj],iepsmp: " << i << " " << jj << " " << ix+imap[1][jj] << " " <<iy+imap[2][jj] << " " << iz+imap[3][jj]<< " "  << iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]] << endl;
                                 break;
                         case 2:
                             //cout << "case 2:" << endl;
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nY=isign*(iord+jjj*epsdim);
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nY=isign*(iord+jjj*epsdim);
                             break;
                         case 3:
                             //cout << "case 3:" << endl;
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nZ=isign*(iord+jjj*epsdim);
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nZ=isign*(iord+jjj*epsdim);
                             break;
                         default:
                             if(space_debug) cout <<"????? flag2" << endl;
@@ -1185,12 +1212,12 @@ void CDelphiSpace::VdwToMs()
                     iext=0;
                     ibgp=0;
 
-                    itmp[1]=abs(iepsmp[ix][iy][iz].nX)/epsdim;
-                    itmp[2]=abs(iepsmp[ix][iy][iz].nY)/epsdim;
-                    itmp[3]=abs(iepsmp[ix][iy][iz].nZ)/epsdim;
-                    itmp[4]=abs(iepsmp[ix-1][iy][iz].nX)/epsdim;
-                    itmp[5]=abs(iepsmp[ix][iy-1][iz].nY)/epsdim;
-                    itmp[6]=abs(iepsmp[ix][iy][iz-1].nZ)/epsdim;
+                    itmp[1]=abs(iepsmp[iz][iy][ix].nX)/epsdim;
+                    itmp[2]=abs(iepsmp[iz][iy][ix].nY)/epsdim;
+                    itmp[3]=abs(iepsmp[iz][iy][ix].nZ)/epsdim;
+                    itmp[4]=abs(iepsmp[iz][iy][ix-1].nX)/epsdim;
+                    itmp[5]=abs(iepsmp[iz][iy-1][ix].nY)/epsdim;
+                    itmp[6]=abs(iepsmp[iz-1][iy][ix].nZ)/epsdim;
 
                     if(itmp[1]==0) iext=1;
                     if(itmp[1]!=itmp[6]) ibgp=1;
@@ -1204,12 +1231,12 @@ void CDelphiSpace::VdwToMs()
 #ifdef DEBUG
 
                     nt=0;
-                    if((abs(iepsmp[ix][iy][iz].nX)/epsdim)>0)nt=nt+1;
-                    if((abs(iepsmp[ix][iy][iz].nY)/epsdim)>0)nt=nt+1;
-                    if((abs(iepsmp[ix][iy][iz].nZ)/epsdim)>0)nt=nt+1;
-                    if((abs(iepsmp[ix-1][iy][iz].nX)/epsdim)>0) nt=nt+1;
-                    if((abs(iepsmp[ix][iy-1][iz].nY)/epsdim)>0) nt=nt+1;
-                    if((abs(iepsmp[ix][iy][iz-1].nZ)/epsdim)>0) nt=nt+1;
+                    if((abs(iepsmp[iz][iy][ix].nX)/epsdim)>0)nt=nt+1;
+                    if((abs(iepsmp[iz][iy][ix].nY)/epsdim)>0)nt=nt+1;
+                    if((abs(iepsmp[iz][iy][ix].nZ)/epsdim)>0)nt=nt+1;
+                    if((abs(iepsmp[iz][iy][ix-1].nX)/epsdim)>0) nt=nt+1;
+                    if((abs(iepsmp[iz][iy-1][ix].nY)/epsdim)>0) nt=nt+1;
+                    if((abs(iepsmp[iz-1][iy][ix].nZ)/epsdim)>0) nt=nt+1;
 
                     if (nbe[nt] != (ibgp==1&&iext==1))
                     {
@@ -1217,12 +1244,12 @@ void CDelphiSpace::VdwToMs()
                         cout <<"epsdim=" << epsdim << "ibgp=" << ibgp << "iext=" << iext << endl;
                         cout <<"itmp" << itmp << endl;
                         /*
-                        cout <<iepsmp[ix << iy << iz].nX << endl;
-                        cout <<iepsmp[ix << iy << iz].nY << endl;
-                        cout <<iepsmp[ix << iy << iz].nZ << endl;
-                        cout <<iepsmp[ix-1 << iy << iz].nX << endl;
-                        cout <<iepsmp[ix << iy-1 << iz].nY << endl;
-                        cout <<iepsmp[ix << iy << iz-1].nZ << endl;
+                        cout <<iepsmp[ iy ][x ][ix << iy << iz<< iz].nX << endl;
+                        cout <<iepsmp[ iy ][x ][ix << iy << iz<< iz].nY << endl;
+                        cout <<iepsmp[ iy ][x ][ix << iy << iz<< iz].nZ << endl;
+                        cout <<iepsmp[<< i][x-][ix-1 << iy << izy << iz].nX << endl;
+                        cout <<iepsmp[ iy-][x ][ix << iy-1 << iz1 << iz].nY << endl;
+                        cout <<iepsmp[ iy ][x ][ix << iy << iz-1<< iz-1].nZ << endl;
                         */
                     }// if
 
@@ -1298,11 +1325,16 @@ void CDelphiSpace::VdwToMs()
             {
                 for (iz=1; iz<=iGrid; iz++)
                 {
-                    epsfile << setw(5) << iepsmp[ix][iy][iz].nX
-                            << setw(5) << iepsmp[ix][iy][iz].nY
-                            << setw(5) << iepsmp[ix][iy][iz].nZ
+                    epsfile << setw(5) << iepsmp[iz][iy][ix].nX
+                            << setw(5) << iepsmp[iz][iy][ix].nY
+                            << setw(5) << iepsmp[iz][iy][ix].nZ
                             << endl;
+
+#ifdef IJK
                     debfile << idebmap[ix][iy][iz] << endl;
+#endif // IJK
+                    debfile << idebmap[iz][iy][ix] << endl;
+
                     /*
                     if(bDebMap[ix-1][iy-1][iz-1]){
                        debfile << "T" << " " << bDebMap[ix-1][iy-1][iz-1] <<endl;
@@ -1353,8 +1385,10 @@ void CDelphiSpace::VdwToMs()
         if(cbn2_v.size()>0) vector <integer>().swap(cbn2_v);
         if(cbal.size()>0) vector <integer>().swap(cbal);
 
-        free_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
-        free_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
+        if(cbn1 != NULL) free_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
+        if(space_debug) cout << "### freed cbn1 ###" << endl;
+        if(space_debug) cout << "### cbn1: " << cbn1 << endl;
+        if(cbn2 != NULL) free_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
 
 
 #ifdef VERBOSE
@@ -1364,13 +1398,13 @@ void CDelphiSpace::VdwToMs()
 
 //consolidate the list, removing dead boundary points, adding new ones..
         j=0;
-        ncms=0;
+        //ncms=0;
 
 //2011-05-19 Array is re-sized keeping old values in the
 //memory.
 
 
-	cout << "Lin Li: ibgrd_v.size(): " << ibgrd_v.size() << endl;
+	if(space_debug)cout << "Lin Li: ibgrd_v.size(): " << ibgrd_v.size() << endl;
 
         if(ibgrd_v.size() > 0)
         {
@@ -1379,7 +1413,7 @@ void CDelphiSpace::VdwToMs()
             if (Nar<ibmx)
             {
                 ibgrd_v.resize(ibmx);
-		ibgrd=&ibgrd_v[-1];
+                ibgrd=&ibgrd_v[-1];
 
                 /* don't need this because of using vectors
                 allocate(ibgrd_temp(Nar));
@@ -1395,8 +1429,9 @@ void CDelphiSpace::VdwToMs()
         }
         else
         {
-            ibgrd_v.assign(ibmx+1,{0,0,0});
-	    ibgrd=&ibgrd_v[-1];
+            //ibgrd_v.assign(ibmx+1,{0,0,0});
+            ibgrd_v.assign(ibmx+1,sgrid_temp_int);
+            ibgrd=&ibgrd_v[-1];
 
         }// if
 
@@ -1431,7 +1466,7 @@ void CDelphiSpace::VdwToMs()
             for(jj=1; jj<=6; jj++)
             {
 
-                ntt=optComp(iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]],imap[4][jj]);
+                ntt=optComp(iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]],imap[4][jj]);
                 nt=(ntt%epsdim);
 
                 if (nt<0)
@@ -1441,13 +1476,13 @@ void CDelphiSpace::VdwToMs()
                     switch (imap[4][jj])
                     {
                     case 1:
-                        iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nX=ntt;
+                        iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nX=ntt;
                         break;
                     case 2:
-                        iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nY=ntt;
+                        iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nY=ntt;
                         break;
                     case 3:
-                        iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nZ=ntt;
+                        iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nZ=ntt;
                         break;
                     default:
                         if(space_debug) cout <<"????? flag3" << endl;
@@ -1460,13 +1495,13 @@ void CDelphiSpace::VdwToMs()
                         switch (imap[4][jj])
                         {
                         case 1:
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nX=ntt;
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nX=ntt;
                             break;
                         case 2:
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nY=ntt;
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nY=ntt;
                             break;
                         case 3:
-                            iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]].nZ=ntt;
+                            iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]].nZ=ntt;
                             break;
                         default:
                             if(space_debug) cout <<"????? flag4" << endl;
@@ -1476,7 +1511,7 @@ void CDelphiSpace::VdwToMs()
                 }// if
 
 #ifdef DEBUG
-                ntt=optComp(iepsmp[ix+imap[1][jj]][iy+imap[2][jj]][iz+imap[3][jj]],imap[4][jj]);
+                ntt=optComp(iepsmp[iz+imap[3][jj]][iy+imap[2][jj]][ix+imap[1][jj]],imap[4][jj]);
                 nt=(ntt%epsdim);
                 jjj=ntt/epsdim;
                 if (nt==0&&jjj>0)
@@ -1528,8 +1563,8 @@ void CDelphiSpace::VdwToMs()
     if(allocated(ibnd)) deallocate(ibnd);
     */
     //delete bndeps;
-    //delete ibnd;
-    //free_pt4d<integer>(bndeps,iGrid+1,iGrid+1,iGrid+1,3);
+    delete [] ibnd;
+    if(bndeps != NULL) free_pt4d<integer>(bndeps,iGrid+1,iGrid+1,iGrid+1,3);
 
     if(space_debug) cout << "free memery done" << endl;
 
@@ -1543,7 +1578,8 @@ void CDelphiSpace::VdwToMs()
 
 
             //allocate(scspos(iBoundNum));
-            scspos_v.assign(iBoundNum,{0.,0.,0.});
+            //scspos_v.assign(iBoundNum,{0.,0.,0.});
+            scspos_v.assign(iBoundNum,sgrid_temp_real);
             scspos=&scspos_v[-1];
 
             //cout << "Lin Li: 0" << endl;
@@ -1559,7 +1595,8 @@ void CDelphiSpace::VdwToMs()
 
             //allocate(scsnor(iBoundNum),atsurf(iBoundNum),atndx(iBoundNum));
 
-            scsnor_v.assign(iBoundNum,{0.,0.,0.});
+            //scsnor_v.assign(iBoundNum,{0.,0.,0.});
+            scsnor_v.assign(iBoundNum,sgrid_temp_real);
             scsnor=&scsnor_v[-1];
             //scsnor = new  SGrid <real>  [iBoundNum+1];
 
@@ -1569,6 +1606,7 @@ void CDelphiSpace::VdwToMs()
 
             atndx_v.assign(iBoundNum,0);
             atndx=&atndx_v[-1];
+
             //atndx = new integer [iBoundNum+1];
 
 
@@ -1588,12 +1626,15 @@ void CDelphiSpace::VdwToMs()
         {
 //2011-05-19 Parameters transfered via module architecture
             //allocate(egrid(iGrid,iGrid,iGrid));
-            egrid = get_pt3d <SGrid <integer> > (iGrid+1,iGrid+1,iGrid+1);
+
+            //egrid = get_pt3d <SGrid <integer> > (iGrid+1,iGrid+1,iGrid+1);
+            get_pt3d <SGrid <integer> > (egrid,iGrid+1,iGrid+1,iGrid+1);
+
            // msrf();
 
 
             //if(allocated(egrid) )deallocate(egrid);
-            free_pt3d(egrid,iGrid+1,iGrid+1,iGrid+1);
+            if(egrid != NULL) free_pt3d(egrid,iGrid+1,iGrid+1,iGrid+1);
         }
         else
         {
@@ -1601,11 +1642,13 @@ void CDelphiSpace::VdwToMs()
             cout <<"because there are also geometric objects" << endl;
         }// if
     }// if
-
+        //cout << "Lin Li: free atsurf??" << endl;
+        //cout << isitsf << " " << isite << " " << isch << " " << scrgfrm << endl;
         if (!isitsf&&!isite&&!(isch&&scrgfrm!=0))
         {
             //if(allocated(atndx)) deallocate(atndx);
             //if(allocated(atsurf)) deallocate(atsurf);
+            //cout << "Lin Li: free atsurf..." << endl;
 
             if(atndx_v.size()>0) vector <integer>().swap(atndx_v);
             if(atsurf_v.size()>0) vector <integer>().swap(atsurf_v);
@@ -1620,5 +1663,22 @@ void CDelphiSpace::VdwToMs()
         if(allocated(rs2)) deallocate(rs2);
         if(allocated(ast)) deallocate(ast);
     */
+        if(iab1 != NULL) free_pt3d<integer>(iab1,lcb1+1,mcb1+1,ncb1+1);
+        if(iab2 != NULL) free_pt3d<integer>(iab2,lcb1+1,mcb1+1,ncb1+1);
+
+
+        if(cbn1 != NULL) free_pt3d<integer>(cbn1,lcb+1,mcb+1,ncb+1);
+        if(space_debug) cout << "### freed cbn1 ###" << endl;
+        if(cbn2 != NULL) free_pt3d<integer>(cbn2,lcb+1,mcb+1,ncb+1);
+
+        if(r0.size()>0) vector <real>().swap(r0);
+        if(r02.size()>0) vector <real>().swap(r02);
+        if(rs2.size()>0) vector <real>().swap(rs2);
+        if(ast.size()>0) vector <integer>().swap(ast);
+
+
+
+        ibgrd_v.resize(iBoundNum);
+        ibgrd=&ibgrd_v[-1];
 
 }// void vwtms;

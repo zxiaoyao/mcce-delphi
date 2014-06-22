@@ -25,17 +25,18 @@ void CDelphiSpace::setout()
     SGrid <real> * rad2aav=rad2aavtemp+15;
     SGrid <integer>* ioff;
 
-    bool itobig,itest2,ipore,bOnlyMolbDebug;
+    bool itobig,itest2;
     string strtmp,strtmp1;
 //2011-05-12 Non-standard int variable, thus necessary
-    integer epsdim, objecttype;
+    integer epsdim;
 //2011-05-12 Non-standard float variable, thus necessary
-    real modul,modul2, mod2,modx,mody;
+    //real modul,modul2, mod2,modx,mody;
 //2011-05-12 Non-standard type of variable, thus necessary
-    SGrid <real> xa,xb,xc,xd,xp,ddist,xyz2,dxyz,ddxyz,xn,vecdist;
-    SGrid <real> tmpvect1,tmpvect2;
-    SGrid <real> vectx,vecty,vectz,rad2av,fxn,vtemp;
-    SGrid <integer> ismin,ismax,idist,idist1,ixyz,itest,ixn,i123;
+    //SGrid <real> xa,xb,xc,xd,xp;
+    SGrid <real> ddist,dxyz,ddxyz,xn;
+    //SGrid <real> tmpvect1,tmpvect2;
+    SGrid <real> rad2av,fxn,vtemp;
+    SGrid <integer> ismin,ismax,idist,ixyz,itest,ixn,i123;
 //here fRadPrb is not zero only if one wants to map the ext}//ed
 //surf. that has to be done with fRadPrb(1) if solute-solvent
 //interface is concerned
@@ -43,11 +44,13 @@ void CDelphiSpace::setout()
 //a non-zero entry in iEpsMap indicates an atom # plus 1 (to
 //properly treat re-entrant mid-points later (15 Aug 93)
 //2011-05-27 Declarations added due to IMPLICIT NONE
-    integer iboxt,iac,ibox,ii,igrdc,i,j,k,imedia,iv,ix,iy,iz,kind;
+    //integer iboxt;
+    integer iac,ibox,igrdc,i,iv,ix,iy,iz;
     integer limmax,lim;
-    real alpha,dis2min2,dis2min1,dot,distsq,exrd,dist,rad,rad2;
-    real rad2a,rad4,radius,radmax2,fRMid,rad5,radp2,radtest,radprobe;
-    real radp,tan2,temp,tmp,tmp1,tmp2;
+    real dis2min2,dis2min1,distsq,dist,rad,rad2;
+    //real rad4,rad5;
+    real rad2a,radmax2,fRMid,radp2,radtest,radprobe;
+    real radp,temp;
 
 
     if(space_debug) cout << "############ beginning of setout: ##############" << endl;
@@ -57,7 +60,7 @@ void CDelphiSpace::setout()
 #endif
     radprobe=0; // this radprobe seems not useful.
     epsdim=iNatom+iNObject+2;
-    iboxt=0;
+    //iboxt=0;
     radmax2=0.0;
     fRMid=float((iGrid+1)/2);
     itest2=false;
@@ -523,10 +526,10 @@ void CDelphiSpace::setout()
 
 //fScale radius to grid
         rad=rad*fScale;
-        rad5=pow( (rad+0.5),2);
+        //rad5=pow( (rad+0.5),2);
         radp=rad+fExternRadius*fScale;
         rad=rad+radprobe*fScale;
-        rad4=pow( (rad+0.5),2);
+        //rad4=pow( (rad+0.5),2);
         rad2=rad*rad;
         radp2=radp*radp;
 
@@ -551,6 +554,39 @@ void CDelphiSpace::setout()
             if(space_debug) cout << "### slow method:"  << endl;
             if(space_debug) cout << "itest, itest2,itobig: " << itest << " " << itest2 << " " << itobig << endl;
             rad2a = rad2 - 0.25;
+#ifdef KJI
+            for(iz=ismin.nZ; iz<=ismax.nZ; iz++)
+            {
+                for(iy=ismin.nY; iy<=ismax.nY; iy++)
+                {
+                    for(ix=ismin.nX; ix<=ismax.nX; ix++)
+                    {
+
+                        ixyz=int_coord(ix,iy,iz);
+                        dxyz=optCast <real,integer> (ixyz)-xn;
+                        distsq=optDot(dxyz,dxyz);
+                        dxyz=dxyz+distsq;
+
+                        if (dxyz.nX<rad2a)
+                        {
+                            iepsmp[iz][iy][ix].nX=iv+1+iAtomMed[iv]*epsdim;
+                        }// if
+
+                        if (dxyz.nY<rad2a)
+                        {
+                            iepsmp[iz][iy][ix].nY=iv+1+iAtomMed[iv]*epsdim;
+                        }// if
+
+                        if (dxyz.nZ<rad2a)
+                        {
+                            iepsmp[iz][iy][ix].nZ=iv+1+iAtomMed[iv]*epsdim;
+                        }// if
+
+                        if(distsq<radp2) idebmap[ix][iy][iz] =false;
+                    }// do
+                }// do
+            }// do
+#endif // KJI
 
             for(iz=ismin.nZ; iz<=ismax.nZ; iz++)
             {
@@ -566,23 +602,24 @@ void CDelphiSpace::setout()
 
                         if (dxyz.nX<rad2a)
                         {
-                            iepsmp[ix][iy][iz].nX=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[iz][iy][ix].nX=iv+1+iAtomMed[iv]*epsdim;
                         }// if
 
                         if (dxyz.nY<rad2a)
                         {
-                            iepsmp[ix][iy][iz].nY=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[iz][iy][ix].nY=iv+1+iAtomMed[iv]*epsdim;
                         }// if
 
                         if (dxyz.nZ<rad2a)
                         {
-                            iepsmp[ix][iy][iz].nZ=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[iz][iy][ix].nZ=iv+1+iAtomMed[iv]*epsdim;
                         }// if
 
-                        if(distsq<radp2) idebmap[ix][iy][iz] =false;
+                        if(distsq<radp2) idebmap[iz][iy][ix] =false;
                     }// do
                 }// do
             }// do
+
 
         } //if
         else  //faster method;
@@ -604,9 +641,10 @@ void CDelphiSpace::setout()
             }// do
 
 //adjust inter-atom, different epsilon bgps+++04/2004 Walter
+
             if (iNMedia>1&&bOnlyMol)
             {
-                //cout << "#### multi media:" << endl;
+                if(space_debug)cout << "#### multi media:" << endl;
                 for(i=0; i<=ibox; i++)
                 {
 
@@ -619,12 +657,14 @@ void CDelphiSpace::setout()
 
                     if (distsq<rad2aav[i123.nX].nX)
                     {
-                        iac=(iEpsMap[ix][iy][iz].nX % epsdim)-1;
+                        //iac=(iEpsMap[ix][iy][iz].nX % epsdim)-1;
+                        iac=(iepsmp[ix][iy][iz].nX % epsdim)-1;
 
                         if (iac==-1||iac>iNatom)
                         {
 //occhio! non so cosa fa con i pori!!
-                            iEpsMap[ix][iy][iz].nX=iv+1+iAtomMed[iv]*epsdim;
+                            //iEpsMap[ix][iy][iz].nX=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[ix][iy][iz].nX=iv+1+iAtomMed[iv]*epsdim;
                         }
                         else
                         {
@@ -638,17 +678,20 @@ void CDelphiSpace::setout()
                             dis2min2=optDot(ddxyz,ddxyz)-pow((sDelPhiPDB[iac].radius*fScale),2);
 
                             if (dis2min2>dis2min1) iac=iv;
-                            iEpsMap[ix][iy][iz].nX=iac+1+iAtomMed[iac]*epsdim;
+                            //iEpsMap[ix][iy][iz].nX=iac+1+iAtomMed[iac]*epsdim;
+                            iepsmp[ix][iy][iz].nX=iac+1+iAtomMed[iac]*epsdim;
                         }// if
                     }// if
 
                     if (distsq<rad2aav[i123.nY].nY)
                     {
-                        iac=(iEpsMap[ix][iy][iz].nY % epsdim)-1;
+                        //iac=(iEpsMap[ix][iy][iz].nY % epsdim)-1;
+                        iac=(iepsmp[ix][iy][iz].nY % epsdim)-1;
                         if (iac==-1||iac>iNatom)
                         {
 //occhio! non so cosa fa con i pori!!
-                            iEpsMap[ix][iy][iz].nY=iv+1+iAtomMed[iv]*epsdim;
+                            //iEpsMap[ix][iy][iz].nY=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[ix][iy][iz].nY=iv+1+iAtomMed[iv]*epsdim;
                         }
                         else
                         {
@@ -662,17 +705,20 @@ void CDelphiSpace::setout()
                             dis2min2=optDot(ddxyz,ddxyz)-pow((sDelPhiPDB[iac].radius*fScale),2);
 
                             if (dis2min2>dis2min1) iac=iv;
-                            iEpsMap[ix][iy][iz].nY=iac+1+iAtomMed[iac]*epsdim;
+                            //iEpsMap[ix][iy][iz].nY=iac+1+iAtomMed[iac]*epsdim;
+                            iepsmp[ix][iy][iz].nY=iac+1+iAtomMed[iac]*epsdim;
                         }// if
                     }// if
 
                     if (distsq<rad2aav[i123.nZ].nZ)
                     {
-                        iac=(iEpsMap[ix][iy][iz].nZ%epsdim)-1;
+                        //iac=(iEpsMap[ix][iy][iz].nZ%epsdim)-1;
+                        iac=(iepsmp[ix][iy][iz].nZ%epsdim)-1;
                         if (iac==-1||iac>iNatom)
                         {
 //occhio! non so cosa fa con i pori!!
-                            iEpsMap[ix][iy][iz].nZ=iv+1+iAtomMed[iv]*epsdim;
+                            //iEpsMap[ix][iy][iz].nZ=iv+1+iAtomMed[iv]*epsdim;
+                            iepsmp[ix][iy][iz].nZ=iv+1+iAtomMed[iv]*epsdim;
                         }
                         else
                         {
@@ -686,16 +732,18 @@ void CDelphiSpace::setout()
                             dis2min2=optDot(ddxyz,ddxyz)-pow((sDelPhiPDB[iac].radius*fScale),2);
 
                             if (dis2min2>dis2min1) iac=iv;
-                            iEpsMap[ix][iy][iz].nZ=iac+1+iAtomMed[iac]*epsdim;
+                            //iEpsMap[ix][iy][iz].nZ=iac+1+iAtomMed[iac]*epsdim;
+                            iepsmp[ix][iy][iz].nZ=iac+1+iAtomMed[iac]*epsdim;
                         }// if
                     }// if
 
-                    if(distsq<radp2) bDebMap[ix][iy][iz]=false;
+                    //if(distsq<radp2) bDebMap[ix][iy][iz]=false;
+                    if(distsq<radp2) idebmap[ix][iy][iz]=false;
                 }// do
             }
             else
             {
-                //cout << "### single media:" << endl;
+                if(space_debug) cout << "### fast method + single media:" << endl;
 
                 //cout << "ix,rad2aav[ix]" << ix <<" " << rad2aav[ix] << endl;
                 for(i=0; i<=ibox; i++)
@@ -713,7 +761,7 @@ void CDelphiSpace::setout()
                         //Lin Li: all indexes -1, because of C++ arrays' indexes start from 0;
                         //Lin Li: because iv start from 0, so +2:
                         //iEpsMap[ix-1][iy-1][iz-1].nX=iv+2+iAtomMed[iv]*epsdim;
-                        iepsmp[ix][iy][iz].nX=iv+1+iAtomMed[iv]*epsdim;
+                        iepsmp[iz][iy][ix].nX=iv+1+iAtomMed[iv]*epsdim;
 
                         //cout << "ix,iy,iz,iEpsMap[ix-1][iy-1][iz-1].nX: " << ix<< " " << iy << " " << iz << " " <<iEpsMap[ix-1][iy-1][iz-1].nX << endl;
                         //cout << "ix,iy,iz,iv,iAtomMed[iv],epsdim " << ix<< " " << iy << " " << iz << " " << iv << " " << iAtomMed[iv]<< " " << epsdim << endl;
@@ -722,16 +770,20 @@ void CDelphiSpace::setout()
                     if (distsq<rad2aav[i123.nY].nY)
                     {
                         //iEpsMap[ix-1][iy-1][iz-1].nY=iv+2+iAtomMed[iv]*epsdim;
-                        iepsmp[ix][iy][iz].nY=iv+1+iAtomMed[iv]*epsdim;
+                        iepsmp[iz][iy][ix].nY=iv+1+iAtomMed[iv]*epsdim;
                     }// if
 
                     if (distsq<rad2aav[i123.nZ].nZ)
                     {
                         //iEpsMap[ix-1][iy-1][iz-1].nZ=iv+2+iAtomMed[iv]*epsdim;
-                        iepsmp[ix][iy][iz].nZ=iv+1+iAtomMed[iv]*epsdim;
+                        iepsmp[iz][iy][ix].nZ=iv+1+iAtomMed[iv]*epsdim;
                     }// if
-
+#ifdef IJK
                     if (distsq<radp2) idebmap[ix][iy][iz]=false;
+#endif // IJK
+                    if (distsq<radp2) idebmap[iz][iy][ix]=false;
+
+
                 }// do
 
 
@@ -739,7 +791,7 @@ void CDelphiSpace::setout()
         }// if
     }// do DoATOMS //end do of atoms;
 
-    delete ioff;
+    delete [] ioff;
 
 #ifdef DEBUG_DELPHI_SPACE
     ofstream epsfile;
@@ -788,11 +840,15 @@ void CDelphiSpace::setout()
             {
                 for (iz=1; iz<=iGrid; iz++)
                 {
-                    epsfile << setw(5) << iepsmp[ix][iy][iz].nX
-                            << setw(5) << iepsmp[ix][iy][iz].nY
-                            << setw(5) << iepsmp[ix][iy][iz].nZ
+                    epsfile << setw(5) << iepsmp[iz][iy][ix].nX
+                            << setw(5) << iepsmp[iz][iy][ix].nY
+                            << setw(5) << iepsmp[iz][iy][ix].nZ
                             << endl;
+#ifdef IJK
                     debfile << idebmap[ix][iy][iz] << endl;
+#endif // IJK
+                    debfile << idebmap[iz][iy][ix] << endl;
+
                     /*
                     if(bDebMap[ix-1][iy-1][iz-1]){
                        debfile << "T" << " " << bDebMap[ix-1][iy-1][iz-1] <<endl;
@@ -811,7 +867,7 @@ void CDelphiSpace::setout()
 
     }
 
-
+/*
 #ifdef DEBUG
     //open(52,file='iepsmapnewfirst',form='formatted');
     ofstream file1;
@@ -829,7 +885,7 @@ void CDelphiSpace::setout()
     //close (52);
     file1.close();
 #endif // DEBUG
-
+*/
 #ifdef VERBOSE
     cout <<"Ending creating Van der Waals Epsilon Map " << endl;
 #endif

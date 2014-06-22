@@ -32,20 +32,23 @@ class CIO
       const real fDielec;                // repsin
       const real fEPKT;                  // epkt
 
-      //---------- miscellany
+      /*
+       * miscellany
+       */
       string toUpperCase(const string& strLine);
 
       string removeSpace(const string& strLine);
 
       bool checkFileFormat(const string& strFile);
                  
-      //---------- for reading atom force (radii/size and charge) file
-      integer iRadiusNum;        // nrmax
-                                 // # of entries in radius file 
-      vector<CForce> prgas;      // radii(:)
-      integer iCrgNum;           // nchrec
-                                 // # of entries in charge file
-      vector<CForce> prgac;      // charge(:)
+      /*
+       * for reading atom force (radii/size and charge) file
+       * these static attributes are declared here and defined in io_force.cpp
+       */
+      static integer iRadiusNum;   // nrmax (# of entries in radius file)
+      static vector<CForce> prgas; // radii(:)
+      static integer iCrgNum;      // nchrec (# of entries in charge file)
+      static vector<CForce> prgac; // charge(:)
               
       void readFileInNotPKFormat(ifstream& ifFileStream, const int& iFileType);
 
@@ -63,7 +66,9 @@ class CIO
 
       //void checkCharge(const bool& bSurfCrgInSite);
 
-      //---------- for reading PDB file     
+      /*
+       * for reading PDB file
+       */
       integer iObjectMediaNum;  // imedianumb
 
       void readStdPdbFile(ifstream& ifPdbFileStream);
@@ -101,20 +106,27 @@ class CIO
       bool       bOnlyMolecule;          // ionlymol
                                          // true if there are only molecules in the system (no objects)
 
-      vector<CAtomPdb> prgapAtomPdb;     // delphipdb(Natom)
+      vector<CAtomPdb> vctapAtomPdb;     // delphipdb(Natom)
                                          // array of structure to store info read from pdb file
-      vector<real>    prgfMediaEps;      // medeps(0:nmediamax)
+      vector<real>    vctfMediaEps;      // medeps(0:nmediamax)
                                          // vector containing correspondence media<->epsilon/epkt
-      vector<string>  prgstrObject;      // dataobject(nobjectmax,2)
+      vector<string>  vctstrObject;      // dataobject(nobjectmax,2)
                                          // vector containing string with object data, and pre-elab data
-                                         // changed it to prgstrObject(2*nobjectmax)
-      vector<integer> prgiAtomMediaNum;  // iatmmed(Natom+Nobjectmax)
+                                         // changed it to vctstrObject(2*nobjectmax)
+      vector<integer> vctiAtomMediaNum;  // iatmmed(Natom+Nobjectmax)
                                          // vector containing internal media-number per atom and object
 
       CIO():fDielec(4.0),fEPKT(167100.9162872952/297.3342119)
       {     
-         iRadiusNum      = 0;         
-         iCrgNum         = 0;
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                     CIO is constructed                       *\n";
+         cout << "****************************************************************\n";
+#endif
+
+         //iRadiusNum      = 0;
+         //iCrgNum         = 0;
          iMediaNum       = 1;
          iObjectNum      = 1;  
          iAtomNum        = 0;
@@ -126,8 +138,15 @@ class CIO
 
       CIO(real fDielecIn,real fEPKTIn):fDielec(fDielecIn),fEPKT(fEPKTIn)
       {
-         iRadiusNum      = 0;         
-         iCrgNum         = 0;
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                     CIO is constructed                       *\n";
+         cout << "****************************************************************\n";
+#endif
+
+         //iRadiusNum      = 0;
+         //iCrgNum         = 0;
          iMediaNum       = 1;
          iObjectNum      = 1;  
          iAtomNum        = 0;
@@ -137,38 +156,72 @@ class CIO
          iResidueNum     = 0;        
       };
       
-      //---------- for reading atom force (radii/size and charge) file
+      /**
+       * destructor
+       */
+      ~CIO()
+      {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                      CIO is destroyed                        *\n";
+         cout << "****************************************************************\n";
+#endif
+      };
+
+
+      /*
+       * for reading atom force (radii/size and charge) file
+       */
       void readForceFile(const string& strFile);
 
-      //---------- for reading/writing PDB file               
+      /*
+       * for reading/writing PDB file
+       */
       void readPdbFile(const string& strPdbFile,const int& iPdbFormat,const bool& bPdbUnformat);
                        
       void writeUnformatPdb(const string& strPdbFile);
 
       void writeModifiedPdb(const string& strPdbFile,const int& iModPdbFormatOut);
                        
-      //---------- miscellany
-      // set DelPhi-style atom list prgapAtomPdb(iAtomNum), i.e, (delphipdb(natom))
+      /*
+       * miscellany
+       */
+
+      // set DelPhi-style atom list vctapAtomPdb(iAtomNum), i.e, (delphipdb(natom))
       void setDelphiAtom(const bool& bSolvePB,const bool& bSurfCrgInSite,const string& strSizeFile,const string& strCrgFile,
                          const string& strPdbFile,const int& iPdbFormat,const bool& bPdbUnformat);
                                                  
-      //---------- for reading/writing FRC file     
+      /*
+       * for reading/writing FRC file
+       */
       SGrid<real> readFrcFile(const string& strFrcFile,const SGrid<real>& fgOffCenter,const real& fScale);
 
       //---------- for writing EPS file
       void writeEpsMap(const integer& iAtomNumIn,const integer& iObjectNumIn,const integer& iGrid,const real& fScale,
-                       const SGrid<real>& fgBoxCenter,const vector< SGrid<integer> >& prgigEpsMap,const vector<bool>& prgbDielecMap,
+                       const SGrid<real>& fgBoxCenter,const vector< SGrid<integer> >& vctigEpsMap,const vector<bool>& vctbDielecMap,
                        const string& strEpsFile);
       
-      //---------- for reading/writing PHI file
+      /*
+       * for reading/writing PHI file
+       */
 
-      //---------- for writing ENERGY file
+      /*
+       *for writing ENERGY file
+       */
 
-      //---------- for writing HSURF2 file
+      /*
+       * for writing HSURF2 file
+       */
 
-      //---------- for writing SURFEN file
+      /*
+       *for writing SURFEN file
+       */
 
-      //---------- for writing SCRG file
+      /*
+       * for writing SCRG file
+       */
+
 };
 
 #endif // CIO_H

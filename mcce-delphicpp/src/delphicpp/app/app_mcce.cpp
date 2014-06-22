@@ -1,9 +1,15 @@
-/*
- * app_mcce.cpp
+/**
+ * @file app_mcce.cpp
+ * @brief Main function to generate the executable mcce_delphicpp
  *
- *  Created on: Apr 16, 2014
- *      Author: chuan
+ * @author Chuan Li, chuanli@clemson.edu
+ *
+ * An interface allowing data to be transferred between the program mcce and delphicpp without intensive IO operations.
+ *
+ * @note a good reference for programs which wish to incorporate delphicpp
  */
+
+//#include <fstream>
 
 #include "../delphi/delphi_data.h"
 #include "../space/space.h"
@@ -11,7 +17,34 @@
 #include "../energy/energy.h"
 #include "../site/site.h"
 
-int mcce_delphi(SMCCE * mcce_data)
+#include <sstream>
+
+/**
+ * a class to redirect cout to a file instead of screen
+ */
+class StreamRedirector
+{
+    public:
+    explicit StreamRedirector(std::ios& stream, std::streambuf* newBuf) : savedBuf_(stream.rdbuf()), stream_(stream)
+    {
+        stream_.rdbuf(newBuf);
+    }
+
+    ~StreamRedirector()
+    {
+        stream_.rdbuf(savedBuf_);
+    }
+
+    private:
+    std::streambuf* savedBuf_;
+    std::ios& stream_;
+};
+
+
+/**
+ * single delphi run, the same as app_delphi.cpp
+ */
+bool runDelphi(SMCCE * mcce_data)
 {
    /*
     * bool values are inserted/extracted by their textual representation: either true or false, instead of integral values.
@@ -19,51 +52,36 @@ int mcce_delphi(SMCCE * mcce_data)
     */
    cout << boolalpha;
 
+   cerr << boolalpha;
+
 #ifdef DEVELOPER
    cout << fixed << setprecision(7); //cout.precision(15)
 #else
    cout << fixed << setprecision(3); //cout.precision(7)
 #endif
 
+   shared_ptr<CTimer> pTimer(new CTimer); // record execution time
+
+   //---------- a shared_ptr to an object of CDelphiData
+   shared_ptr<IDataContainer> pDataContainer( new CDelphiData(mcce_data,pTimer) );
+
+   pDataContainer->showMap("test_delphicpp_atbeginning.dat");
+
    try
    {
-      shared_ptr<CTimer> pTimer( new CTimer); // record execution time
-
-      //********************************************************************************//
-      //                                                                                //
-      //                      get inputs from the struct mcce_data                      //
-      //                                                                                //
-      //********************************************************************************//
-
-      //---------- a shared_ptr to an object of IDataContainer
-      shared_ptr<IDataContainer> pDataContainer( new CDelphiData(mcce_data,pTimer) );
-
       //********************************************************************************//
       //                                                                                //
       //    realize an object of CDelphiSpace class to construct molecular surfaces     //
       //                                                                                //
       //********************************************************************************//
 
-//#ifdef DEBUG_DELPHI_SPACE
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SPACE] data container is written into file test_delphicpp_atbeginning.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_atbeginning.dat");
-//#endif
-
       unique_ptr<IAbstractModule> pSpace( new CDelphiSpace(pDataContainer,pTimer) );
 
       pSpace->run();
 
-      pSpace.release();
+      pSpace.reset(); // !!! need to be changed to pSpace.reset();
 
-//#ifdef DEBUG_DELPHI_SPACE
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SPACE] data container is written into file test_delphicpp_aftersurf.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_aftersurf.dat");
-//#endif
-
+      //---------- print out results after constructing molecular surfaces
       cout << endl;
 
       cout << " number of atom coordinates read  :" << right << setw(10) << pDataContainer->getKey_constRef<integer>("natom") << endl;
@@ -84,139 +102,266 @@ int mcce_delphi(SMCCE * mcce_data)
 
          if (pDataContainer->getKey_constRef<bool>("iexun") && 0 == pDataContainer->getKey_constRef<integer>("ibnum"))
             throw CNoBndyAndDielec(pTimer);
-      } // ---------- end of if (pDataContainer->getKey_constRef<bool>("isolv"))
 
-      //++++++++++ above is to be moved into biosystem.run() ++++++++++//
+         //********************************************************************************//
+         //                                                                                //
+         //   realize an object of CDelphiFastSOR class to calculate potentials on grids   //
+         //                                                                                //
+         //********************************************************************************//
 
-      //********************************************************************************//
-      //                                                                                //
-      //   realize an object of CDelphiFastSOR class to calculate potentials on grids   //
-      //                                                                                //
-      //********************************************************************************//
+         unique_ptr<CDelphiFastSOR> pSolver( new CDelphiFastSOR(pDataContainer,pTimer) );
 
-      if (pDataContainer->getKey_constRef<bool>("isolv"))
-      {
-#ifdef DEBUG_DELPHI_SOLVER
-         cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SOLVER] data container is read from file test_fromsurf.dat---\n\n" << "\033[0m";
-
-         pDataContainer->reset("test_fromsurf.dat");
-
-         cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SOLVER] data container is written into file test_delphicpp_beforeitr.dat---\n\n"
-              << "\033[0m";
-
-         pDataContainer->showMap("test_delphicpp_beforeitr.dat");
-
-#endif // DEBUG_DELPHI_SOLVER
-
-         unique_ptr<IAbstractModule> pSolver( new CDelphiFastSOR(pDataContainer,pTimer) );
+         if (3 == mcce_data->bndcon) pSolver->getMCCE(mcce_data);
 
          pSolver->run();
 
-         pSolver.release();
+         pSolver.reset();
 
-//#ifdef DEBUG_DELPHI_SOLVER
-         cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SOLVER] data container is written into file test_delphicpp_afteritr.dat---\n\n"
-                    << "\033[0m";
+         //********************************************************************************//
+         //                                                                                //
+         //          realize an object of CDelphiEnergy class to calculate energys         //
+         //                                                                                //
+         //********************************************************************************//
 
-         pDataContainer->showMap("test_delphicpp_afteritr.dat");
-//#endif // DEBUG_DELPHI_SOLVER
+         unique_ptr<IAbstractModule> pEnergy( new CDelphiEnergy(pDataContainer,pTimer) );
+
+         pEnergy->run();
+
+         pEnergy.reset();
+
+         //********************************************************************************//
+         //                                                                                //
+         //               realize an object of CSite class to write site info              //
+         //                                                                                //
+         //********************************************************************************//
+
+         unique_ptr<CSite> pSite( new CSite(pDataContainer,pTimer) );
+
+         if (pDataContainer->getKey_constRef<bool>("isite"))
+         {
+            int iisitsf = 0;
+            if (pDataContainer->getKey_Ref<bool>("isitsf")) iisitsf = 1;
+            pSite->writeSite(iisitsf);
+         }
+
+         if (pDataContainer->getKey_constRef<bool>("phiwrt")) pSite->writePhi();
+
+         /*
+          * equivalent to out(frc,file="filename") in the parameter file
+          */
+         if (0 == pSite->mcce_phiv.size())
+         {
+            pSite.reset();
+            pTimer->exit(); pTimer.reset();
+            return false;
+         }
+
+         mcce_data->phiv = pSite->mcce_phiv;
+
+         pSite.reset();
+
+         /*
+          * equivalent to out(phi,file="filename") in the parameter file
+          */
+         mcce_data->phimap  = pDataContainer->getKey_Val< vector<real> >("phimap");
+         mcce_data->scale1  = pDataContainer->getKey_Val<real>("scale");
+         mcce_data->oldmid1 = pDataContainer->getKey_Val< SGrid<real> >("oldmid");
+         mcce_data->igrid1  = pDataContainer->getKey_Val<integer>("igrid");
+
+         /*
+          * equivalent to energy(s) in the parameter file
+          */
+         mcce_data->ergs = pDataContainer->getKey_Val<real>("ergs");
       }
 
-      //********************************************************************************//
-      //                                                                                //
-      //          realize an object of CDelphiEnergy class to calculate energys         //
-      //                                                                                //
-      //********************************************************************************//
+      pDataContainer.reset();
 
-#ifdef DEBUG_DELPHI_ENERGY
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_ENERGY] data container is read from file test_fromsurf.dat "
-           << "and test_fromsolver.dat---\n\n" << "\033[0m";
-
-      pDataContainer->reset("test_fromsurf.dat");
-
-      pDataContainer->reset("test_fromsolver.dat");
-
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SOLVER] data container is written into file test_delphicpp_beforeenergy.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_beforeenergy.dat");
-
-#endif // DEBUG_DELPHI_ENERGY
-
-      unique_ptr<IAbstractModule> pEnergy( new CDelphiEnergy(pDataContainer,pTimer) );
-
-      pEnergy->run();
-
-      pEnergy.release();
-
-//#ifdef DEBUG_DELPHI_ENERGY
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_ENERGY] data container is written into file test_delphicpp_aftereng.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_aftereng.dat");
-//#endif // DEBUG_DELPHI_ENERGY
-
-      //********************************************************************************//
-      //                                                                                //
-      //               realize an object of CSite class to write site info              //
-      //                                                                                //
-      //********************************************************************************//
-
-#ifdef DEBUG_DELPHI_SITE
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SITE] data container is read from file test_fromsurf.dat, "
-           << "test_fromsolver.dat and test_fromenergy.dat---\n\n" << "\033[0m";
-
-      pDataContainer->reset("test_fromsurf.dat");
-      pDataContainer->reset("test_fromsolver.dat");
-      pDataContainer->reset("test_fromenergy.dat");
-
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SOLVER] data container is written into file test_delphicpp_beforesite.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_beforesite.dat");
-#endif // DEBUG_DELPHI_SITE
-
-      unique_ptr<CSite> pSite( new CSite(pDataContainer,pTimer) );
-
-      //pDataContainer->getKey_Ref<bool>("isite") = true;
-
-      if (pDataContainer->getKey_constRef<bool>("isite"))
-      {
-         int iisitsf = 0;
-         if (pDataContainer->getKey_Ref<bool>("isitsf")) iisitsf = 1;
-         pSite->writeSite(iisitsf);
-      }
-
-      if (pDataContainer->getKey_constRef<bool>("phiwrt")) pSite->writePhi();
-
-      pSite.release();
-
-//#ifdef DEBUG_DELPHI_SITE
-      cerr << "\n\033[1;31m" << "---[DEBUG_DELPHI_SITE] data container is written into file test_delphicpp_atend.dat---\n\n"
-           << "\033[0m";
-
-      pDataContainer->showMap("test_delphicpp_atend.dat");
-//#endif // DEBUG_DELPHI_SITE
-
-      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
-
-      pTimer->exit();
-
-      //---------- shared_ptr will be released automatically but unique_ptr must call unique_ptr.release() before exiting this scope
-
-   } // ---------- end of try block
-   catch (CException)
+      pTimer->exit(); pTimer.reset();
+   }
+   catch (CException&)
    {
       cerr << "\n\n ......... PROGRAM ABORTS WITH AN EXCEPTION AND " << CWarning::iWarningNum << " WARNING(S) ........\n\n";
-
-      return 1;
+      return false;
    }
 
    cout << "\n\n .........  PROGRAM EXITS SUCCESSFULLY : WITH TOTAL " << CWarning::iWarningNum << " WARNING(S) ........\n\n";
-
    cout.unsetf(ios_base::floatfield); // return to cout default notation
+   return true;
+}
 
-   return 0;
+/**
+ * interface function to pass the calculated energies, values etc., from delphicpp to mcce
+ *
+ * @param[in,out]  mcce_data the struct containing the values required to run delphicpp and to be returned back to mcce
+ * @return true if successfully calling delphicpp
+ */
+bool conf_energies_delphi(SMCCE * mcce_data)
+{
+   int notpassed = 1;
+   bool bDelPhiReturn = false;
+   char FileName[80];
 
+   while(notpassed)
+   {
+      if (2 > mcce_data->n_retry)
+      {
+         /*
+          * save log and errors in different files
+          *
+         sprintf(FileName,"%s%02d.log","delphi",1);
+         ofstream logFile(FileName);
+         StreamRedirector redirect_cout(cout,logFile.rdbuf());
+
+         sprintf(FileName,"%s%02d.err","delphi",1);
+         ofstream errFile(FileName);
+         StreamRedirector redirect_cerr(cerr,errFile.rdbuf());
+         */
+
+         /*
+          * save log and errors in the same file
+          */
+         sprintf(FileName,"%s%02d.log","delphi",1);
+         ofstream logFile(FileName);
+         StreamRedirector redirect_cout(cout,logFile.rdbuf());
+         StreamRedirector redirect_cerr(cerr,logFile.rdbuf());
+
+         bDelPhiReturn = runDelphi(mcce_data);
+      }
+      else if (2 <= mcce_data->n_retry && 100 > mcce_data->n_retry)
+      {
+         printf("   Trying changing scale on trial %d\n",mcce_data->n_retry);
+         bDelPhiReturn = runDelphi(mcce_data);
+      }
+      else
+      {
+         printf("   FATAL: too many failed delphi runs (%d), quitting...\n",mcce_data->n_retry);
+         return false;
+      }
+
+      if (false == bDelPhiReturn)
+      {
+         printf("\n   WARNING: Delphi failed at focusing depth %d of %s, retry\n", 1, mcce_data->uniqID.c_str());
+         mcce_data->n_retry++;
+         mcce_data->del_err = 1;
+         continue;
+      }
+
+      /*
+       * prepare for focusing runs
+       */
+      if (1 < mcce_data->del_runs) mcce_data->bndcon = 3;
+
+      for (int i = 1; i < mcce_data->del_runs; i++)
+      {
+         /*
+          * update mcce_data to prepare for focusing runs
+          */
+         mcce_data->del_runs -= i;
+
+         if (100 > mcce_data->n_retry)
+         {
+            /*
+             * save log and errors in different files
+             *
+            sprintf(FileName,"%s%02d.log","delphi",i+1);
+            ofstream logFile(FileName);
+            StreamRedirector redirect_cout(cout,logFile.rdbuf());
+
+            sprintf(FileName,"%s%02d.err","delphi",i+1);
+            ofstream errFile(FileName);
+            StreamRedirector redirect_cerr(cerr,errFile.rdbuf());
+            */
+
+            /*
+             * save log and errors in the same file
+             */
+            sprintf(FileName,"%s%02d.log","delphi",i+1);
+            ofstream logFile(FileName);
+            StreamRedirector redirect_cout(cout,logFile.rdbuf());
+            StreamRedirector redirect_cerr(cerr,logFile.rdbuf());
+
+            bDelPhiReturn = runDelphi(mcce_data);
+         }
+         else
+         {
+            printf("   FATAL: too many failed delphi runs (%d), quitting...\n",mcce_data->n_retry);
+            return false;
+         }
+
+         if (false == bDelPhiReturn)
+         {
+            printf("\n   WARNING: Delphi failed at focusing depth %d of %s, retry\n",i+1,mcce_data->uniqID.c_str());
+            mcce_data->n_retry++;
+            mcce_data->del_err = 1;
+            break;
+         }
+
+         mcce_data->del_err = 0;
+      }
+
+      if (mcce_data->del_err) notpassed = 1;
+      else notpassed = 0; /* so far so good */
+   }
+
+   return true;
+}
+
+
+bool conf_rxn_delphi(SMCCE * mcce_data,float rxn[])
+{
+   bool bDelPhiReturn = false;
+   char FileName[80];
+
+   /*
+    * save log and errors in the same file
+    */
+   sprintf(FileName,"%s%02d.log","rxn",1);
+   ofstream logFile(FileName);
+   StreamRedirector redirect_cout(cout,logFile.rdbuf());
+   StreamRedirector redirect_cerr(cerr,logFile.rdbuf());
+
+   bDelPhiReturn = runDelphi(mcce_data);
+
+   if (false == bDelPhiReturn)
+   {
+      printf("\n   WARNING: Delphi failed at focusing depth %d of %s, retry\n", 1, mcce_data->uniqID.c_str());
+      return false;
+   }
+
+   rxn[0] = mcce_data->ergs;
+
+   /*
+    * prepare for focusing runs
+    */
+   mcce_data->bndcon = 3;
+
+   for (int i = 1; i < mcce_data->del_runs; i++)
+   {
+      /*
+       * update mcce_data to prepare for focusing runs
+       */
+      mcce_data->del_runs -= i;
+
+      /*
+       * save log and errors in the same file
+       */
+      sprintf(FileName,"%s%02d.log","rxn",i+1);
+      ofstream logFile(FileName);
+      StreamRedirector redirect_cout(cout,logFile.rdbuf());
+      StreamRedirector redirect_cerr(cerr,logFile.rdbuf());
+
+      bDelPhiReturn = runDelphi(mcce_data);
+
+      if (false == bDelPhiReturn)
+      {
+         printf("\n   WARNING: Delphi failed at focusing depth %d of %s, retry\n", 1, mcce_data->uniqID.c_str());
+         return false;
+      }
+
+      rxn[i] = mcce_data->ergs;
+   }
+
+
+   return true;
 }
 

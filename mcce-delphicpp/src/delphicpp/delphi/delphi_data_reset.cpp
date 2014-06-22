@@ -490,8 +490,6 @@ void CDelphiData::reset(const string& strF95File)
 
          continue;
       }
-
-
    }
 
    ifFileStream.close();

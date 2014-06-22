@@ -18,11 +18,26 @@ class CTimer
    public:
       CTimer()
       { 
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                   CTimer is constructed                      *\n";
+         cout << "****************************************************************\n";
+#endif
+
          tStart = time(0); tmStartDateTime = localtime(&tStart); 
          clockStart = clock();
       };
       
-      ~CTimer(){};
+      ~CTimer()
+      {
+#ifdef DEBUG_OBJECT
+         cout << endl;
+         cout << "****************************************************************\n";
+         cout << "*                    CTimer is destroyed                       *\n";
+         cout << "****************************************************************\n";
+#endif
+      };
       
       void start();
            

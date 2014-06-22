@@ -1,666 +1,1308 @@
+/*
+ * delphi_datamarshal_getFunction.cpp
+ *
+ *  Created on: May 03, 2014
+ *      Author: chuan
+ *
+ * The way how these functions are coded is confusing and unsafe. I re-coded them using istringstream
+ * (see below). Hope it's better in C++ language...
+ *
+ * The order included headers in this file is crucial in order to avoid ambiguous reference to "real" when
+ * compiling the code in Mac system
+ */
+
 #include "delphi_datamarshal.h"
+
+#include <sstream>
+//#include <iterator>
+//#include <algorithm>
+#include <boost/lexical_cast.hpp>
 
 //-----------------------------------------------------------------------//
 bool CDelphiDataMarshal::getFunction(string strLineNoSpace)
 {
+   using boost::lexical_cast;
+   using boost::bad_lexical_cast;
+
    locale loc;
    
-   // find the position of the bracket    	   
+   /*
+    * It is known that newlines in DOS and Windows end with the combination of two characters, namely '\r\n',
+    * while they end with a single '\n' to indicate a new line in Unix and a single '\r' in Mac.
+    * Need to check if "\r" exists (for Windows machine). If so, remove \r in the string
+    *
+    * (chuan 2014May17) this operation is moved to IDataMarshal::read(strFileName)
+    */
+    //if('\r' == strLineNoSpace[strLineNoSpace.size()-1])
+    //{
+    //    strLineNoSpace.erase( strLineNoSpace.size()-1);
+    //}
+    
+   /*
+    * Find the position of the bracket. Report error if there is no '(' or ')'
+    */
+   if (string::npos == strLineNoSpace.find_first_of('(') || string::npos == strLineNoSpace.find_first_of(')') )
+      return false;
+
+   /*
+    * get the function name and transform the function name to upper case
+    */
    size_t pos = strLineNoSpace.find_first_of('(');
-
-   // if there is no '(' report error
-   if (string::npos == pos) return false;
    
-   // get the function name
-   string strTempFunc = strLineNoSpace.substr(0,pos);
-   
-   // string that contains the function name transform the function name to upper case
-   string strFunc; 
-   for (size_t ii = 0; ii < strTempFunc.length(); ++ii) 
-      strFunc += toupper(strTempFunc[ii], loc);
+   string strFunc = strLineNoSpace.substr(0,pos);
 
-   // string with the argument of the function not in upper case to keep the name of the input file if there is one
-   string strDirecFileName;
-   strDirecFileName = strLineNoSpace.substr(pos, strLineNoSpace.size()-pos); 
+   for (size_t ii = 0; ii < strFunc.length(); ++ii)
+      strFunc[ii] = toupper(strFunc[ii], loc);
 
-   // string with the argument of the function in upper case the argument is put into upper case
-   string strDirecUpperCase;
-   for (size_t ii = 0; ii < strDirecFileName.length()-1; ++ii) 
-      strDirecUpperCase += toupper(strDirecFileName[ii], loc); 
-
+   /*
+    * determine function type based on its name
+    */
    size_t typearg = 0; // initialize to be 0 as an error indicator
    
-   // select the function name  
-   for (int ii = 1; ii < 12; ii++)
+   for (int ii = 1; ii < iFunctionNum_FullName; ii++)
    {
-      if (strFullFunc[ii] == strFunc) { typearg = ii; break; }
+      if (rgstrFunction_FullForm[ii] == strFunc) { typearg = ii; break; }
    }
    
-   for (int ii = 1; ii < 5; ii++)
+   for (int ii = 1; ii < iFunctionNum_ShortName; ii++)
    {
-      if (strShortFunc[ii] == strFunc) { typearg = ii; break; }
+      if (rgstrFunction_ShortForm[ii] == strFunc) { typearg = ii; break; }
    }
 
    if (0 == typearg) return false; // invalid function name
 
-   // if there is a frm, form or format argument, find it and its position
-   size_t kk = 0, pos1 = 0, pos2 = 0;
-
-   if ( string::npos != (pos = strDirecUpperCase.find("FRM=")) ) 
-      kk = pos+4;
-   else if ( string::npos != (pos = strDirecUpperCase.find("FORM=")) )    
-      kk = pos+5;
-   else if ( string::npos != (pos = strDirecUpperCase.find("FORMAT=")) )   
-      kk = pos+7;
-
-   // if the frm argument was found, find the format value in upper case
-   bool bFormat = false;
-   
-   string strFormatString;
-   
-   if (0 != kk)
+   /*
+    * get the arguments list of the function w/0 '(' and ')', convert the characters to upper case
+    */
+   if (2 == strLineNoSpace.substr(pos, strLineNoSpace.size()-pos).length()) // function has no argument
    {
-      bFormat = true;
-      if (string::npos != (pos = strDirecUpperCase.find(")",kk))) pos1 = pos;
-      if (string::npos != (pos = strDirecUpperCase.find(",",kk))) pos2 = pos;
-         
-      pos = (pos1 > pos2) ? pos1 : pos2;   
-   
-      //ISN'T strDirecUpperCase ALREADY IN UPPER CASE???
-      for (size_t ii=kk; ii<pos; ++ii) 
-         strFormatString += toupper(strDirecUpperCase[ii],loc); 
+      CEnmptyParameter_FUNCTION warning(strFunc);
+      return false;
    }
+
+   string strArgs_fromInput = strLineNoSpace.substr(pos+1, strLineNoSpace.find_first_of(')')-pos-1); // take off '(' and ')'
+
+   string strArgs_UpperCase; // inputs in upper case
+
+   for (size_t ii = 0; ii < strArgs_fromInput.length(); ++ii)
+      strArgs_UpperCase += toupper(strArgs_fromInput[ii], loc);
+
+   /*
+    * find the unit or form argument
+    */
+   //bool bFile = false;
+   //if (string::npos != strArgs_UpperCase.find("UNIT=") || string::npos != strArgs_UpperCase.find("FILE=") )
+   //   bFile = true;
+
+   /*
+    * determine if there is a frm, form or format argument
+    */
+   //bool bFormat = false;
+   //if (string::npos != strArgs_UpperCase.find("FRM=") || string::npos != strArgs_UpperCase.find("FORM=") || string::npos != strArgs_UpperCase.find("FORMAT="))
+   //   bFormat = true;
+
+   /*
+    * pharse strArgs_UpperCase into takens for easy handling
+    */
+   std::vector<std::string> prgstrArgTokens_UpperCase = getArguments(strArgs_UpperCase);
+   std::vector<std::string> prgstrArgTokens_fromInput = getArguments(strArgs_fromInput);
    
-   // find the unit or form argument, and its position
-   int kk2 = 0, kk3 = 0;
-   
-   if (string::npos != (pos = strDirecUpperCase.find("UNIT=")))
-      kk2 = pos+5;
-   else if (string::npos != (pos = strDirecUpperCase.find("FILE=")))  
-      kk3 = pos+5; 
-      
-   bool bFile = false;
-   if (0 != kk2+kk3) bFile = true;
-     
-   switch (typearg)
+   /*
+    * The try-catch block tries to catch any exception thrown by lexical_cast during converting the string to numbers.
+    * A better solution when comparing to atoi and atof which return zeroes silencely.
+    */
+   try
    {
-      case 1: // CENTER or CENT function
+      switch (typearg)
       {
-         int iJ0 = 0;
-      
-         if ( "()" == strDirecUpperCase || "(0,0,0)" == strDirecUpperCase )
-            // fgOffCenter initialized to be {0.0, 0.0, 0.0}, no need to reset here
-            iJ0 = 1;
-      
-         if (bFile)
-            strCentFile = getFileName(strDirecFileName, kk2, kk3);       
-      
-         if (0 != kk2+kk3)
+         /*
+          * CENTER or CENT function
+          * =======================
+          * This function is used to specify the offset (expressed in grid units) with respect to the lattice center
+          * at which the center of the molecule [pmid(3)] is placed. This will influence what point in the real space
+          * (expressed in Angstroms) is placed at the center of the grid [oldmid(3)]. The relationship between real
+          * space r(i) and grid g(i) coordinates for a grid size of igrid, with a scale of gpa grids/angstrom is as follows.
+          *
+          * The centre of the grid is:
+          *    midg = (igrid+1)/2
+          *    oldmid(i) = pmid(i) - OFFSET(i)/gpa
+          *    g(i) = (r(i) - pmid(i))*gpa + midg + OFFSET(i)
+          *    r(i) = (g(i) - midg)/gpa + oldmid(3)
+          *
+          * The scale, the system center and the shift are printed in the logfile.
+          *
+          * Note that a certain error inevitably results from the mapping of the molecule onto the grid. By moving the
+          * molecule slightly (changing CENTER offset between 0,0,0 and 1,1,1) and repeating the calculations, it is possible
+          * to see whether the results are sensitive to the particular position on the grid, and if so, to improve the accuracy
+          * by averaging (this is related to rotational averaging, discussed in the J. Comp Chem paper of Gilson et al.).
+          * However using a larger scale is a more effective way of improving accuracy than averaging. 
+          */
+         case 1:
          {
-            fgOffCenter.nX = 999.0; fgOffCenter.nY = 0.0; fgOffCenter.nZ = 0.0;
-         }
-            
-         if (string::npos != strDirecUpperCase.find("AN=1"))
-         {
-            fgOffCenter.nX = 999.0; fgOffCenter.nY = 999.0; fgOffCenter.nZ = 0.0;   
-         }
-            
-         if (0 == kk2+kk3+iJ0)
-         {
-            size_t n1, n2;
-            
-            n1 = strDirecUpperCase.find(",",1);
-            fgOffCenter.nX = (real)( atof(strDirecUpperCase.substr(1, n1-1).c_str()) );
-            
-            n2 = strDirecUpperCase.find(",",n1+1);
-            fgOffCenter.nY = (real)( atof(strDirecUpperCase.substr(n1+1,n2-n1-1).c_str()) );
-         
-            n1 = n2 + 1; n2 = strDirecUpperCase.find(")", n1);
-            fgOffCenter.nZ = (real)( atof(strDirecUpperCase.substr(n1,n2-n1).c_str()) );
-         }   
-         
-         break;   
-      }
-      
-      case 2: // ACENTER or ACENT function
-      {
-         size_t n1, n2;
-         
-         n1 = strDirecUpperCase.find(",",1);
-         fgAcent.nX = (real)( atof(strDirecUpperCase.substr(1, n1-1).c_str()) );
-            
-         n2 = strDirecUpperCase.find(",",n1+1);
-         fgAcent.nY = (real)( atof(strDirecUpperCase.substr(n1+1,n2-n1-1).c_str()) );
-         
-         n1 = n2 + 1; n2 = strDirecUpperCase.find(")", n1);
-         fgAcent.nZ = (real)( atof(strDirecUpperCase.substr(n1,n2-n1).c_str()) );
-    
-         bIsAcent = true;
-         
-         break;
-      }
-                  
-      case 3: // READ or IN function
-         if ("SIZ" == strDirecUpperCase.substr(1,3)) // size file
-         {
-            if (bFile) strSizeFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat) 
-            {
-               CInUnknownSizeFormat warning(strFormatString);
-            }
-         }
-         
-         if ("CRG" == strDirecUpperCase.substr(1,3)) // charge file
-         {
-            if (bFile) strCrgFile = getFileName(strDirecFileName,kk2,kk3); 
-            
-            if (bFormat) 
-            {
-               CInUnknownCrgFormat warning(strFormatString);
-            }   
-         }
-         
-         if ("PDB" == strDirecUpperCase.substr(1,3))    // pdb file
-         {
-            iPdbFormatIn = STDPDB;
-            
-            if (bFile) strPdbFile = getFileName(strDirecFileName,kk2,kk3);
-         }
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
 
-         if ("MODPDB" == strDirecUpperCase.substr(1,6)) // modified pdb
-         {
-            iPdbFormatIn = MODPDB;
-
-            if (bFile) strPdbFile = getFileName(strDirecFileName,kk2,kk3);
-         
-            if (bFormat)
+            /*
+             * read center info from a file
+             */
+            if (string::npos != prgstrArgTokens_UpperCase[0].find("UNIT=") || string::npos != prgstrArgTokens_UpperCase[0].find("FILE="))
             {
-               if      ("MOD" == strFormatString) iPdbFormatIn = MODPDB;
-               else if ("PQR" == strFormatString) iPdbFormatIn = PQRPDB;
-               else    { CInUnknownPDBFormat warning(strFormatString); }
-               
-               /*
-               if (0 < iPdbFormatIn)
-                  bPdbUnformatIn = true; (obsolete)
-               else
+               strCentFile = getFile_Name_or_Format(prgstrArgTokens_UpperCase[0],prgstrArgTokens_fromInput[0]);
+
+               gfOffCenter.nX = 999.0; gfOffCenter.nY = 0.0; gfOffCenter.nZ = 0.0; // center(999,0,0)
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
                {
-                  CInUnknownPDBFormat warning(strFormatString);
-               }
-               */
-            }
-         }
-         
-         if ("MODPDB4" == strDirecUpperCase.substr(1,7)) 
-         {
-            iPdbFormatIn = MOD4PDB;
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
 
-            if (bFile) strPdbFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat)
-            {
-               //if    ("UN"  == strFormatString) iPdbFormatIn = 41;
-               if      ("MOD" == strFormatString) iPdbFormatIn = MOD4PDB;
-               else if ("PQR" == strFormatString) iPdbFormatIn = PQR4PDB;
-               else    { CInUnknownPDBFormat warning(strFormatString); }
-
-               /*
-               if (40 < iPdbFormatIn)
-                  bPdbUnformatIn = true; (obsolete)
-               else
-                  CInUnknownPDBFormat warning(strFormatString);
-               */
-            }
-         } 
-         
-         // new options are added to allow users easily select pqr formats
-         if ("PQR" == strDirecUpperCase.substr(1,3))    // pqr file
-         {
-            iPdbFormatIn = PQRPDB;
-            if (bFile) strPdbFile = getFileName(strDirecFileName,kk2,kk3);
-         }
-         
-         if ("PQR4" == strDirecUpperCase.substr(1,4))    // pqr4 file
-         {
-            iPdbFormatIn = PQR4PDB;
-            if (bFile) strPdbFile = getFileName(strDirecFileName,kk2,kk3);
-         }
-         
-         if ("FRC" == strDirecUpperCase.substr(1,3))
-         {
-            if (bFile) strFrciFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat) 
-            {
-               if ("SELF"  == strFormatString) 
-                  bPDB2FRCInSite = true;
-               else   
-               {   
-                  CInUnknownFRCFormat warning(strFormatString);
+                     // a token describing input file name
+                     if (string::npos != it->find("AN=1"))
+                     {
+                        gfOffCenter.nX = 999.0; gfOffCenter.nY = 999.0; gfOffCenter.nZ = 0.0; // center(999,999,0)
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
                }
             }
-         }
-         
-         if ("PHI" == strDirecUpperCase.substr(1,3))
-         {
-            if (bFile) strPhiiFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat) 
+            /*
+             * read center coordinates
+             */
+            else if (0 < prgstrArgTokens_UpperCase.size() && 4 > prgstrArgTokens_UpperCase.size())
             {
-               CInUnknownPHIFormat warning(strFormatString);
-            }     
-         }
-      
-         break;
-      
-      case 4: // WRITE or OUT function
-      {
-         bool bFlag = false, bIJ4;
+               gfOffCenter.nX = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[0]);
 
-         if ("OFF" != strDirecUpperCase.substr(1,3)) bFlag = true;
-            
-         bIJ4 = bFlag && bFile;   
+               if (1 < prgstrArgTokens_UpperCase.size())
+                  gfOffCenter.nY = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[1]);
 
-         if ("PHI" == strDirecUpperCase.substr(1,3))  
-         {
-            bPhimapOut = bFlag;
-            
-            if (bIJ4) strPhiFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat)
-            {
-               if      ("BIOSYM" == strFormatString) iPhiFormatOut = 1;
-               else if ("GRASP"  == strFormatString) iPhiFormatOut = 2;
-               else if ("CCP4"   == strFormatString) iPhiFormatOut = 3;
-               else if ("DIFF"   == strFormatString) iPhiFormatOut = 4;
-               else if ("CUBE"   == strFormatString) iPhiFormatOut = 5;
-            
-               if (1 == iPhiFormatOut) bBiosystemOut = true;
-               
-               if (0 == iPhiFormatOut) 
-               {
-                  COutUnknownPHIFormat warning(strFormatString);
-               }   
+
+               if (2 < prgstrArgTokens_UpperCase.size())
+                  gfOffCenter.nZ = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[2]);
             }
-         }
-         
-         if ("SRF" == strDirecUpperCase.substr(1,3))  
-         {
-            bOutGraspSurf = true;
-            
-            if(bIJ4) strGraspFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat && ("BEM" == strFormatString) ) bBemSrfOut = true;
-         }
-         
-         if ("FRC" == strDirecUpperCase.substr(1,3))
-         {
-            bSiteOut = bFlag;
-         
-            if (bIJ4) strFrcFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat)
-            {
-               if      ("RC" == strFormatString) iFrcFormatOut = 1;
-               else if ("R"  == strFormatString) iFrcFormatOut = 2;
-               else if ("UN" == strFormatString) iFrcFormatOut = 3;
-               
-               if (1 == iFrcFormatOut || 2 == iFrcFormatOut) 
-                  bReactFieldInFRC = true;
-                  
-               if (1 > iFrcFormatOut || 3 < iFrcFormatOut)
-               {  
-                  COutUnknownFRCFormat warning(strFormatString);
-               }
-            }        
-         }
-         
-         if ("EPS" == strDirecUpperCase.substr(1,3))
-         {
-            bEpsOut = bFlag;
-            
-            if (bIJ4) strEpsFile = getFileName(strDirecFileName,kk2,kk3);
-            
-            if (bFormat) 
-            {
-               COutUnknownEPSFormat waring(strFormatString);
-            }   
-         }
-         
-         if ("MODPDB" == strDirecUpperCase.substr(1,6))
-         {
-            bModPdbOut = bFlag; iModPdbFormatOut = MODPDB;
-            
-            if (bIJ4) 
-               strModifiedPdbFile = getFileName(strDirecFileName,kk2,kk3);
-               
-            if (bFormat)
-            {
-               if ("PQR" == strFormatString) 
-                  iModPdbFormatOut = PQRPDB;
-               else
-               {   
-                  COutUnknownMODPDBFormat warning(strFormatString);
-               }   
-            }
-         }
-         
-         if ("MODPDB4" == strDirecUpperCase.substr(1,7))         
-         {
-            bModPdbOut = bFlag; iModPdbFormatOut = MOD4PDB;
-            
-            if (bIJ4) 
-               strModifiedPdbFile = getFileName(strDirecFileName,kk2,kk3);
-
-            if (bFormat)
-            {
-               if ("PQR" == strFormatString) 
-                  iModPdbFormatOut = PQR4PDB;
-               else
-               {
-                  COutUnknownMODPDBFormat warning(strFormatString);
-               }   
-            }         
-         }
-         
-         if ("UNPDB" == strDirecUpperCase.substr(1,5))
-         {
-            bUnformatPdbOut = bFlag;
-            
-            if (bIJ4) 
-               strUnformatPdbFile = getFileName(strDirecFileName,kk2,kk3);
-         
-            if (bFormat) 
-            {
-               COutUnknownUNPDBFormat warning(strFormatString);
-            }
-         }
-         
-         if ("UNFRC" == strDirecUpperCase.substr(1,5))
-         {
-            bUnformatFrcOut = bFlag;            
-         
-            if (bIJ4) 
-               strUnformatFrcFile = getFileName(strDirecFileName,kk2,kk3);
-         
-            if (bFormat) 
-            {
-               COutUnknownUNFRCFormat warning(strFormatString);
-            }   
-         }
-         
-         if ("ENERGY" == strDirecUpperCase.substr(1,6))
-         {
-            bEngOut = bFlag;            
-         
-            if (bIJ4) 
-               strEnergyFile = getFileName(strDirecFileName,kk2,kk3);
-         
-            if (bFormat) 
-            {
-               COutUnknownEnergyFormat warning(strFormatString); 
-            }   
-         }         
-         
-         if ("GCRG" == strDirecUpperCase.substr(1,4))
-            bGridCrgOut = true;
-            
-         if ("HSURF" == strDirecUpperCase.substr(1,5))
-            bHsurf2DatOut = true;
-            
-         if ("DB" == strDirecUpperCase.substr(1,2))
-            bDbOut = true;
-            
-         if ("SURFEN" == strDirecUpperCase.substr(1,6))
-            bSurfEngOut = true;     
-            
-         if ("SCRG" == strDirecUpperCase.substr(1,4))
-         {
-            bSurfCrgOut = bFlag;
-            
-            if (bIJ4) strScrgFile = getFileName(strDirecFileName,kk2,kk3);
-         
-            if (bFormat)
-            {
-               if ("PDB" == strFormatString) iSurfCrgFormatOut = 1;
-               
-               if ("PDBA" == strFormatString) 
-               {
-                  COutOBSOLETEPDBAFormat warning(strFormatString);
-               }
-                  
-               if (1 > iSurfCrgFormatOut || 2 < iSurfCrgFormatOut)
-               {   
-                  COutUnknownSurfCrgFormat warning(strFormatString);
-               }   
-            }
-         }                   
-
-         break;
-      }
-      
-      case 5: // ENERGY function
-              // since energy can have many arguments, the comma is important
-              // it helps to separate the commands so that when looking for S 
-              // does not find SOLVATION instead
-      {
-         strDirecUpperCase.insert(strDirecUpperCase.end()-1,','); // comma is replaced for all arguments
-
-         if (string::npos != strDirecUpperCase.find("GRID,")) bGridEng = true;
-         
-         unsigned long int iString; // change to long integer for out of range bug
-         
-         iString = strDirecUpperCase.find("S,"); // look for AS or S 
-         if (string::npos != iString)
-         {
-            if ( 0 != strDirecUpperCase.compare(iString-1,1,"A") ) // S
-               bSolvEng = true;
-            else // AS
-               bAnalySurfEng = true;
-         }
-      
-         iString = strDirecUpperCase.find("G,"); // look for AG or G
-         if (string::npos != iString)
-         {      
-            if ( 0 != strDirecUpperCase.compare(iString-1,1,"A") ) // S
-               bGridEng = true;
             else
-               bAnalyEng = true;               
-         }
-      
-         // look for each of the following strings, and set the boolean 
-         // accordingly
-         if ( string::npos != strDirecUpperCase.find("ION,") || string::npos != strDirecUpperCase.find("IONIC_C,") )
-        	 bIonsEng = true;
-         if ( string::npos != strDirecUpperCase.find("SOLVATION,") || string::npos != strDirecUpperCase.find("SOL,") )
-            bSolvEng = true;
-         if ( string::npos != strDirecUpperCase.find("C,") || string::npos != strDirecUpperCase.find("COU,") || string::npos != strDirecUpperCase.find("COULOMBIC,") )
-            bCoulombEng = true;                   
-         if ( string::npos != strDirecUpperCase.find("AS,") || string::npos != strDirecUpperCase.find("ANASURF,") || string::npos != strDirecUpperCase.find("ANALYTICSURFACE,") )
-            bAnalySurfEng = true; 
-         if ( string::npos != strDirecUpperCase.find("AG,") || string::npos != strDirecUpperCase.find("ANAGRID,") || string::npos != strDirecUpperCase.find("ANALYTICGRID,") )
-            bAnalyEng = true;             
-      
-         break;
-      }
-          
-      case 6: // SITE function
-         // empty bracket means reset all quantities to false
-         // reset back to false in fortran code - no need here since 
-         // they are already initialized to be false in contructor 
-         if (2 == strDirecUpperCase.length()) { };
-         
-         if (string::npos != strDirecUpperCase.find("ATOM,"))
-            bAtomInSite = true;
-         if (string::npos != strDirecUpperCase.find("CHARGE,"))
-            bCrgInSite = true;  
-         if (string::npos != strDirecUpperCase.find("POTENTIAL,"))
-            bGridPotentialInSite = true; 
-         if (string::npos != strDirecUpperCase.find("ATOMICPOT,"))
-            bAtomPotentialInSite = true;             
-         if (string::npos != strDirecUpperCase.find("DEBYEFRACTION,"))
-            bDebyeFractionInSite = true;    
-         if (string::npos != strDirecUpperCase.find("FIELD,"))
-            bFieldInSite = true;      
-         if (string::npos != strDirecUpperCase.find("REACTION,"))
-            bReactPotentialInSite = true;               
-         if (string::npos != strDirecUpperCase.find("COULOMB,"))
-            bCoulombPotentialInSite = true;              
-         if (string::npos != strDirecUpperCase.find("COORDINATES,"))
-            bAtomCoordInSite = true;               
-         if (string::npos != strDirecUpperCase.find("SALT,"))
-            bSaltInSite = true;             
-         if (string::npos != strDirecUpperCase.find("TOTAL,"))
-            bTotalPotentialInSite = true;
-         if (string::npos != strDirecUpperCase.find("REACTIONFORCE,")) // new
-            bReactForceInSite = true;
-         if (string::npos != strDirecUpperCase.find("COULOMBFORCE,")) // new
-            bCoulombForceInSite = true;
-         if (string::npos != strDirecUpperCase.find("MOLECULARDYNAMICS,"))//new
-            bMDInSite = true;
-         if (string::npos != strDirecUpperCase.find("SURFACECHARGE,")) // new
-            bSurfCrgInSite = true;
-         if (string::npos != strDirecUpperCase.find("TOTALFORCE,")) // new
-            bTotalForceInSite = true;
+               return false;
 
-         // can only do the last letter like this if there is no cooincindence with those above
-         if (string::npos != strDirecUpperCase.find("A,"))
-            bAtomInSite = true;
-         if (string::npos != strDirecUpperCase.find("Q,"))
-            bCrgInSite = true;  
-         if (string::npos != strDirecUpperCase.find("P,"))
-            bGridPotentialInSite = true; 
-         if (string::npos != strDirecUpperCase.find("ATPO,"))
-            bAtomPotentialInSite = true;             
-         if (string::npos != strDirecUpperCase.find("DEB,"))
-            bDebyeFractionInSite = true;    
-         if (string::npos != strDirecUpperCase.find("F,")) 
+            break;
+         }
+
+         /*
+          * ACENTER or ACENT function
+          * =========================
+          * Acenter takes three absolute coordinates, i.e. in Å and uses those as the center
+          */
+         case 2:
          {
-            if (string::npos != strDirecUpperCase.find("RF,"))
-               bReactForceInSite = true; 
-            if (string::npos != strDirecUpperCase.find("CF,"))
-               bCoulombForceInSite = true;
-            if (string::npos != strDirecUpperCase.find("MDF,"))
-               bMDInSite = true;         
-            if (string::npos != strDirecUpperCase.find("SF,"))
-               bSurfCrgInSite = true;
-            if (string::npos != strDirecUpperCase.find("TF,"))
-               bTotalForceInSite = true;
-            if ( !(bReactForceInSite || bCoulombForceInSite || bMDInSite || bSurfCrgInSite || bTotalForceInSite) )
-               bFieldInSite = true; 
+            if (0 < prgstrArgTokens_UpperCase.size() && 4 > prgstrArgTokens_UpperCase.size())
+            {
+               gfAcent.nX = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[0]);
+
+               if (1 < prgstrArgTokens_UpperCase.size())
+                  gfAcent.nY = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[1]);
+
+               if (2 < prgstrArgTokens_UpperCase.size())
+                  gfAcent.nZ = boost::lexical_cast<delphi::real>(prgstrArgTokens_UpperCase[2]);
+            }
+            else
+               return false;
+
+            bIsAcent = true;
+
+            break;
          }
-         if (string::npos != strDirecUpperCase.find("R,"))
-            bReactPotentialInSite = true;        
-         if (string::npos != strDirecUpperCase.find("C,"))
-            bCoulombPotentialInSite = true;              
-         if (string::npos != strDirecUpperCase.find("X,"))
-            bAtomCoordInSite = true;               
-         if (string::npos != strDirecUpperCase.find("I,"))
-            bSaltInSite = true;             
-         if (string::npos != strDirecUpperCase.find("T,"))
-            bTotalPotentialInSite = true; 
 
-         if ( bReactPotentialInSite || bReactForceInSite || bMDInSite || bTotalForceInSite || bTotalPotentialInSite || bSurfCrgInSite )
-            bReactFieldInFRC = true;
-            
-         if (bSurfCrgInSite) bPDB2FRCInSite = true;       
-            
-         break;              
-      
-      case 7: // BUFFZ function
-      {
-         string strStringChar;
-         
-         strStringChar = strDirecUpperCase.substr(0,3);
-         ieBuffz.nMin.nX = (integer)( atoi(strStringChar.c_str()) );
-         
-         strStringChar = strDirecUpperCase.substr(3,3);         
-         ieBuffz.nMin.nY = (integer)( atoi(strStringChar.c_str()) );
-         
-         strStringChar = strDirecUpperCase.substr(6,3);         
-         ieBuffz.nMin.nZ = (integer)( atoi(strStringChar.c_str()) );
-      
-         strStringChar = strDirecUpperCase.substr(9,3);         
-         ieBuffz.nMax.nX = (integer)( atoi(strStringChar.c_str()) );
-         
-         strStringChar = strDirecUpperCase.substr(12,3);         
-         ieBuffz.nMax.nY = (integer)( atoi(strStringChar.c_str()) );
-         
-         strStringChar = strDirecUpperCase.substr(15,3);         
-         ieBuffz.nMax.nZ = (integer)( atoi(strStringChar.c_str()) );    
-      
-         bIsBuffz = true;
-      
-         break;
-      }
-      
-      case 8: // QPREF function
-              // TAKE NO ACTION.
-         
-         break;
-            
-      case 9: // INSOBJ function
-              // ONLY FOR OBJECTS. REMOVED FROM THE LIST AND TAKE NO ACTION.
-         
-         break;   
-      
-      case 10: // SURFACE function
-         if (string::npos != strDirecUpperCase.find("CONNOLLY")) 
-            iTypeSurf = 0;
-         
-         if (string::npos != strDirecUpperCase.find("SKIN"))    
-            iTypeSurf = 1;
-         
-         if (string::npos != strDirecUpperCase.find("BLOBBY"))    
-            iTypeSurf = 2;
-         
-         if (string::npos != strDirecUpperCase.find("MESH"))    
-            iTypeSurf = 3;
-         
-         if (string::npos != strDirecUpperCase.find("MSMS"))    
-            iTypeSurf = 4;            
-            
-         break;   
-   
-      default:
-      {
-         CUnknownFunction warning(strFunc);
-         break;
-      }
-   } // end of switch (typearg)
-   
-   return true;
+         /*
+          * READ or IN function
+          * ===================
+          * This function allows files to be read as input. It comes with several specifiers, namely:
+          *    SIZ    : for the radius file  CRG: for the charge file
+          *    PDB    : for the pdb structure file (possible alternative formats: frm=UN and frm=MOD)
+          *    MODPDB4: for the modified pdb structure file (possible alternative formats: frm=PQR and frm=MOD) which
+          *             contain charges and radii values with 4 digits precession after decimal points.
+          *    FRC    : for positions of site potentials.
+          *    PHI    : for the phimap used in focusing
+          *
+          * The main use, at present will be to give the user flexibility to specify the file name or unit number of
+          * any of these files. Note that the default files for all read (and write) operations are the standard DelPhi
+          * files.
+          */
+         case 3:
+         {
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
 
+            /*
+             * size file
+             */
+            if (0 == prgstrArgTokens_UpperCase[0].compare("SIZ"))
+            {
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strSizeFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * charge file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("CRG"))
+            {
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strCrgFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * standard PDB file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("PDB"))
+            {
+               iPdbFormatIn = STDPDB;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strPdbFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * modified pdb file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("MODPDB"))
+            {
+               iPdbFormatIn = MODPDB;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strPdbFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing input file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("MOD"))
+                           iPdbFormatIn = MODPDB;
+                        else if (0 == strFormat.compare("PQR"))
+                           iPdbFormatIn = PQRPDB;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * modified pdb (4-digit) file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("MODPDB4"))
+            {
+               iPdbFormatIn = MOD4PDB;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strPdbFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing input file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("MOD"))
+                           iPdbFormatIn = MOD4PDB;
+                        else if (0 == strFormat.compare("PQR"))
+                           iPdbFormatIn = PQR4PDB;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * a shortcut to read PQR file (removed after 1st round of tests)
+             */
+            //else if (0 == prgstrArgTokens_UpperCase[0].compare("PQR"))
+            //{
+            //   iPdbFormatIn = PQRPDB;
+            //
+            //   if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+            //   {
+            //      for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+            //      {
+            //         itt++;
+            //
+            //         // a token describing input file name
+            //         if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+            //            strPdbFile = getFile_Name_or_Format(*it,*itt);
+            //         // invalid token
+            //         else
+            //            CUnknownParameter_FUNCTION warning(strFunc,*itt);
+            //      }
+            //   }
+            //}
+            /*
+             * a shortcut to read PQR4 file (removed after 1st round of tests)
+             */
+            //else if (0 == prgstrArgTokens_UpperCase[0].compare("PQR4"))
+            //{
+            //   iPdbFormatIn = PQR4PDB;
+            //
+            //   if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+            //   {
+            //      for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+            //      {
+            //         itt++;
+            //
+            //         // a token describing input file name
+            //         if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+            //            strPdbFile = getFile_Name_or_Format(*it,*itt);
+            //         // invalid token
+            //         else
+            //            CUnknownParameter_FUNCTION warning(strFunc,*itt);
+            //      }
+            //   }
+            //}
+            /*
+             * FRC file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("FRC"))
+            {
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strFrciFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing input file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("SELF"))
+                           bPDB2FRCInSite = true;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * PHI file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("PHI"))
+            {
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing input file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strPhiiFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * invalid token prgstrArgTokens_UpperCase[0]
+             */
+            else
+               CUnknownParameter_FUNCTION warning(strFunc,prgstrArgTokens_fromInput[0]);
+
+            break;
+         }
+
+         /*
+          * WRITE or OUT function
+          * =====================
+          * Equally obviously this deals with output. The specifiers are:
+          *    PHI    : for phimaps (possible other formats: frm=BIOSYM, frm=GRASP, frm=CUBE; see Unit14 in Files)
+          *    FRC    : for site potentials (possible other formats: frm=RC, frm=R, frm=UN;)
+          *    EPS    : for epsmaps
+          *    MODPDB : for modified pdb files
+          *    MODPDB4: modified pdb files that contain charges and radii with 4 digits precision after decimal points
+          *    UNPDB  : for unformatted pdb file
+          *    UNFRC  : for unformatted frc files
+          *    ENERGY : writes the file "energy.dat" containing energy data. (Example: out(energy))
+          *             Note that this is different from the Energy function!
+          */
+         case 4:
+         {
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
+
+            /*
+             * PHI file
+             */
+            if (0 == prgstrArgTokens_UpperCase[0].compare("PHI"))
+            {
+               bPhimapOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strPhiFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("BIOSYM"))
+                        {
+                           iPhiFormatOut = 1; bBiosystemOut = true;
+                        }
+                        else if (0 == strFormat.compare("GRASP"))
+                           iPhiFormatOut = 2;
+                        else if (0 == strFormat.compare("CCP4"))
+                           iPhiFormatOut = 3;
+                        else if (0 == strFormat.compare("DIFF"))
+                           iPhiFormatOut = 4;
+                        else if (0 == strFormat.compare("CUBE"))
+                           iPhiFormatOut = 5;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * SRF file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("SRF"))
+            {
+               /*
+                * out(srf,...) has been decided to be removed after 1st of tests
+                */
+
+               /*
+               bOutGraspSurf = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strGraspFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("BEM"))
+                           bBemSrfOut = true;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+               */
+
+               CObsoleteFunction warning(strLineNoSpace);
+
+            }
+            /*
+             * FRC file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("FRC"))
+            {
+               bSiteOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strFrcFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("RC"))
+                        {
+                           /*
+                            * format = RC has been decided to be removed after 1st round of tests
+                            */
+                           //iFrcFormatOut = 1; bReactFieldInFRC = true;
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                        }
+                        else if (0 == strFormat.compare("R"))
+                        {
+                           /*
+                            * format = RC has been decided to be removed after 1st round of tests
+                            */
+                           //iFrcFormatOut = 2; bReactFieldInFRC = true;
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                        }
+                        else if (0 == strFormat.compare("UN"))
+                        {
+                           /*
+                            * format = RC has been decided to be removed after 1st round of tests
+                            */
+                           //iFrcFormatOut = 3;
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                        }
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * EPS file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("EPS"))
+            {
+               bEpsOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strEpsFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * MODPDB file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("MODPDB"))
+            {
+               bModPdbOut = true;
+
+               iModPdbFormatOut = MODPDB;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strModifiedPdbFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("PQR"))
+                           iModPdbFormatOut = PQRPDB;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * MODPDB4 file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("MODPDB4"))
+            {
+               bModPdbOut = true;
+
+               iModPdbFormatOut = MOD4PDB;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strModifiedPdbFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("PQR"))
+                           iModPdbFormatOut = PQR4PDB;
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * UNPDB file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("UNPDB"))
+            {
+               /*
+                * out(unpdb,...) has been decided to be removed after 1st round of tests
+                */
+               //bUnformatPdbOut = true;
+               //
+               //if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               //{
+               //   for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+               //   {
+               //      itt++;
+               //
+               //      // a token describing output file name
+               //      if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+               //         strUnformatPdbFile = getFile_Name_or_Format(*it,*itt);
+               //      // invalid token
+               //      else
+               //         CUnknownParameter_FUNCTION warning(strFunc,*itt);
+               //   }
+               //}
+               CObsoleteFunction warning(strLineNoSpace);
+            }
+            /*
+             * UNFRC file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("UNFRC"))
+            {
+               /*
+                * out(unfrc,...) has been decided to be removed after 1st round of tests
+                */
+               //bUnformatFrcOut = true;
+               //
+               //if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               //{
+               //   for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+               //   {
+               //      itt++;
+               //
+               //      // a token describing output file name
+               //      if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+               //         strUnformatFrcFile = getFile_Name_or_Format(*it,*itt);
+               //      // invalid token
+               //      else
+               //         CUnknownParameter_FUNCTION warning(strFunc,*itt);
+               //   }
+               //}
+               CObsoleteFunction warning(strLineNoSpace);
+            }
+            /*
+             * ENERGY file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("ENERGY"))
+            {
+               bEngOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strEnergyFile = getFile_Name_or_Format(*it,*itt);
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * GCRG file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("GCRG"))
+            {
+               bGridCrgOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+                     CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+
+               }
+            }
+            /*
+             * HSURF file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("HSURF"))
+            {
+               bHsurf2DatOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+                     CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+
+               }
+            }
+            /*
+             * DB file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("DB"))
+            {
+               bDbOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+                     CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+
+               }
+            }
+            /*
+             * SURFEN file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("SURFEN"))
+            {
+               bSurfEngOut = true;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+                     CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+
+               }
+            }
+            /*
+             * SCRG file
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("SCRG"))
+            {
+               bSurfCrgOut = true;
+
+               iModPdbFormatOut = 0;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+
+                     // a token describing output file name
+                     if (string::npos != it->find("UNIT=") || string::npos != it->find("FILE=") )
+                        strScrgFile = getFile_Name_or_Format(*it,*itt);
+                     // a token describing output file format
+                     else if (string::npos != it->find("FRM=") || string::npos != it->find("FORM=") || string::npos != it->find("FORMAT="))
+                     {
+                        string strFormat = getFile_Name_or_Format(*it,*itt);
+
+                        if (0 == strFormat.compare("PDB"))
+                           iSurfCrgFormatOut = 1;
+                        else if (0 == strFormat.compare("PDBA"))
+                           COutOBSOLETEPDBAFormat warning(strFormat);
+                        else
+                           CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                     }
+                     // invalid token
+                     else
+                        CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+               }
+            }
+            /*
+             * unconditionally turn off write function for all
+             */
+            else if (0 == prgstrArgTokens_UpperCase[0].compare("OFF"))
+            {
+               bPhimapOut      = false;
+               bOutGraspSurf   = false;
+               bSiteOut        = false;
+               bEpsOut         = false;
+               bModPdbOut      = false;
+               bUnformatPdbOut = false;
+               bUnformatFrcOut = false;
+               bEngOut         = false;
+               bGridCrgOut     = false;
+               bHsurf2DatOut   = false;
+               bDbOut          = false;
+               bSurfEngOut     = false;
+               bSurfCrgOut     = false;
+
+               if (1 < prgstrArgTokens_UpperCase.size()) // more than one argument
+               {
+                  for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin()+1; it != prgstrArgTokens_UpperCase.end(); ++it)
+                  {
+                     itt++;
+                     CUnknownParameter_FUNCTION warning(strFunc,*itt);
+                  }
+
+               }
+
+               CUncondionalOff_WRITE warning;
+            }
+            /*
+             * invalid token prgstrArgTokens_UpperCase[0]
+             */
+            else
+               CUnknownParameter_FUNCTION warning(strFunc,*itt);
+
+            break;
+         }
+
+         /*
+          * ENERGY function
+          * ===============
+          * At present it takes as its argument any of the following:
+          *    G   or GRID                      : for the grid energy,
+          *    S   or SOL     or SOLVATION      : for the corrected reaction field energy
+          *    AS  or ANASURF or ANALYTICSURFACE: for the analytical surface energy
+          *    AG  or ANAGRID or ANALYTICGRID   : for the analytical grid energy
+          *    C   or COU     or COULOMBIC      : for the coulombic energy
+          *    ION or IONIC   or IONIC_C for the direct ionic contribution (see Ionic direct Contribution)
+          * separated by commas. (As always there is no case sensitivity here.)
+          *
+          * Note that the calculation of the non linear contributions are automatically turned on whenever non-linear PBE
+          * solver is invoked.
+          *
+          * For the energy definition we recommend the Rocchia et al. J. Phys. Chem, however a brief explanation is given below:
+          *
+          * The grid energy is obtained from the product of the potential at each point on the grid and the charge at that point,
+          * summed over all points on the grid. However, the potential computed for each charge on the grid includes not only the
+          * potentials induced by all other charges, but also the "self" potential. The effect is caused by the partitioning of
+          * the real charges into the grid points. Thus, two neighboring grid points might have partial charges that originate
+          * from the same real charge. Since the product of a charge with its own potential is not a true physical quantity, the
+          * grid energy should not be taken as a physically meaningful number by itself. Instead, the grid energy is only meaningful
+          * when comparing two DelPhi runs with exactly the same grid conditions (e.g constant structure and constant scale). The
+          * difference can then be used to extract solvation energies, salt effects, and others.
+          *
+          * The coulombic energy is calculated using Coulomb's law. It is defined as the energy required to bring charges from
+          * infinite distance to their resting positions within the dielectric specified for the molecule. This term has been revised
+          * in the new DelPhi to be consistent with the new multiple dielectric model. For the most recent definition, we again refer
+          * the reader to the previously mentioned paper.
+          *
+          * The reaction field energy (also called the solvation energy) is obtained from the product of the potential due to induced
+          * surface charges with all fixed charges of the solute molecule. This includes any fixed charge in the molecule that happens
+          * to be outside of the grid box. The induced surface charges are calculated at each point on the boundary between two
+          * dielectrics, e.g. the surface of the molecule. If the entire molecule lies within the box and salt is absent, this energy is
+          * the energy of transferring the molecule from a medium equal to the interior dielectric of the molecule into a medium of
+          * external dielectric of the solution. Depending on the physical process being described, this may be the actual solvation
+          * energy, but in general the solvation energy is obtained by taking the difference in reaction field energies between suitable
+          * reference states - hence we make the distinction between this physical process and our calculated energy term.
+          *
+          * The osmotic and electrostatic stress terms, defined in the same paper, are calculated whenever the program is asked to run
+          * nonlinear iterations; their contribution arises from the solvent inside the box.
+          *
+          * The calculation of the external ion contribution is toggled by the flag ion in the energy statement, it calculates the direct
+          * interaction of ions to real charges.
+          *
+          * This direct calculation needs some comments: it calculates the coulombic interaction between the ions in solution (screened
+          * by the surrounding polarized water). First of all, it can be computationally expensive, especially if the grid size is very
+          * high. Secondly, this energy neglects all of the ionic contribution due to the ions located outside the box. This can result in
+          * a underestimation of the real contribution, especially if the percentage filling is high. In the linear case this problem has
+          * been reduced almost completely by a mixed numerical/analytical technique. The analytical contribution of the first term in a
+          * spherical expansion of the molecular system outside the box is calculated. So the direct ionic contribution is better estimated
+          * by the sum of two terms: the one internal to the box and the one external to the box.
+          *
+          * For the non-linear case this is not so easy, because an analytical solution of the non-linear PBE for the spherical case is not
+          * available. The use of the linear approximation routine would result in an overestimation of the ionic contribution.
+          *
+          * Another way to get an estimation of the same energy term is to subtract the grid and reaction field energy in two cases: with
+          * and without salt. This means running the program twice on the system.
+          *
+          * In order to help the user decide if these two runs are necessary, the program estimates and reports the number of Debye lengths
+          * bounded within the grid. This number, together with the ionic strength, aids the user in estimating the error due to neglecting
+          * the ionic contribution outside the box.
+          *
+          * Note: If periodic boundary conditions are used, the estimated external ion contribution will be taken only in the directions
+          * where periodicity is NOT invoked. This is done in order to give an estimate of energy per periodic cell.
+          *
+          * The self-reaction field energy is calculated whenever the usual reaction field energy is calculated. It is an attempt to
+          * estimate the energy that the system gains when a point charge is moved from vacuum to a dielectric medium. In fact, when a
+          * charge moves from vacuum to a dielectric a polarization charge of opposite sign builds up around it. This results in an
+          * energetically favorable process. The higher the dielectric constant of the medium, the higher is the amount of polarization
+          * charge and the more energetically favorable is the process. In our model, it is assumed that polarization charge builds up
+          * spherically around any real point charge, at a distance the user can decide via the statement radpolext=[radius], which by
+          * default is set to be 1Å. This information is no attempt to give a quantitative estimation of this energy but just to take into
+          * account in a more detailed way the fact that the most favorable place for a charge is within a high dielectric medium. This
+          * necessity arises when a system with many different dielectric regions is studied.
+          */
+         case 5:
+         {
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
+
+            for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin(); it != prgstrArgTokens_UpperCase.end(); ++it)
+            {
+               if      (0 == it->compare("G") || 0 == it->compare("GRID"))
+                  bGridEng  = true;
+               else if (0 == it->compare("S") || 0 == it->compare("SOL") || 0 == it->compare("SOLVATION"))
+                  bSolvEng  = true;
+               else if (0 == it->compare("AS") || 0 == it->compare("ANASURF") || 0 == it->compare("ANALYTICSURFACE"))
+                  bAnalySurfEng = true;
+               else if (0 == it->compare("AG") || 0 == it->compare("ANAGRID") || 0 == it->compare("ANALYTICGRID"))
+                  bAnalyEng = true;
+               else if (0 == it->compare("ION") || 0 == it->compare("IONIC") || 0 == it->compare("IONIC_C"))
+                  bIonsEng = true;
+               else if (0 == it->compare("C") || 0 == it->compare("COU") || 0 == it->compare("COULOMBIC"))
+                  bCoulombEng = true;
+               else
+                  CUnknownParameter_FUNCTION warning(strFunc,*itt);
+
+               itt++;
+            }
+
+            break;
+         }
+
+         /* SITE function
+          * =============
+          * Reports the potentials and electrostatic field components at the positions of the subset of atoms specified in the frc file.
+          * The atoms specified in frc file should not be charged in the delphi run.
+          *
+          * The argument is a list of identifiers that can be:
+          *    ATOM              or A
+          *    CHARGE            or Q
+          *    POTENTIAL         or P
+          *    ATOMICPOT         or ATPO
+          *    DEBYEFRACTION     or DEB
+          *    FIELD             or F
+          *    REACTION          or R
+          *    COULOMB           or C
+          *    COORDINATES       or X
+          *    SALT              or I
+          *    TOTAL             or T
+          *    REACTIONFORCE     or RF
+          *    COULOMBFORCE      or CF
+          *    MOLECULARDYNAMICS or MDF
+          *    SURFACECHARGE     or SF
+          *    TOTALFORCE        or TF
+          */
+         case 6:
+         {
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
+
+            for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin(); it != prgstrArgTokens_UpperCase.end(); ++it)
+            {
+               if      (0 == it->compare("ATOM") || 0 == it->compare("A"))
+                  bAtomInSite = true;
+               else if (0 == it->compare("CHARGE") || 0 == it->compare("Q"))
+                  bCrgInSite = true;
+               else if (0 == it->compare("POTENTIAL") || 0 == it->compare("P"))
+                  bGridPotentialInSite = true;
+               else if (0 == it->compare("ATOMICPOT") || 0 == it->compare("ATPO"))
+                  bAtomPotentialInSite = true;
+               else if (0 == it->compare("DEBYEFRACTION") || 0 == it->compare("DEB"))
+                  bDebyeFractionInSite = true;
+               else if (0 == it->compare("FIELD") || 0 == it->compare("F"))
+                  bFieldInSite = true;
+               else if (0 == it->compare("REACTION") || 0 == it->compare("R"))
+                  bReactPotentialInSite = true;
+               else if (0 == it->compare("COULOMB") || 0 == it->compare("C"))
+                  bCoulombPotentialInSite = true;
+               else if (0 == it->compare("COORDINATES") || 0 == it->compare("X"))
+                  bAtomCoordInSite = true;
+               else if (0 == it->compare("SALT") || 0 == it->compare("I"))
+                  bSaltInSite = true;
+               else if (0 == it->compare("TOTAL") || 0 == it->compare("T"))
+                  bTotalPotentialInSite = true;
+               else if (0 == it->compare("REACTIONFORCE") || 0 == it->compare("RF")) // new
+                  bReactForceInSite = true;
+               else if (0 == it->compare("COULOMBFORCE") || 0 == it->compare("CF")) // new
+                  bCoulombForceInSite = true;
+               else if (0 == it->compare("MOLECULARDYNAMICS") || 0 == it->compare("MDF")) // new
+                  bMDInSite = true;
+               else if (0 == it->compare("SURFACECHARGE") || 0 == it->compare("SF")) // new
+                  bSurfCrgInSite = true;
+               else if (0 == it->compare("TOTALFORCE") || 0 == it->compare("TF")) // new
+                  bTotalForceInSite = true;
+               else
+                  CUnknownParameter_FUNCTION warning(strFunc,*itt);
+
+               itt++;
+            }
+
+            //if (!(bReactForceInSite||bCoulombForceInSite||bMDInSite||bSurfCrgInSite||bTotalForceInSite))
+            //   bFieldInSite = true;
+
+            if (bReactPotentialInSite||bReactForceInSite||bMDInSite||bTotalForceInSite||bTotalPotentialInSite||bSurfCrgInSite)
+               bReactFieldInFRC = true;
+
+            if (bSurfCrgInSite) bPDB2FRCInSite = true;
+
+            break;
+         }
+
+         /*
+          * BUFFZ function
+          * ==============
+          * Defines a box with sides parallel to grid unit vectors that the reaction field energy will then be calculated using
+          * ONLY the polarization charges contained in that box. The fixed format is BUFFZ(6i3).
+          */
+         case 7:
+         {
+            /*
+             * function BUFFZ has been decided to be removed after 1st round of tests
+             */
+
+            /*
+            if (1 != prgstrArgTokens_UpperCase.size() || 18 != prgstrArgTokens_UpperCase[0].length())
+            {
+               CUnknownParameter_FUNCTION warning(strFunc,prgstrArgTokens_UpperCase[0]);
+               return false;
+            }
+
+            eiBuffz.nMin.nX = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(0,3));
+            eiBuffz.nMin.nY = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(3,3));
+            eiBuffz.nMin.nZ = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(6,3));
+
+            eiBuffz.nMax.nX = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(9,3));
+            eiBuffz.nMax.nY = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(12,3));
+            eiBuffz.nMax.nZ = boost::lexical_cast<integer>(prgstrArgTokens_UpperCase[0].substr(15,3));
+
+            bIsBuffz = true;
+            */
+
+            CObsoleteFunction warning(strLineNoSpace);
+
+            break;
+         }
+
+         /*
+          * QPREF function
+          * ==============
+          * Obsolete. Take no action.
+          */
+         case 8:
+         {
+            CObsoleteFunction warning(strLineNoSpace);
+            break;
+         }
+
+         /*
+          * INSOBJ function
+          * ===============
+          * ONLY FOR OBJECTS. REMOVED FROM THE LIST AND TAKE NO ACTION.
+          */
+         case 9:
+         {
+            CObsoleteFunction warning(strLineNoSpace);
+            break;
+         }
+
+         /*
+          * SURFACE function
+          * ================
+          */
+         case 10:
+         {
+            vector<string>::iterator itt = prgstrArgTokens_fromInput.begin();
+
+            for (vector<string>::iterator it = prgstrArgTokens_UpperCase.begin(); it != prgstrArgTokens_UpperCase.end(); ++it)
+            {
+               if (0 == it->compare("CONNOLLY"))
+                  iTypeSurf = 0;
+               else if (0 == it->compare("SKIN"))
+                  iTypeSurf = 1;
+               else if (0 == it->compare("BLOBBY"))
+                  iTypeSurf = 2;
+               else if (0 == it->compare("MESH"))
+                  iTypeSurf = 3;
+               else if (0 == it->compare("MSMS"))
+                  iTypeSurf = 4;
+               else
+                  CUnknownParameter_FUNCTION warning(strFunc,*itt);
+
+               itt++;
+            }
+
+            break;
+         }
+
+         default:
+         {
+            CUnknownFunction warning(strFunc);
+            break;
+         }
+
+      } //--------------------- end of switch (typearg)
+
+      return true;
+   }
+   catch(bad_lexical_cast&)
+   {
+      return false;
+   }
 }
 
 //-----------------------------------------------------------------------//
-string CDelphiDataMarshal::getFileName(string strArgument, int iUnitPosit, int iFilePosit)
+string CDelphiDataMarshal::getFile_Name_or_Format(string strArg_UpperCase,string strArg_fromInput)
 {
    size_t pos;
-   string strFileName;
+   string strFile_Name_or_Format;
    string strNumber = "0123456789";
    string strLetter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.:_-+=!@#$^1234567890abcdefghijklmnopqrstuvwxyz|/?><";
 
-   if (0 != iUnitPosit)
+   int kk2 = 0, kk3 = 0, kk4 = 0, kk5 = 0, kk6 = 0;
+
+   if (string::npos != strArg_UpperCase.find("UNIT="))
+      kk2 = 5;
+   else if (string::npos != strArg_UpperCase.find("FILE="))
+      kk3 = 5;
+   else if (string::npos != strArg_UpperCase.find("FRM="))
+      kk4 = 4;
+   else if (string::npos != strArg_UpperCase.find("FORM="))
+      kk5 = 5;
+   else if (string::npos != strArg_UpperCase.find("FORMAT="))
+      kk5 = 7;
+
+   if (0 != kk2)
    {
-      strFileName = "fort.";
+      strFile_Name_or_Format = "fort.";
       
-      for (size_t ii = iUnitPosit; ii < strArgument.length(); ++ii)
+      for (size_t ii = kk2; ii < strArg_fromInput.length(); ++ii)
       {
-         pos = strNumber.find_first_of(strArgument[ii]);
-         if (string::npos == strNumber.find_first_of(strArgument[ii])) break;
-         strFileName += strNumber[pos];     
+         pos = strNumber.find_first_of(strArg_fromInput[ii]);
+         if (string::npos == strNumber.find_first_of(strArg_fromInput[ii])) break;
+         strFile_Name_or_Format += strNumber[pos];
       }
    }
 
-   if (0 != iFilePosit)
+   if (0 != kk3)
    {
-      for (size_t ii = iFilePosit; ii < strArgument.length(); ++ii)
+      for (size_t ii = kk3; ii < strArg_fromInput.length(); ++ii)
       {
-         if (string::npos != strLetter.find_first_of(strArgument[ii]))
-            strFileName += strArgument[ii];
+         if (string::npos != strLetter.find_first_of(strArg_fromInput[ii]))
+            strFile_Name_or_Format += strArg_fromInput[ii];
       }
    }
    
-   return strFileName;
+   if (0 != kk4)
+   {
+      for (size_t ii = kk4; ii < strArg_UpperCase.length(); ++ii)
+      {
+         if (string::npos != strLetter.find_first_of(strArg_UpperCase[ii]))
+            strFile_Name_or_Format += strArg_UpperCase[ii];
+      }
+   }
+
+   if (0 != kk5)
+   {
+      for (size_t ii = kk5; ii < strArg_UpperCase.length(); ++ii)
+      {
+         if (string::npos != strLetter.find_first_of(strArg_UpperCase[ii]))
+            strFile_Name_or_Format += strArg_UpperCase[ii];
+      }
+   }
+
+   if (0 != kk6)
+   {
+      for (size_t ii = kk6; ii < strArg_UpperCase.length(); ++ii)
+      {
+         if (string::npos != strLetter.find_first_of(strArg_UpperCase[ii]))
+            strFile_Name_or_Format += strArg_UpperCase[ii];
+      }
+   }
+
+   return strFile_Name_or_Format;
 }
+
+//-----------------------------------------------------------------------//
+inline vector<string> CDelphiDataMarshal::getArguments(string strArgs)
+{
+   /*
+    * take off "(" and ")" from strArgs if they present
+    */
+   if ('(' == strArgs.at(0) && ')' == strArgs.at(strArgs.length()-1))
+      strArgs = strArgs.substr(1,strArgs.length()-2);
+
+   std::vector<std::string> prgstrTokens;
+   istringstream issBuffer(strArgs);
+   for(string token; getline(issBuffer,token,',');) prgstrTokens.push_back(token);
+
+   /*
+    *  to test the vector prgstrTokens, must include <iterator> and <algorithm> at the beginning of this file
+    */
+   //copy(prgstrTokens.begin(),prgstrTokens.end(),ostream_iterator<string>(cout,"."));
+   //cout << '\n';
+
+   return prgstrTokens;
+}
+
+

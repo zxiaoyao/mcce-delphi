@@ -34,11 +34,11 @@ void CSite::writePhi()
       writePotential_delphi();
 
    if (2 != iPhiFormatOut)
-      phimap4.clear();
+      vector<real>().swap(phimap4);
 
    if (bOutCrgDensity)
    {
       prgfPhiMap.assign(phimap3.begin(),phimap3.end());
-      phimap3.clear();
+      vector<real>().swap(phimap3);
    }
 }

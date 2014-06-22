@@ -36,5 +36,5 @@ void CSite::writePotential_grasp(vector<real>& phimapIn)
 
    ofPhiStream.close();
 
-   phimapIn.clear();
+   vector<real>().swap(phimapIn);
 }
